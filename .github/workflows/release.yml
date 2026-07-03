@@ -22,6 +22,24 @@ jobs:
       - run: npm run build -w anonimizator
       - run: npm run test -w anonimizator
       - run: npm run build -w anonimizator-web
+      - name: Dodaj instrukcję do paczki
+        run: |
+          cat > apps/web/dist/JAK-UZYC.txt <<'EOF'
+          ANONIMIZATOR — jak zacząć (30 sekund)
+
+          1. Otwórz plik index.html podwójnym kliknięciem (uruchomi się w przeglądarce).
+          2. Wklej tekst albo upuść plik .txt na lewe pole.
+          3. Po prawej masz wersję z zamaskowanymi danymi — kliknij „Kopiuj".
+
+          Wszystko dzieje się na Twoim komputerze. Aplikacja nie łączy się
+          z internetem — możesz wyłączyć Wi-Fi i sprawdzić.
+
+          Uwaga: wykrywanie imion i nazwisk jest heurystyczne — zawsze przejrzyj
+          wynik, zanim go komuś wyślesz.
+
+          Kod źródłowy i dokumentacja:
+          https://github.com/karolpolikarp/anonimizator
+          EOF
       - name: Spakuj aplikację offline
         run: cd apps/web/dist && zip -r ../../../anonimizator-offline.zip .
       - uses: softprops/action-gh-release@v2

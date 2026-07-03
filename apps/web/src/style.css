@@ -139,6 +139,12 @@ textarea:focus {
   border-color: transparent;
 }
 
+textarea.dragover {
+  outline: 2px dashed var(--accent);
+  outline-offset: -1px;
+  background: var(--accent-soft);
+}
+
 .output {
   white-space: pre-wrap;
   word-wrap: break-word;

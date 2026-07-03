@@ -11,6 +11,7 @@ const findingsChips = $<HTMLSpanElement>('findings-chips');
 const copyBtn = $<HTMLButtonElement>('copy');
 const downloadBtn = $<HTMLButtonElement>('download');
 const clearBtn = $<HTMLButtonElement>('clear');
+const exampleBtn = $<HTMLButtonElement>('example');
 const loadFileBtn = $<HTMLButtonElement>('load-file');
 const fileInput = $<HTMLInputElement>('file-input');
 const nerEnabledBox = $<HTMLInputElement>('ner-enabled');
@@ -185,18 +186,49 @@ downloadBtn.addEventListener('click', () => {
   URL.revokeObjectURL(url);
 });
 
+// Przykład pokazuje pełne spektrum: maskowanie PESEL/IBAN/adresu/nazwisk ORAZ strażnik
+// kontekstu (numer przepisu „art. 123 456 789" celowo zostaje nietknięty).
+const EXAMPLE_TEXT = `Dzień dobry, nazywam się Anna Kowalska (PESEL 44051401359).
+Mieszkam przy ul. Polnej 12/3, 00-950 Warszawa.
+Proszę o kontakt: anna.kowalska@example.com lub tel. 600 700 800.
+Nr konta do zwrotu: PL61 1090 1014 0000 0712 1981 2874.
+Sprawę prowadzi pan Bąkiewicz zgodnie z art. 123 456 789 KC.`;
+
+exampleBtn.addEventListener('click', () => {
+  input.value = EXAMPLE_TEXT;
+  update();
+  input.focus();
+});
+
 loadFileBtn.addEventListener('click', () => fileInput.click());
 
-fileInput.addEventListener('change', () => {
-  const file = fileInput.files?.[0];
-  if (!file) return;
+function loadTextFile(file: File): void {
   const reader = new FileReader();
   reader.onload = () => {
     input.value = String(reader.result ?? '');
     update();
   };
   reader.readAsText(file);
+}
+
+fileInput.addEventListener('change', () => {
+  const file = fileInput.files?.[0];
+  if (!file) return;
+  loadTextFile(file);
   fileInput.value = '';
+});
+
+// drag&drop pliku wprost na pole tekstowe
+input.addEventListener('dragover', (e) => {
+  e.preventDefault();
+  input.classList.add('dragover');
+});
+input.addEventListener('dragleave', () => input.classList.remove('dragover'));
+input.addEventListener('drop', (e) => {
+  e.preventDefault();
+  input.classList.remove('dragover');
+  const file = e.dataTransfer?.files?.[0];
+  if (file) loadTextFile(file);
 });
 
 update();
