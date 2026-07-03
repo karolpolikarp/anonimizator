@@ -52,11 +52,15 @@ for (let i = 0; i < args.length; i++) {
   }
 }
 
+// BOM (﻿) zdejmujemy: pliki UTF-8 zapisane na Windows (np. przez Out-File)
+// zaczynają się od niego, a nie jest treścią.
+const stripBom = (s) => s.replace(/^﻿/, '');
+
 let input;
 try {
   input = files.length > 0
-    ? files.map((f) => readFileSync(f, 'utf8')).join('\n')
-    : readFileSync(0, 'utf8'); // stdin
+    ? files.map((f) => stripBom(readFileSync(f, 'utf8'))).join('\n')
+    : stripBom(readFileSync(0, 'utf8')); // stdin
 } catch (err) {
   console.error(`Błąd odczytu: ${err.message}`);
   process.exit(1);

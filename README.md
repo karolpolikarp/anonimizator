@@ -160,8 +160,8 @@ services/ner/     # opcjonalna lokalna usługa NER (Python/FastAPI + spaCy PL, D
 ## Testy
 
 ```bash
-npm test          # 33 testy: sumy kontrolne, maskowanie, fałszywe trafienia, idempotencja,
-                  # fail-safe NER (mock), scalanie znalezisk, circuit breaker
+npm test          # sumy kontrolne, maskowanie, fałszywe trafienia, idempotencja,
+                  # opcje types/masks, fail-safe NER (mock), circuit breaker
 ```
 
 ## Roadmapa

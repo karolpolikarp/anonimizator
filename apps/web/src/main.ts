@@ -127,7 +127,10 @@ function renderResult(redacted: string, found: PiiFinding[]): void {
   const label = findingsBar.querySelector<HTMLSpanElement>('.findings-label')!;
   if (found.length === 0) {
     label.textContent = 'Zamaskowano:';
-    findingsChips.innerHTML = '<span class="chip chip-ok">nie wykryto danych osobowych</span>';
+    // Gdy użytkownik wyłączył część typów, „nic nie znaleziono" nie oznacza „tekst czysty".
+    findingsChips.innerHTML = disabledGroups.size > 0
+      ? '<span class="chip">nic nie zamaskowano — część typów jest wyłączona w „Co maskować”</span>'
+      : '<span class="chip chip-ok">nie wykryto danych osobowych</span>';
   } else {
     const total = found.reduce((s, f) => s + f.count, 0);
     label.textContent = `Zamaskowano (${total}):`;
@@ -229,12 +232,29 @@ clearBtn.addEventListener('click', () => {
   input.focus();
 });
 
+function flashCopyBtn(text: string): void {
+  const prev = copyBtn.textContent;
+  copyBtn.textContent = text;
+  setTimeout(() => (copyBtn.textContent = prev), 1500);
+}
+
 copyBtn.addEventListener('click', async () => {
   if (!lastRedacted) return;
-  await navigator.clipboard.writeText(lastRedacted);
-  const prev = copyBtn.textContent;
-  copyBtn.textContent = 'Skopiowano ✓';
-  setTimeout(() => (copyBtn.textContent = prev), 1500);
+  try {
+    await navigator.clipboard.writeText(lastRedacted);
+    flashCopyBtn('Skopiowano ✓');
+  } catch {
+    // fallback: przeglądarka odmówiła Clipboard API — kopiujemy przez ukryty textarea
+    const ta = document.createElement('textarea');
+    ta.value = lastRedacted;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.append(ta);
+    ta.select();
+    const ok = document.execCommand('copy');
+    ta.remove();
+    flashCopyBtn(ok ? 'Skopiowano ✓' : 'Nie udało się — zaznacz i Ctrl+C');
+  }
 });
 
 downloadBtn.addEventListener('click', () => {

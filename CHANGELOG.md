@@ -3,6 +3,17 @@
 Format wersji: [SemVer](https://semver.org/lang/pl/). Tagi `vX.Y.Z` budują paczkę
 offline (`anonimizator-offline.zip`) w [Releases](https://github.com/karolpolikarp/anonimizator/releases).
 
+## v0.3.2 — 2026-07-04
+
+Przegląd stabilizacyjny:
+
+- **CI typechekuje aplikację webową** (`tsc --noEmit`) — Vite tylko transpiluje,
+  więc błędy typów przechodziły niezauważone.
+- Uczciwy komunikat, gdy część typów jest wyłączona w „Co maskować" — zamiast
+  mylącego „nie wykryto danych osobowych".
+- „Kopiuj" ma fallback, gdy przeglądarka odmówi Clipboard API.
+- CLI zdejmuje BOM z plików UTF-8 (Windows/`Out-File`).
+
 ## v0.3.1 — 2026-07-04
 
 - UX: „Kopiuj" jako przycisk główny (akcent) + skrót **Ctrl/Cmd+Enter**; licznik
