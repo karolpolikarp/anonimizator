@@ -124,9 +124,13 @@ function renderResult(redacted: string, found: PiiFinding[]): void {
     output.innerHTML = highlightMasks(escapeHtml(redacted));
   }
   findingsBar.hidden = false;
+  const label = findingsBar.querySelector<HTMLSpanElement>('.findings-label')!;
   if (found.length === 0) {
+    label.textContent = 'Zamaskowano:';
     findingsChips.innerHTML = '<span class="chip chip-ok">nie wykryto danych osobowych</span>';
   } else {
+    const total = found.reduce((s, f) => s + f.count, 0);
+    label.textContent = `Zamaskowano (${total}):`;
     renderChips(found);
   }
 }
@@ -303,10 +307,20 @@ input.addEventListener('drop', (e) => {
   if (file) void loadAnyFile(file);
 });
 
+// Ctrl/Cmd+Enter — skopiuj wynik (skrót podpowiadany w title przycisku Kopiuj)
+document.addEventListener('keydown', (e) => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+    e.preventDefault();
+    copyBtn.click();
+  }
+});
+
 // ?demo — autouzupełnij przykład (do linków demonstracyjnych i zrzutów ekranu).
 // MUSI być po deklaracji EXAMPLE_TEXT (const, TDZ) i tuż przed startowym update().
 if (new URLSearchParams(location.search).has('demo')) {
   input.value = EXAMPLE_TEXT;
+} else {
+  input.focus();
 }
 
 update();

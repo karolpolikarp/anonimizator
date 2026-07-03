@@ -3,6 +3,13 @@
 Format wersji: [SemVer](https://semver.org/lang/pl/). Tagi `vX.Y.Z` budują paczkę
 offline (`anonimizator-offline.zip`) w [Releases](https://github.com/karolpolikarp/anonimizator/releases).
 
+## v0.3.1 — 2026-07-04
+
+- UX: „Kopiuj" jako przycisk główny (akcent) + skrót **Ctrl/Cmd+Enter**; licznik
+  zamaskowanych wystąpień w pasku „Zamaskowano (N)"; autofocus pola tekstowego.
+- Paczka npm: dołączony `LICENSE`; zawartość zweryfikowana `npm publish --dry-run`
+  (8 plików, ~11,5 kB). Homepage repo wskazuje najnowszy release.
+
 ## v0.3.0 — 2026-07-04
 
 - **Aplikacja czyta pliki .docx** — ekstrakcja tekstu w 100% lokalnie (maleńki `fflate`

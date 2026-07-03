@@ -116,6 +116,18 @@ button:hover {
   color: var(--accent);
 }
 
+button.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+  font-weight: 600;
+}
+
+button.primary:hover {
+  opacity: 0.88;
+  color: #fff;
+}
+
 textarea, .output {
   min-height: 320px;
   padding: 0.75rem;
