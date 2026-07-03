@@ -42,7 +42,7 @@ jobs:
           EOF
       - name: Spakuj aplikację offline
         run: cd apps/web/dist && zip -r ../../../anonimizator-offline.zip .
-      - uses: softprops/action-gh-release@v2
+      - uses: softprops/action-gh-release@v3
         with:
           files: anonimizator-offline.zip
           body: |
