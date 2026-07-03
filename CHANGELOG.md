@@ -3,6 +3,14 @@
 Format wersji: [SemVer](https://semver.org/lang/pl/). Tagi `vX.Y.Z` budują paczkę
 offline (`anonimizator-offline.zip`) w [Releases](https://github.com/karolpolikarp/anonimizator/releases).
 
+## v0.3.3 — 2026-07-04
+
+- Favicon aplikacji (inline SVG — działa też offline) i `theme-color`.
+- Szablony zgłoszeń GitHub (nierozpoznane PII / fałszywe trafienie) z ostrzeżeniem,
+  by NIE wklejać prawdziwych danych osobowych do publicznych issues.
+- Dependabot (npm / pip / GitHub Actions, tygodniowo).
+- Zweryfikowany układ mobilny (~500 px, jedna kolumna); odświeżony zrzut w README.
+
 ## v0.3.2 — 2026-07-04
 
 Przegląd stabilizacyjny:

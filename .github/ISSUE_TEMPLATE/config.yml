@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Dokumentacja
+    url: https://github.com/karolpolikarp/anonimizator#readme
+    about: README z opisem, ograniczeniami i instrukcją użycia
