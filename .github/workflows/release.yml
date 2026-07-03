@@ -28,7 +28,7 @@ jobs:
           ANONIMIZATOR — jak zacząć (30 sekund)
 
           1. Otwórz plik index.html podwójnym kliknięciem (uruchomi się w przeglądarce).
-          2. Wklej tekst albo upuść plik .txt na lewe pole.
+          2. Wklej tekst albo upuść plik (.txt lub .docx) na lewe pole.
           3. Po prawej masz wersję z zamaskowanymi danymi — kliknij „Kopiuj".
 
           Wszystko dzieje się na Twoim komputerze. Aplikacja nie łączy się

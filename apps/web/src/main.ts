@@ -1,5 +1,6 @@
 import { redactPII, type PiiFinding, type PiiType } from 'anonimizator';
 import { mergeFindings, nerHealthCheck, nerRedact } from 'anonimizator/ner';
+import { extractDocxText } from './docx';
 import './style.css';
 
 const $ = <T extends HTMLElement>(id: string): T => document.getElementById(id) as T;
@@ -268,10 +269,24 @@ function loadTextFile(file: File): void {
   reader.readAsText(file);
 }
 
+async function loadAnyFile(file: File): Promise<void> {
+  if (/\.docx$/i.test(file.name)) {
+    try {
+      const buf = new Uint8Array(await file.arrayBuffer());
+      input.value = extractDocxText(buf);
+      update();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Nie udało się odczytać pliku .docx.');
+    }
+    return;
+  }
+  loadTextFile(file);
+}
+
 fileInput.addEventListener('change', () => {
   const file = fileInput.files?.[0];
   if (!file) return;
-  loadTextFile(file);
+  void loadAnyFile(file);
   fileInput.value = '';
 });
 
@@ -285,7 +300,7 @@ input.addEventListener('drop', (e) => {
   e.preventDefault();
   input.classList.remove('dragover');
   const file = e.dataTransfer?.files?.[0];
-  if (file) loadTextFile(file);
+  if (file) void loadAnyFile(file);
 });
 
 // ?demo — autouzupełnij przykład (do linków demonstracyjnych i zrzutów ekranu).

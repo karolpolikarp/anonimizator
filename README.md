@@ -20,7 +20,8 @@ lokalnie, w Twojej przeglądarce. Możesz rozłączyć internet i sprawdzić.
    `anonimizator-offline.zip`.
 2. Rozpakuj i otwórz `index.html` **podwójnym kliknięciem** — aplikacja działa prosto z dysku,
    bez serwera, bez instalacji, bez internetu.
-3. Wklej tekst albo wczytaj plik — po prawej dostajesz wersję zredagowaną do skopiowania.
+3. Wklej tekst albo upuść plik (`.txt`, `.docx`) — po prawej dostajesz wersję zredagowaną
+   do skopiowania. Pliki Word są czytane w całości lokalnie, jak wszystko tutaj.
 
 Alternatywnie sklonuj repo i odpal z kodu (sekcja „Dla programistów" niżej).
 
@@ -168,7 +169,8 @@ npm test          # 33 testy: sumy kontrolne, maskowanie, fałszywe trafienia, i
 - [ ] NER bez Dockera: model ONNX odpalany bezpośrednio w przeglądarce (transformers.js) —
       pełny recall nazwisk bez instalowania czegokolwiek.
 - [x] Konfigurowalne placeholdery i wybór typów do maskowania (v0.2.0).
-- [ ] Obsługa plików PDF/DOCX w aplikacji webowej (ekstrakcja tekstu lokalnie).
+- [x] Obsługa plików DOCX w aplikacji webowej — ekstrakcja tekstu lokalnie (v0.3.0).
+- [ ] Obsługa plików PDF (wymaga pdf.js — rozważane vs. rozmiar paczki offline).
 
 ## Pochodzenie
 
