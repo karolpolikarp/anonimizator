@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Anonimizator — usuń dane osobowe z tekstu, lokalnie w przeglądarce</title>
+    <meta
+      name="description"
+      content="Lokalny anonimizator polskich danych osobowych: PESEL, NIP, REGON, numer konta, dowód, e-mail, telefon, adres, imię i nazwisko. Tekst nie opuszcza Twojej przeglądarki."
+    />
+  </head>
+  <body>
+    <header class="site-header">
+      <h1>Anonimizator</h1>
+      <p class="tagline">Usuń dane osobowe z tekstu — zanim wkleisz go do czatu, e-maila czy formularza.</p>
+      <p class="privacy-badge">
+        🔒 Działa w 100% lokalnie w Twojej przeglądarce. Tekst nigdzie nie jest wysyłany —
+        możesz rozłączyć internet i sprawdzić.
+      </p>
+    </header>
+
+    <main>
+      <section class="panels">
+        <div class="panel">
+          <div class="panel-head">
+            <label for="input">Tekst źródłowy</label>
+            <div class="actions">
+              <button id="load-file" type="button">Wczytaj plik</button>
+              <button id="clear" type="button">Wyczyść</button>
+              <input id="file-input" type="file" accept=".txt,.md,.csv,.log" hidden />
+            </div>
+          </div>
+          <textarea
+            id="input"
+            spellcheck="false"
+            placeholder="Wklej tutaj tekst, np.:&#10;&#10;Nazywam się Jan Kowalski, PESEL 44051401359, mieszkam przy ul. Polnej 12/3. Proszę o kontakt: jan@example.com, tel. 600 700 800."
+          ></textarea>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <label for="output">Wynik — zredagowany</label>
+            <div class="actions">
+              <button id="copy" type="button">Kopiuj</button>
+              <button id="download" type="button">Pobierz .txt</button>
+            </div>
+          </div>
+          <div id="output" class="output" aria-live="polite"></div>
+        </div>
+      </section>
+
+      <section id="findings" class="findings" hidden>
+        <span class="findings-label">Zamaskowano:</span>
+        <span id="findings-chips"></span>
+      </section>
+
+      <section class="info">
+        <h2>Co wykrywa</h2>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Dane</th><th>Jak rozpoznaje</th><th>Placeholder</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>PESEL</td><td>11 cyfr + <strong>walidacja sumy kontrolnej</strong></td><td><code>[PESEL]</code></td></tr>
+              <tr><td>NIP</td><td>10 cyfr (także z myślnikami) + <strong>suma kontrolna</strong></td><td><code>[NIP]</code></td></tr>
+              <tr><td>REGON</td><td>9/14 cyfr + <strong>suma kontrolna</strong></td><td><code>[REGON]</code></td></tr>
+              <tr><td>IBAN / nr konta</td><td>walidacja mod 97 lub kontekst „konto/rachunek”</td><td><code>[NR-KONTA]</code></td></tr>
+              <tr><td>Nr dowodu osobistego</td><td>3 litery + 6 cyfr + <strong>suma kontrolna</strong></td><td><code>[NR-DOWODU]</code></td></tr>
+              <tr><td>E-mail</td><td>wzorzec adresu</td><td><code>[EMAIL]</code></td></tr>
+              <tr><td>Telefon</td><td>9 cyfr, opcjonalnie +48</td><td><code>[TELEFON]</code></td></tr>
+              <tr><td>Kod pocztowy</td><td>XX-XXX</td><td><code>[KOD-POCZTOWY]</code></td></tr>
+              <tr><td>Data urodzenia</td><td>data z kontekstem „ur./urodzony”</td><td><code>[DATA-URODZENIA]</code></td></tr>
+              <tr><td>Adres</td><td>ul./al./os./pl. + nazwa + numer</td><td><code>[ADRES]</code></td></tr>
+              <tr><td>Imię i nazwisko</td><td>słownik ~200 polskich imion + wyzwalacze („nazywam się”, „Pan/Pani”)</td><td><code>[IMIĘ I NAZWISKO]</code></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>
+          Walidacja sum kontrolnych odróżnia prawdziwy PESEL czy NIP od przypadkowego ciągu cyfr
+          (sygnatury akt, numery przepisów) — dlatego fałszywych trafień jest bardzo mało.
+          Strażnik kontekstu pilnuje, żeby „art. 123 456 789” nie został uznany za telefon.
+        </p>
+      </section>
+
+      <section class="info caveat">
+        <h2>Ograniczenia — przeczytaj</h2>
+        <p>
+          Wykrywanie imion i nazwisk jest <strong>heurystyczne</strong>: rzadkie nazwisko bez
+          imienia ze słownika i bez wyzwalacza kontekstu może nie zostać zamaskowane. Numery
+          w nietypowych formatach też mogą się prześlizgnąć. <strong>Zawsze przejrzyj wynik,
+          zanim go udostępnisz.</strong> To narzędzie pomocnicze, a nie gwarancja anonimizacji.
+        </p>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <p>
+        Kod open source (MIT):
+        <a href="https://github.com/karolpolikarp/anonimizator" rel="noopener">github.com/karolpolikarp/anonimizator</a>
+        · dostępny też jako pakiet npm <code>anonimizator</code> i narzędzie CLI.
+      </p>
+    </footer>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

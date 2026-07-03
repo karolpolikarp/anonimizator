@@ -1,0 +1,54 @@
+{
+  "name": "anonimizator",
+  "version": "0.1.0",
+  "description": "Lokalny anonimizator polskich danych osobowych (PII): PESEL, NIP, REGON, IBAN, nr dowodu (z walidacją sum kontrolnych), e-mail, telefon, adres, imię i nazwisko. Zero zależności — działa w Node, Deno, Bun i przeglądarce.",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "bin": {
+    "anonimizator": "./bin/anonimizator.js"
+  },
+  "files": [
+    "dist",
+    "bin",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "test": "vitest run",
+    "prepublishOnly": "npm run build && npm run test"
+  },
+  "keywords": [
+    "pii",
+    "rodo",
+    "gdpr",
+    "anonimizacja",
+    "anonymization",
+    "redaction",
+    "pesel",
+    "nip",
+    "regon",
+    "iban",
+    "polish",
+    "privacy"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/karolpolikarp/anonimizator.git",
+    "directory": "packages/core"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.0",
+    "vitest": "^3.0.0"
+  }
+}

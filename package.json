@@ -1,0 +1,16 @@
+{
+  "name": "anonimizator-monorepo",
+  "private": true,
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "build": "npm run build -w anonimizator && npm run build -w anonimizator-web",
+    "test": "npm run test -w anonimizator",
+    "dev": "npm run dev -w anonimizator-web"
+  },
+  "allowScripts": {
+    "esbuild@0.28.1": true
+  }
+}
