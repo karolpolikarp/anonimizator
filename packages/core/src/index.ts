@@ -46,6 +46,16 @@ export interface RedactionResult {
   found: PiiFinding[];
 }
 
+export interface RedactOptions {
+  /** Typy do maskowania. Domyślnie (brak pola) — WSZYSTKIE. Pusta lista = nic nie maskuj. */
+  types?: PiiType[];
+  /**
+   * Własne placeholdery per typ. UWAGA na idempotencję: placeholder nie może zawierać cyfr
+   * ani „@" — inaczej ponowny przebieg redakcji mógłby go pożreć jako PII.
+   */
+  masks?: Partial<Record<PiiType, string>>;
+}
+
 /** Etykiety placeholderów (czytelne dla człowieka i modelu, bez cyfr → idempotentne). */
 const MASK: Record<PiiType, string> = {
   EMAIL: '[EMAIL]',
@@ -215,13 +225,18 @@ const DICT_NAME_RE = new RegExp(
 // Główna funkcja redakcji
 // ============================================================================
 
-export function redactPII(input: string): RedactionResult {
+export function redactPII(input: string, options?: RedactOptions): RedactionResult {
   if (!input || typeof input !== 'string') {
     return { redacted: input ?? '', found: [] };
   }
 
   const counts = new Map<PiiType, number>();
   const bump = (t: PiiType) => counts.set(t, (counts.get(t) ?? 0) + 1);
+
+  // Filtr typów (brak = wszystkie) i ewentualne własne placeholdery.
+  const enabled = options?.types ? new Set(options.types) : null;
+  const on = (t: PiiType) => enabled === null || enabled.has(t);
+  const M: Record<PiiType, string> = options?.masks ? { ...MASK, ...options.masks } : MASK;
 
   let text = input;
 
@@ -230,126 +245,148 @@ export function redactPII(input: string): RedactionResult {
   // (telefon 9, kod 5). Redakcja dłuższego usuwa ciąg, więc krótszy detektor nie „odgryza" jego części.
 
   // 1) E-MAIL
-  text = text.replace(
-    /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g,
-    () => {
-      bump('EMAIL');
-      return MASK.EMAIL;
-    },
-  );
+  if (on('EMAIL')) {
+    text = text.replace(
+      /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g,
+      () => {
+        bump('EMAIL');
+        return M.EMAIL;
+      },
+    );
+  }
 
   // 2) IBAN (z prefiksem kraju, walidacja mod 97). Dopuszcza spacje w grupach.
-  text = text.replace(
-    /\b[A-Z]{2}\d{2}(?:[ ]?[A-Z0-9]){11,30}\b/g,
-    (m) => {
-      if (isValidIban(m)) {
-        bump('IBAN');
-        return MASK.IBAN;
-      }
-      return m;
-    },
-  );
+  if (on('IBAN')) {
+    text = text.replace(
+      /\b[A-Z]{2}\d{2}(?:[ ]?[A-Z0-9]){11,30}\b/g,
+      (m) => {
+        if (isValidIban(m)) {
+          bump('IBAN');
+          return M.IBAN;
+        }
+        return m;
+      },
+    );
+  }
 
   // 3) NR KONTA (NRB) zakotwiczony słowem „konto/rachunek/IBAN" + 26 cyfr (z opcjonalnymi spacjami).
-  text = text.replace(
-    /\b(konto|konta|rachunek|rachunku|rachunek bankowy|nr konta|numer konta|iban)\b([\s:.-]*)((?:\d[ ]?){26})(?!\d)/gi,
-    (_m, kw, sep) => {
-      bump('NR-KONTA');
-      return `${kw}${sep}${MASK['NR-KONTA']}`;
-    },
-  );
+  if (on('NR-KONTA')) {
+    text = text.replace(
+      /\b(konto|konta|rachunek|rachunku|rachunek bankowy|nr konta|numer konta|iban)\b([\s:.-]*)((?:\d[ ]?){26})(?!\d)/gi,
+      (_m, kw, sep) => {
+        bump('NR-KONTA');
+        return `${kw}${sep}${M['NR-KONTA']}`;
+      },
+    );
+  }
 
   // 4) PESEL — 11 cyfr + suma kontrolna, nie po „art./poz.".
-  text = text.replace(/(?<![\dA-Za-z])\d{11}(?![\d])/g, (m, offset: number) => {
-    if (precededByLegalRef(text, offset)) return m;
-    if (isValidPesel(m)) {
-      bump('PESEL');
-      return MASK.PESEL;
-    }
-    return m;
-  });
+  if (on('PESEL')) {
+    text = text.replace(/(?<![\dA-Za-z])\d{11}(?![\d])/g, (m, offset: number) => {
+      if (precededByLegalRef(text, offset)) return m;
+      if (isValidPesel(m)) {
+        bump('PESEL');
+        return M.PESEL;
+      }
+      return m;
+    });
+  }
 
   // 5) NIP — format z separatorami (XXX-XXX-XX-XX / XXX-XX-XX-XXX) lub 10 cyfr ciągiem, + suma kontrolna.
-  text = text.replace(
-    /(?<![\d])(?:\d{3}-\d{3}-\d{2}-\d{2}|\d{3}-\d{2}-\d{2}-\d{3}|\d{10})(?![\d])/g,
-    (m, offset: number) => {
-      if (precededByLegalRef(text, offset)) return m;
-      if (isValidNip(m)) {
-        bump('NIP');
-        return MASK.NIP;
-      }
-      return m;
-    },
-  );
+  if (on('NIP')) {
+    text = text.replace(
+      /(?<![\d])(?:\d{3}-\d{3}-\d{2}-\d{2}|\d{3}-\d{2}-\d{2}-\d{3}|\d{10})(?![\d])/g,
+      (m, offset: number) => {
+        if (precededByLegalRef(text, offset)) return m;
+        if (isValidNip(m)) {
+          bump('NIP');
+          return M.NIP;
+        }
+        return m;
+      },
+    );
+  }
 
   // 6) REGON 14-cyfrowy (jednoznaczny — nie myli się z telefonem/PESEL) + suma kontrolna.
-  text = text.replace(/(?<![\d])\d{14}(?![\d])/g, (m) => {
-    if (isValidRegon14(m)) {
-      bump('REGON');
-      return MASK.REGON;
-    }
-    return m;
-  });
-
-  // 7) REGON 9-cyfrowy — TYLKO zakotwiczony słowem „REGON" (bez tego 9 cyfr to częściej telefon).
-  text = text.replace(
-    /\b(regon)\b([\s:.-]*)(\d{9})(?![\d])/gi,
-    (m, kw, sep, num) => {
-      if (isValidRegon9(num)) {
+  if (on('REGON')) {
+    text = text.replace(/(?<![\d])\d{14}(?![\d])/g, (m) => {
+      if (isValidRegon14(m)) {
         bump('REGON');
-        return `${kw}${sep}${MASK.REGON}`;
+        return M.REGON;
       }
       return m;
-    },
-  );
+    });
+
+    // 7) REGON 9-cyfrowy — TYLKO zakotwiczony słowem „REGON" (bez tego 9 cyfr to częściej telefon).
+    text = text.replace(
+      /\b(regon)\b([\s:.-]*)(\d{9})(?![\d])/gi,
+      (m, kw, sep, num) => {
+        if (isValidRegon9(num)) {
+          bump('REGON');
+          return `${kw}${sep}${M.REGON}`;
+        }
+        return m;
+      },
+    );
+  }
 
   // 8) TELEFON — opcjonalny +48, 9 cyfr (grupowane spacją/myślnikiem lub ciągiem). Nie po „art./poz.".
-  text = text.replace(
-    /(?<![\d])(?:\+?\s?48[\s-]?)?\d{3}[\s-]?\d{3}[\s-]?\d{3}(?![\d])/g,
-    (m, offset: number) => {
-      if (precededByLegalRef(text, offset)) return m;
-      bump('TELEFON');
-      return MASK.TELEFON;
-    },
-  );
+  if (on('TELEFON')) {
+    text = text.replace(
+      /(?<![\d])(?:\+?\s?48[\s-]?)?\d{3}[\s-]?\d{3}[\s-]?\d{3}(?![\d])/g,
+      (m, offset: number) => {
+        if (precededByLegalRef(text, offset)) return m;
+        bump('TELEFON');
+        return M.TELEFON;
+      },
+    );
+  }
 
   // 9) NR DOWODU — 3 litery + 6 cyfr + suma kontrolna (np. „ABA300000", „ABC 123456").
-  text = text.replace(/\b[A-Za-z]{3}[\s-]?\d{6}\b/g, (m) => {
-    if (isValidDowod(m)) {
-      bump('DOWOD');
-      return MASK.DOWOD;
-    }
-    return m;
-  });
+  if (on('DOWOD')) {
+    text = text.replace(/\b[A-Za-z]{3}[\s-]?\d{6}\b/g, (m) => {
+      if (isValidDowod(m)) {
+        bump('DOWOD');
+        return M.DOWOD;
+      }
+      return m;
+    });
+  }
 
   // 10) KOD POCZTOWY — XX-XXX, nie po „art./§" (żeby nie zjeść zakresu „art. 12-345").
-  text = text.replace(/(?<![\d-])\d{2}-\d{3}(?![\d-])/g, (m, offset: number) => {
-    if (precededByLegalRef(text, offset)) return m;
-    bump('KOD-POCZTOWY');
-    return MASK['KOD-POCZTOWY'];
-  });
+  if (on('KOD-POCZTOWY')) {
+    text = text.replace(/(?<![\d-])\d{2}-\d{3}(?![\d-])/g, (m, offset: number) => {
+      if (precededByLegalRef(text, offset)) return m;
+      bump('KOD-POCZTOWY');
+      return M['KOD-POCZTOWY'];
+    });
+  }
 
   // 11) DATA URODZENIA — tylko z jawnym kontekstem (ur./urodzony/data urodzenia) + data.
-  text = text.replace(
-    /\b(ur\.|urodzony|urodzona|urodzeni[ae]|data urodzenia)\b([\s:.,-]*)(\d{1,2}[.\-/]\d{1,2}[.\-/]\d{2,4}|\d{4}-\d{2}-\d{2})/gi,
-    (_m, kw, sep) => {
-      bump('DATA-UR');
-      return `${kw}${sep}${MASK['DATA-UR']}`;
-    },
-  );
+  if (on('DATA-UR')) {
+    text = text.replace(
+      /\b(ur\.|urodzony|urodzona|urodzeni[ae]|data urodzenia)\b([\s:.,-]*)(\d{1,2}[.\-/]\d{1,2}[.\-/]\d{2,4}|\d{4}-\d{2}-\d{2})/gi,
+      (_m, kw, sep) => {
+        bump('DATA-UR');
+        return `${kw}${sep}${M['DATA-UR']}`;
+      },
+    );
+  }
 
   // 12) ADRES — ul./al./os./pl. + nazwa + numer (opcjonalnie /mieszkanie). Wysoka precyzja.
-  text = text.replace(
-    new RegExp(
-      `\\b(ul\\.|ulica|al\\.|aleja|os\\.|osiedle|pl\\.|plac)\\s+` +
-        `[${PL_UP}][${PL_LO}${PL_UP}.-]*(?:\\s+[${PL_UP}0-9][${PL_LO}${PL_UP}0-9.-]*){0,3}\\s+\\d+[A-Za-z]?(?:\\s*/\\s*\\d+[A-Za-z]?)?`,
-      'g',
-    ),
-    () => {
-      bump('ADRES');
-      return MASK.ADRES;
-    },
-  );
+  if (on('ADRES')) {
+    text = text.replace(
+      new RegExp(
+        `\\b(ul\\.|ulica|al\\.|aleja|os\\.|osiedle|pl\\.|plac)\\s+` +
+          `[${PL_UP}][${PL_LO}${PL_UP}.-]*(?:\\s+[${PL_UP}0-9][${PL_LO}${PL_UP}0-9.-]*){0,3}\\s+\\d+[A-Za-z]?(?:\\s*/\\s*\\d+[A-Za-z]?)?`,
+        'g',
+      ),
+      () => {
+        bump('ADRES');
+        return M.ADRES;
+      },
+    );
+  }
 
   // 13) IMIĘ I NAZWISKO — heurystyka:
   //   (a) ZNANE imię ze słownika + następne słowo z wielkiej litery (nazwisko);
@@ -357,11 +394,13 @@ export function redactPII(input: string): RedactionResult {
   // (a) Zakotwiczamy na imieniu ZE SŁOWNIKA (alternatywa), a NIE na „dwóch słowach z wielkiej litery".
   // Inaczej wyraz z wielkiej przed imieniem („Pracownik Tomasz Lewandowski") jest zżerany jako para
   // „Pracownik Tomasz", a „Tomasz Lewandowski" nigdy się nie dopasowuje.
-  text = text.replace(DICT_NAME_RE, (m, surname: string) => {
-    if (LEGAL_ENTITY_WORDS.has(surname.toLowerCase())) return m;
-    bump('IMIE');
-    return MASK.IMIE;
-  });
+  if (on('IMIE')) {
+    text = text.replace(DICT_NAME_RE, (m, surname: string) => {
+      if (LEGAL_ENTITY_WORDS.has(surname.toLowerCase())) return m;
+      bump('IMIE');
+      return M.IMIE;
+    });
+  }
 
   // (b) wyzwalacze kontekstu — łapią nazwiska spoza listy imion.
   // UWAGA #1: bez trailing `\b` po wyzwalaczu — „się"/„imię"/„panią" kończą się polską literą (ę/ą),
@@ -369,18 +408,20 @@ export function redactPII(input: string): RedactionResult {
   // UWAGA #2: NIE używamy flagi `i`. Pod `i` klasa [PL_UP] łapie też MAŁE litery, więc grupa
   // „nazwiska" pożerała kolejne małe słowo („Pan Wiśniewski nie" → maskowało także „nie", odwracając
   // sens zdania!). Dlatego wielkość liter wyzwalacza kodujemy jawnie ([Pp]an…), a flaga zostaje samo `g`.
-  const nameTrigger = new RegExp(
-    `\\b([Nn]azywam się|[Mm]am na imię|[Ii]mię i nazwisko|[Ii]mie i nazwisko|[Nn]azwisko:|[Pp]ana|[Pp]anią|[Pp]anu|[Pp]ani|[Pp]an)` +
-      `([\\s:]+)([${PL_UP}][${PL_LO}]+(?:\\s+[${PL_UP}][${PL_LO}]+(?:-[${PL_UP}][${PL_LO}]+)?)?)`,
-    'g',
-  );
-  text = text.replace(nameTrigger, (m, kw: string, sep: string, name: string) => {
-    // nie maskuj, jeśli „nazwa" to encja prawna („Pani Sąd"… praktycznie nie wystąpi, ale chronimy)
-    const firstWord = name.split(/\s+/)[0].toLowerCase();
-    if (LEGAL_ENTITY_WORDS.has(firstWord)) return m;
-    bump('IMIE');
-    return `${kw}${sep}${MASK.IMIE}`;
-  });
+  if (on('IMIE')) {
+    const nameTrigger = new RegExp(
+      `\\b([Nn]azywam się|[Mm]am na imię|[Ii]mię i nazwisko|[Ii]mie i nazwisko|[Nn]azwisko:|[Pp]ana|[Pp]anią|[Pp]anu|[Pp]ani|[Pp]an)` +
+        `([\\s:]+)([${PL_UP}][${PL_LO}]+(?:\\s+[${PL_UP}][${PL_LO}]+(?:-[${PL_UP}][${PL_LO}]+)?)?)`,
+      'g',
+    );
+    text = text.replace(nameTrigger, (m, kw: string, sep: string, name: string) => {
+      // nie maskuj, jeśli „nazwa" to encja prawna („Pani Sąd"… praktycznie nie wystąpi, ale chronimy)
+      const firstWord = name.split(/\s+/)[0].toLowerCase();
+      if (LEGAL_ENTITY_WORDS.has(firstWord)) return m;
+      bump('IMIE');
+      return `${kw}${sep}${M.IMIE}`;
+    });
+  }
 
   const found: PiiFinding[] = [...counts.entries()].map(([type, count]) => ({ type, count }));
   return { redacted: text, found };

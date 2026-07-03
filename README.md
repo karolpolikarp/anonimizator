@@ -1,5 +1,9 @@
 # Anonimizator
 
+[![CI](https://github.com/karolpolikarp/anonimizator/actions/workflows/ci.yml/badge.svg)](https://github.com/karolpolikarp/anonimizator/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/karolpolikarp/anonimizator)](https://github.com/karolpolikarp/anonimizator/releases)
+[![Licencja MIT](https://img.shields.io/badge/licencja-MIT-blue.svg)](./LICENSE)
+
 Lokalny anonimizator polskich danych osobowych (PII). Zamienia PESEL, NIP, REGON, numery kont,
 numery dowodów, e-maile, telefony, adresy oraz imiona i nazwiska na neutralne placeholdery —
 **zanim** tekst trafi do czatu z modelem językowym, e-maila, zgłoszenia czy bazy danych.
@@ -104,6 +108,16 @@ hasPII('czysty tekst');            // false
 describeFindings(found);           // ['PESEL']
 ```
 
+Opcjonalny drugi parametr pozwala wybrać typy i podmienić placeholdery:
+
+```ts
+// maskuj tylko PESEL i e-mail
+redactPII(tekst, { types: ['PESEL', 'EMAIL'] });
+
+// własny placeholder (bez cyfr i „@" — inaczej łamiesz idempotencję)
+redactPII(tekst, { masks: { PESEL: '[UKRYTO]' } });
+```
+
 Eksportowane są też walidatory sum kontrolnych: `isValidPesel`, `isValidNip`, `isValidRegon9`,
 `isValidRegon14`, `isValidIban`, `isValidDowod`.
 
@@ -151,7 +165,7 @@ npm test          # 33 testy: sumy kontrolne, maskowanie, fałszywe trafienia, i
 
 - [ ] NER bez Dockera: model ONNX odpalany bezpośrednio w przeglądarce (transformers.js) —
       pełny recall nazwisk bez instalowania czegokolwiek.
-- [ ] Konfigurowalne placeholdery i wybór typów do maskowania.
+- [x] Konfigurowalne placeholdery i wybór typów do maskowania (v0.2.0).
 - [ ] Obsługa plików PDF/DOCX w aplikacji webowej (ekstrakcja tekstu lokalnie).
 
 ## Pochodzenie

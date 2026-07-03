@@ -1,4 +1,4 @@
-import { redactPII, type PiiFinding } from 'anonimizator';
+import { redactPII, type PiiFinding, type PiiType } from 'anonimizator';
 import { mergeFindings, nerHealthCheck, nerRedact } from 'anonimizator/ner';
 import './style.css';
 
@@ -20,6 +20,54 @@ const nerUrlInput = $<HTMLInputElement>('ner-url');
 const nerStatus = $<HTMLSpanElement>('ner-status');
 
 let lastRedacted = '';
+
+// ── Wybór typów do maskowania (panel „Co maskować") ──
+// Grupy logiczne widoczne dla użytkownika; IBAN i NR-KONTA to technicznie dwa typy,
+// dla użytkownika — jedno „numer konta".
+const MASK_GROUPS: Array<{ key: string; label: string; types: PiiType[] }> = [
+  { key: 'pesel', label: 'PESEL', types: ['PESEL'] },
+  { key: 'nip', label: 'NIP', types: ['NIP'] },
+  { key: 'regon', label: 'REGON', types: ['REGON'] },
+  { key: 'konto', label: 'numer konta', types: ['IBAN', 'NR-KONTA'] },
+  { key: 'dowod', label: 'nr dowodu', types: ['DOWOD'] },
+  { key: 'email', label: 'e-mail', types: ['EMAIL'] },
+  { key: 'telefon', label: 'telefon', types: ['TELEFON'] },
+  { key: 'kod', label: 'kod pocztowy', types: ['KOD-POCZTOWY'] },
+  { key: 'dataur', label: 'data urodzenia', types: ['DATA-UR'] },
+  { key: 'adres', label: 'adres', types: ['ADRES'] },
+  { key: 'imie', label: 'imię i nazwisko', types: ['IMIE'] },
+];
+
+const maskTogglesEl = $<HTMLDivElement>('mask-toggles');
+const disabledGroups = new Set<string>(
+  (localStorage.getItem('mask-disabled') ?? '').split(',').filter(Boolean),
+);
+
+for (const g of MASK_GROUPS) {
+  const label = document.createElement('label');
+  label.className = 'mask-toggle';
+  const box = document.createElement('input');
+  box.type = 'checkbox';
+  box.checked = !disabledGroups.has(g.key);
+  box.addEventListener('change', () => {
+    if (box.checked) disabledGroups.delete(g.key);
+    else disabledGroups.add(g.key);
+    localStorage.setItem('mask-disabled', [...disabledGroups].join(','));
+    update();
+  });
+  label.append(box, document.createTextNode(` ${g.label}`));
+  maskTogglesEl.append(label);
+}
+
+/** Typy aktywne wg checkboxów; undefined = wszystkie (nie przekazujemy opcji). */
+function activeTypes(): PiiType[] | undefined {
+  if (disabledGroups.size === 0) return undefined;
+  return MASK_GROUPS.filter((g) => !disabledGroups.has(g.key)).flatMap((g) => g.types);
+}
+
+function imieEnabled(): boolean {
+  return !disabledGroups.has('imie');
+}
 
 const CHIP_LABEL: Record<string, string> = {
   EMAIL: 'e-mail',
@@ -87,6 +135,7 @@ function nerConfig() {
 
 function scheduleNer(baseRedacted: string, baseFound: PiiFinding[]): void {
   if (!nerEnabledBox.checked || !nerUrlInput.value.trim()) return;
+  if (!imieEnabled()) return; // użytkownik odznaczył imiona — NER nie ma czego dokładać
   const seq = ++nerSeq;
   clearTimeout(nerTimer);
   nerTimer = setTimeout(async () => {
@@ -132,7 +181,7 @@ function update(): void {
     lastRedacted = '';
     return;
   }
-  const { redacted, found } = redactPII(text);
+  const { redacted, found } = redactPII(text, { types: activeTypes() });
   renderResult(redacted, found);
   scheduleNer(redacted, found);
 }

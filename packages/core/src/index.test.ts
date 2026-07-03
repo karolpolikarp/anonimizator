@@ -147,3 +147,30 @@ test('hasPII — wykrywa i nie myli się na czystym tekście', () => {
   expect(hasPII('mój nip 1234563218')).toBe(true);
   expect(hasPII('jakie są zasady rozwodu?')).toBe(false);
 });
+
+// ── Opcje: wybór typów i własne placeholdery ──
+test('options.types — maskuje TYLKO wskazane typy', () => {
+  const r = redactPII('PESEL 44051401359, mail x@y.pl, Jan Kowalski', { types: ['PESEL'] });
+  expect(r.redacted).toContain('[PESEL]');
+  expect(r.redacted).toContain('x@y.pl');
+  expect(r.redacted).toContain('Jan Kowalski');
+  expect(r.found.map((f) => f.type)).toEqual(['PESEL']);
+});
+
+test('options.types — pusta lista nic nie maskuje', () => {
+  const input = 'PESEL 44051401359, mail x@y.pl';
+  const r = redactPII(input, { types: [] });
+  expect(r.redacted).toBe(input);
+  expect(r.found.length).toBe(0);
+});
+
+test('options.masks — własny placeholder, reszta domyślna', () => {
+  const r = redactPII('PESEL 44051401359, mail x@y.pl', { masks: { PESEL: '[UKRYTO]' } });
+  expect(r.redacted).toContain('[UKRYTO]');
+  expect(r.redacted).toContain('[EMAIL]');
+});
+
+test('options — brak opcji identyczny z domyślnym wywołaniem', () => {
+  const input = 'PESEL 44051401359, NIP 123-456-32-18, Jan Kowalski, ul. Polna 12/3, x@y.pl';
+  expect(redactPII(input, {}).redacted).toBe(redactPII(input).redacted);
+});

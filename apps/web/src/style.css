@@ -195,6 +195,41 @@ mark.mask {
   color: var(--ok-text);
 }
 
+.mask-settings {
+  margin-top: 0.9rem;
+  padding: 0.7rem 0.9rem;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-size: 0.9rem;
+}
+
+.mask-settings summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.mask-settings .muted {
+  color: var(--muted);
+  font-weight: 400;
+  font-size: 0.85rem;
+}
+
+.mask-toggles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 1.1rem;
+  margin-top: 0.6rem;
+}
+
+.mask-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
 .ner-box {
   margin-top: 0.9rem;
   padding: 0.7rem 0.9rem;
