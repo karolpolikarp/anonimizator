@@ -1,0 +1,17 @@
+# Wygoda: `docker compose up -d` działa z katalogu głównego repo.
+# Jedyna usługa dockerowa to opcjonalny lokalny NER (aplikacja webowa i CLI go nie wymagają).
+# Pełna dokumentacja: services/ner/README.md
+services:
+  ner:
+    build:
+      context: ./services/ner
+      # Lżejszy model na słabszy sprzęt: odkomentuj poniżej.
+      # args:
+      #   SPACY_MODEL: pl_core_news_md
+    ports:
+      # Bind TYLKO na localhost — usługa nie jest widoczna z sieci.
+      - "127.0.0.1:8090:8090"
+    environment:
+      PII_NER_API_KEY: ""
+      PII_NER_LABELS: "persName"
+    restart: unless-stopped
