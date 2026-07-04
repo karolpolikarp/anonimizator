@@ -63,7 +63,7 @@ przebieg po zredagowanym tekście niczego nie psuje.
 | Kod pocztowy | XX-XXX | `[KOD-POCZTOWY]` |
 | Data urodzenia | data z kontekstem „ur./urodzony" | `[DATA-URODZENIA]` |
 | Adres | ul./al./os./pl. + nazwa + numer | `[ADRES]` |
-| Imię i nazwisko | słownik ~200 polskich imion + wyzwalacze kontekstu („nazywam się", „Pan/Pani") | `[IMIĘ I NAZWISKO]` |
+| Imię i nazwisko | słownik ~200 imion + ~230 najczęstszych nazwisk (z odmianą) + wyzwalacze kontekstu („nazywam się", „Pan/Pani") | `[IMIĘ I NAZWISKO]` |
 
 ## Ograniczenia (przeczytaj przed użyciem)
 

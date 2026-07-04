@@ -148,6 +148,43 @@ test('hasPII — wykrywa i nie myli się na czystym tekście', () => {
   expect(hasPII('jakie są zasady rozwodu?')).toBe(false);
 });
 
+// ── Samodzielne nazwiska ze słownika (krok 13c) ──
+test('nazwisko solo w odmianie — dopełniacz maskowany', () => {
+  const r = redactPII('Sprawę Kowalskiego przekazano do sądu');
+  expect(r.redacted).toContain('[IMIĘ I NAZWISKO]');
+  expect(r.redacted.includes('Kowalskiego')).toBe(false);
+});
+test('nazwisko solo — forma żeńska -ska maskowana', () => {
+  const r = redactPII('Zeznanie złożyła Wiśniewska w czwartek');
+  expect(r.redacted).toContain('[IMIĘ I NAZWISKO]');
+});
+test('nazwisko solo — celownik rzeczownikowy (Nowakowi)', () => {
+  const r = redactPII('Nowakowi doręczono wezwanie');
+  expect(r.redacted).toContain('[IMIĘ I NAZWISKO]');
+  expect(r.redacted.includes('Nowakowi')).toBe(false);
+});
+test('nazwisko solo — liczba mnoga (Kowalscy)', () => {
+  const r = redactPII('Kowalscy odwołali się od decyzji');
+  expect(r.redacted).toContain('[IMIĘ I NAZWISKO]');
+});
+test('homonim solo NIE jest maskowany (Wilk, Mazurek)', () => {
+  const r = redactPII('Wilk biegał po lesie, a Mazurek wielkanocny był pyszny');
+  expect(r.redacted.includes('[IMIĘ I NAZWISKO]')).toBe(false);
+});
+test('homonim Z imieniem nadal maskowany (Jan Wilk)', () => {
+  const r = redactPII('Jan Wilk mieszka w Poznaniu');
+  expect(r.redacted).toContain('[IMIĘ I NAZWISKO]');
+  expect(r.redacted.includes('Wilk')).toBe(false);
+});
+test('małe litery NIE są nazwiskiem (kowalski jako przymiotnik)', () => {
+  const q = 'zawód kowalski wymaga siły';
+  expect(redactPII(q).redacted).toBe(q);
+});
+test('krok 13c nie psuje idempotencji', () => {
+  const once = redactPII('Sprawę Kowalskiego i Wiśniewskiej umorzono').redacted;
+  expect(redactPII(once).redacted).toBe(once);
+});
+
 // ── Opcje: wybór typów i własne placeholdery ──
 test('options.types — maskuje TYLKO wskazane typy', () => {
   const r = redactPII('PESEL 44051401359, mail x@y.pl, Jan Kowalski', { types: ['PESEL'] });

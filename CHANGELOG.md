@@ -3,6 +3,18 @@
 Format wersji: [SemVer](https://semver.org/lang/pl/). Tagi `vX.Y.Z` budują paczkę
 offline (`anonimizator-offline.zip`) w [Releases](https://github.com/karolpolikarp/anonimizator/releases).
 
+## v0.5.0 — 2026-07-04
+
+Start programu „najlepszy anonimizator PL 2026/2027" — analiza SOTA i architektura
+warstwowa w [docs/SOTA-ANALIZA.md](./docs/SOTA-ANALIZA.md).
+
+- **Słownik ~230 najczęstszych polskich nazwisk z obsługą fleksji** w rdzeniu (T1a):
+  maskuje nazwisko występujące samodzielnie („Sprawę Kowalskiego przekazano…"),
+  w odmianie przymiotnikowej (-ski/-cki/-dzki, formy żeńskie i mnogie) i rzeczownikowej
+  (Nowakowi, Wójcikiem), z ruchomym „e". Nazwiska-homonimy (Wilk, Baran, Mazurek…)
+  świadomie wymagają kontekstu — „Wilk biegał po lesie" nie jest maskowane.
+  Zero nowych zależności; działa w paczce offline i npm. +8 testów.
+
 ## v0.4.0 — 2026-07-04
 
 - **Aplikacja czyta pliki PDF** — pdf.js (legacy build) z fake-workerem w buildzie

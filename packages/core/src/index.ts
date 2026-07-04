@@ -21,6 +21,8 @@
  * (np. dwa niezależne przejścia redakcji) niczego nie psuje.
  */
 
+import { surnameBase } from './surnames.js';
+
 export type PiiType =
   | 'EMAIL'
   | 'IBAN'
@@ -421,6 +423,22 @@ export function redactPII(input: string, options?: RedactOptions): RedactionResu
       bump('IMIE');
       return `${kw}${sep}${M.IMIE}`;
     });
+  }
+
+  // (c) SAMODZIELNE nazwisko ze słownika najczęstszych nazwisk (z odmianą):
+  // „Sprawę Kowalskiego przekazano…" — bez imienia i bez wyzwalacza. Uruchamiane PO (a)
+  // i (b), więc pary/wyzwalacze są już zamaskowane. Słownik zawiera wyłącznie nazwiska
+  // jednoznaczne (homonimy typu Wilk/Baran wymagają kontekstu — patrz surnames.ts).
+  if (on('IMIE')) {
+    text = text.replace(
+      new RegExp(`(?<![${PL_UP}${PL_LO}-])[${PL_UP}][${PL_LO}]+(?![${PL_LO}-])`, 'g'),
+      (m) => {
+        if (LEGAL_ENTITY_WORDS.has(m.toLowerCase())) return m;
+        if (!surnameBase(m)) return m;
+        bump('IMIE');
+        return M.IMIE;
+      },
+    );
   }
 
   const found: PiiFinding[] = [...counts.entries()].map(([type, count]) => ({ type, count }));
