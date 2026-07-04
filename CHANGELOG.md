@@ -3,6 +3,14 @@
 Format wersji: [SemVer](https://semver.org/lang/pl/). Tagi `vX.Y.Z` budują paczkę
 offline (`anonimizator-offline.zip`) w [Releases](https://github.com/karolpolikarp/anonimizator/releases).
 
+## v0.3.4 — 2026-07-04
+
+- Zmergowane wszystkie 8 PR-ów Dependabota: TypeScript 6.0, Vitest 4, Vite 8,
+  actions/checkout v7, setup-node v6, gh-release v3, minima pip usługi NER.
+  Naprawy pod TS 6.0: jawny `rootDir` w buildzie core, `vite-env.d.ts` dla importu CSS.
+- 7 testów jednostkowych parsera .docx w CI (dotąd tylko ręczny smoke-test).
+- Angielskie streszczenie w README.
+
 ## v0.3.3 — 2026-07-04
 
 - Favicon aplikacji (inline SVG — działa też offline) i `theme-color`.
