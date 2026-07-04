@@ -9,5 +9,5 @@
     "rootDir": "src",
     "outDir": "dist"
   },
-  "include": ["src/index.ts", "src/ner-client.ts"]
+  "include": ["src/index.ts", "src/ner-client.ts", "src/llm-client.ts"]
 }

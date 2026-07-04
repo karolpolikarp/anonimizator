@@ -3,6 +3,23 @@
 Format wersji: [SemVer](https://semver.org/lang/pl/). Tagi `vX.Y.Z` budują paczkę
 offline (`anonimizator-offline.zip`) w [Releases](https://github.com/karolpolikarp/anonimizator/releases).
 
+## v0.8.0 — 2026-07-04
+
+Trzy równoległe fronty programu SOTA (T3+T4+T5) w jednym wydaniu:
+
+- **Benchmark** (`scripts/benchmark`, raport w `docs/BENCHMARK.md`): 159 przypadków
+  z odmianą i negatywami. Wyniki: core 86,5% R / 99,4% P; core+FastPDN 99,4% R / 97,1% P.
+- **4 fixy rdzenia wykryte benchmarkiem**: REGON ze złą sumą nie jest już zjadany
+  przez detektor telefonu; „ur. 12.05.1985" maskowane (bug trailing \b); adresy
+  w formach zależnych („na ulicy…"); nazwiska dwuczłonowe po wyzwalaczu w całości
+  („Pan Habdank-Wojewódzki"). +4 testy regresyjne.
+- **Warstwa LLM** (`anonimizator/llm`): `redactPIIUltra` przez lokalne Ollama
+  (np. Bielik-11B) — span-extraction z twardą walidacją, fail-safe, breaker;
+  eksperymentalna. +11 testów.
+- **FastPDN jako ONNX int8** (release `models-fastpdn-onnx-v1`, 125 MB, CC-BY-4.0
+  z atrybucją CLARIN-PL): NER bez Dockera przez transformers.js (~16 ms/akapit CPU);
+  przykład `examples/ner-onnx-node.mjs` (zweryfikowany end-to-end).
+
 ## v0.7.0 — 2026-07-04
 
 - **Usługa NER z dwoma backendami** (T2): `spacy` (domyślny, lekki) i `herbert`

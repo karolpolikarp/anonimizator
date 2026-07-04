@@ -185,6 +185,29 @@ test('krok 13c nie psuje idempotencji', () => {
   expect(redactPII(once).redacted).toBe(once);
 });
 
+// ── Regresje z benchmarku (docs/BENCHMARK.md, 2026-07-04) ──
+test('REGON ze złą sumą NIE jest zjadany przez detektor telefonu', () => {
+  const r = redactPII('Firma o REGON 123456784 w rejestrze');
+  expect(r.redacted.includes('[TELEFON]')).toBe(false);
+  expect(r.redacted).toContain('123456784');
+});
+test('„ur. DD.MM.RRRR" maskowane (trailing \\b po kropce nie działał)', () => {
+  const r = redactPII('Powód, ur. 12.05.1985, wnosi o zapłatę');
+  expect(r.redacted).toContain('[DATA-URODZENIA]');
+  expect(r.redacted.includes('12.05.1985')).toBe(false);
+});
+test('adres w formie zależnej „na ulicy …" maskowany', () => {
+  const r = redactPII('Mieszka na ulicy Krakowskie Przedmieście 26/28');
+  expect(r.redacted).toContain('[ADRES]');
+  expect(r.redacted.includes('26/28')).toBe(false);
+});
+test('nazwisko dwuczłonowe po wyzwalaczu maskowane W CAŁOŚCI', () => {
+  const r = redactPII('Pan Habdank-Wojewódzki nie odebrał pisma');
+  expect(r.redacted).toContain('[IMIĘ I NAZWISKO]');
+  expect(r.redacted.includes('Wojewódzki')).toBe(false);
+  expect(r.redacted).toContain('nie odebrał');
+});
+
 // ── Pseudonimizacja: spójne etykiety [OSOBA-X] ──
 test('pseudonimy — ta sama osoba w odmianie dostaje tę samą etykietę', () => {
   const r = redactPII('Kowalski złożył pozew, a sąd wezwał Kowalskiego ponownie', {

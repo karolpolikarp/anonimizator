@@ -1,0 +1,3014 @@
+{
+  "generatedAt": "2026-07-04T16:58:57.203Z",
+  "seed": 20260704,
+  "coreVersion": "0.8.0",
+  "casesTotal": 159,
+  "mustMaskTotal": 163,
+  "mustKeepTotal": 171,
+  "skippedLayers": [],
+  "layers": [
+    {
+      "name": "T0+T1 core",
+      "desc": "redactPII() — regex + sumy kontrolne + słownik (in-process, offline)",
+      "elapsedMs": 3,
+      "changedVsCore": null,
+      "recall": 0.8650306748466258,
+      "precision": 0.9941520467836257,
+      "agg": {
+        "maskTotal": 163,
+        "maskHit": 141,
+        "keepTotal": 171,
+        "keepHit": 170
+      },
+      "perCategory": {
+        "osoby-podstawowe": {
+          "recall": 0.9772727272727273,
+          "precision": 1,
+          "maskTotal": 44,
+          "maskHit": 43,
+          "keepTotal": 25,
+          "keepHit": 25
+        },
+        "osoby-odmiana": {
+          "recall": 0.8888888888888888,
+          "precision": 1,
+          "maskTotal": 36,
+          "maskHit": 32,
+          "keepTotal": 35,
+          "keepHit": 35
+        },
+        "osoby-rzadkie": {
+          "recall": 0.5142857142857142,
+          "precision": 1,
+          "maskTotal": 35,
+          "maskHit": 18,
+          "keepTotal": 24,
+          "keepHit": 24
+        },
+        "strukturalne": {
+          "recall": 1,
+          "precision": 1,
+          "maskTotal": 48,
+          "maskHit": 48,
+          "keepTotal": 44,
+          "keepHit": 44
+        },
+        "negatywy": {
+          "recall": null,
+          "precision": 0.9767441860465116,
+          "maskTotal": 0,
+          "maskHit": 0,
+          "keepTotal": 43,
+          "keepHit": 42
+        }
+      },
+      "failures": [
+        {
+          "id": "os-p-14",
+          "category": "osoby-podstawowe",
+          "text": "Anna i Jan Kowalscy kupili mieszkanie na osiedlu.",
+          "leaked": [
+            "Anna"
+          ],
+          "eaten": [],
+          "redacted": "Anna i [IMIĘ I NAZWISKO] kupili mieszkanie na osiedlu."
+        },
+        {
+          "id": "os-o-23",
+          "category": "osoby-odmiana",
+          "text": "Pozew Jana Kowalskiego wpłynął we wtorek.",
+          "leaked": [
+            "Jana"
+          ],
+          "eaten": [],
+          "redacted": "Pozew Jana [IMIĘ I NAZWISKO] wpłynął we wtorek."
+        },
+        {
+          "id": "os-o-24",
+          "category": "osoby-odmiana",
+          "text": "Sąd wysłuchał Anny Wiśniewskiej na rozprawie zdalnej.",
+          "leaked": [
+            "Anny"
+          ],
+          "eaten": [],
+          "redacted": "Sąd wysłuchał Anny [IMIĘ I NAZWISKO] na rozprawie zdalnej."
+        },
+        {
+          "id": "os-o-25",
+          "category": "osoby-odmiana",
+          "text": "Zarzuty postawiono Piotrowi Zielińskiemu.",
+          "leaked": [
+            "Piotrowi"
+          ],
+          "eaten": [],
+          "redacted": "Zarzuty postawiono Piotrowi [IMIĘ I NAZWISKO]."
+        },
+        {
+          "id": "os-o-26",
+          "category": "osoby-odmiana",
+          "text": "Nagrodę wręczono Magdalenie Woźniak.",
+          "leaked": [
+            "Magdalenie"
+          ],
+          "eaten": [],
+          "redacted": "Nagrodę wręczono Magdalenie [IMIĘ I NAZWISKO]."
+        },
+        {
+          "id": "os-r-06",
+          "category": "osoby-rzadkie",
+          "text": "Świętomira Gzowska przyszła na przesłuchanie.",
+          "leaked": [
+            "Świętomira",
+            "Gzowska"
+          ],
+          "eaten": [],
+          "redacted": "Świętomira Gzowska przyszła na przesłuchanie."
+        },
+        {
+          "id": "os-r-07",
+          "category": "osoby-rzadkie",
+          "text": "Bożydar Krzemieniecki prowadzi kancelarię w Radomiu.",
+          "leaked": [
+            "Bożydar",
+            "Krzemieniecki"
+          ],
+          "eaten": [],
+          "redacted": "Bożydar Krzemieniecki prowadzi kancelarię w Radomiu."
+        },
+        {
+          "id": "os-r-08",
+          "category": "osoby-rzadkie",
+          "text": "Protokół sporządził Wieńczysław Trzebiatowski.",
+          "leaked": [
+            "Wieńczysław",
+            "Trzebiatowski"
+          ],
+          "eaten": [],
+          "redacted": "Protokół sporządził Wieńczysław Trzebiatowski."
+        },
+        {
+          "id": "os-r-09",
+          "category": "osoby-rzadkie",
+          "text": "napisała do mnie Krzemieniecka w sprawie zaliczki",
+          "leaked": [
+            "Krzemieniecka"
+          ],
+          "eaten": [],
+          "redacted": "napisała do mnie Krzemieniecka w sprawie zaliczki"
+        },
+        {
+          "id": "os-r-10",
+          "category": "osoby-rzadkie",
+          "text": "sprawę Zdrojewczyka przekazano do prokuratury",
+          "leaked": [
+            "Zdrojewczyka"
+          ],
+          "eaten": [],
+          "redacted": "sprawę Zdrojewczyka przekazano do prokuratury"
+        },
+        {
+          "id": "os-r-11",
+          "category": "osoby-rzadkie",
+          "text": "list od Gzowskiego leżał na biurku tydzień",
+          "leaked": [
+            "Gzowskiego"
+          ],
+          "eaten": [],
+          "redacted": "list od Gzowskiego leżał na biurku tydzień"
+        },
+        {
+          "id": "os-r-12",
+          "category": "osoby-rzadkie",
+          "text": "Bąkiewiczowi zależało na szybkiej wypłacie.",
+          "leaked": [
+            "Bąkiewiczowi"
+          ],
+          "eaten": [],
+          "redacted": "Bąkiewiczowi zależało na szybkiej wypłacie."
+        },
+        {
+          "id": "os-r-13",
+          "category": "osoby-rzadkie",
+          "text": "Zaległości Trzebiatowskiego rosły z miesiąca na miesiąc.",
+          "leaked": [
+            "Trzebiatowskiego"
+          ],
+          "eaten": [],
+          "redacted": "Zaległości Trzebiatowskiego rosły z miesiąca na miesiąc."
+        },
+        {
+          "id": "os-r-14",
+          "category": "osoby-rzadkie",
+          "text": "Wniosek Młodzianowskiej rozpatrzono odmownie.",
+          "leaked": [
+            "Młodzianowskiej"
+          ],
+          "eaten": [],
+          "redacted": "Wniosek Młodzianowskiej rozpatrzono odmownie."
+        },
+        {
+          "id": "os-r-19",
+          "category": "osoby-rzadkie",
+          "text": "Fiołkowska wygrała przetarg na dostawę mebli.",
+          "leaked": [
+            "Fiołkowska"
+          ],
+          "eaten": [],
+          "redacted": "Fiołkowska wygrała przetarg na dostawę mebli."
+        },
+        {
+          "id": "os-r-20",
+          "category": "osoby-rzadkie",
+          "text": "Opinię przygotowała Gzowska z działu prawnego.",
+          "leaked": [
+            "Gzowska"
+          ],
+          "eaten": [],
+          "redacted": "Opinię przygotowała Gzowska z działu prawnego."
+        },
+        {
+          "id": "os-r-21",
+          "category": "osoby-rzadkie",
+          "text": "Państwo Bąkiewiczowie odwołali się od decyzji.",
+          "leaked": [
+            "Bąkiewiczowie"
+          ],
+          "eaten": [],
+          "redacted": "Państwo Bąkiewiczowie odwołali się od decyzji."
+        },
+        {
+          "id": "os-r-22",
+          "category": "osoby-rzadkie",
+          "text": "Spór z Krzemienieckimi trwa od dwóch lat.",
+          "leaked": [
+            "Krzemienieckimi"
+          ],
+          "eaten": [],
+          "redacted": "Spór z Krzemienieckimi trwa od dwóch lat."
+        },
+        {
+          "id": "os-r-24",
+          "category": "osoby-rzadkie",
+          "text": "opinia Rzepeckiej-Gil była druzgocąca",
+          "leaked": [
+            "Rzepeckiej-Gil"
+          ],
+          "eaten": [],
+          "redacted": "opinia Rzepeckiej-Gil była druzgocąca"
+        },
+        {
+          "id": "neg-40",
+          "category": "negatywy",
+          "text": "Pan Tadeusz to najsłynniejsza polska epopeja narodowa.",
+          "leaked": [],
+          "eaten": [
+            "Tadeusz"
+          ],
+          "redacted": "Pan [IMIĘ I NAZWISKO] to najsłynniejsza polska epopeja narodowa."
+        }
+      ],
+      "perCase": [
+        {
+          "id": "os-p-01",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-p-02",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-p-03",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-p-04",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-p-05",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-p-06",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-p-07",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-p-08",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-p-09",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-p-10",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-p-11",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-p-12",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-p-13",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-p-14",
+          "leaked": [
+            "Anna"
+          ],
+          "eaten": []
+        },
+        {
+          "id": "os-p-15",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-p-16",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-p-17",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-p-18",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-p-19",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-p-20",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-p-21",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-p-22",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-p-23",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-o-01",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-o-02",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-o-03",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-o-04",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-o-05",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-o-06",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-o-07",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-o-08",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-o-09",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-o-10",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-o-11",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-o-12",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-o-13",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-o-14",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-o-15",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-o-16",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-o-17",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-o-18",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-o-19",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-o-20",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-o-21",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-o-22",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-o-23",
+          "leaked": [
+            "Jana"
+          ],
+          "eaten": []
+        },
+        {
+          "id": "os-o-24",
+          "leaked": [
+            "Anny"
+          ],
+          "eaten": []
+        },
+        {
+          "id": "os-o-25",
+          "leaked": [
+            "Piotrowi"
+          ],
+          "eaten": []
+        },
+        {
+          "id": "os-o-26",
+          "leaked": [
+            "Magdalenie"
+          ],
+          "eaten": []
+        },
+        {
+          "id": "os-o-27",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-o-28",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-o-29",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-o-30",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-o-31",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-o-32",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-r-01",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-r-02",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-r-03",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-r-04",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-r-05",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-r-06",
+          "leaked": [
+            "Świętomira",
+            "Gzowska"
+          ],
+          "eaten": []
+        },
+        {
+          "id": "os-r-07",
+          "leaked": [
+            "Bożydar",
+            "Krzemieniecki"
+          ],
+          "eaten": []
+        },
+        {
+          "id": "os-r-08",
+          "leaked": [
+            "Wieńczysław",
+            "Trzebiatowski"
+          ],
+          "eaten": []
+        },
+        {
+          "id": "os-r-09",
+          "leaked": [
+            "Krzemieniecka"
+          ],
+          "eaten": []
+        },
+        {
+          "id": "os-r-10",
+          "leaked": [
+            "Zdrojewczyka"
+          ],
+          "eaten": []
+        },
+        {
+          "id": "os-r-11",
+          "leaked": [
+            "Gzowskiego"
+          ],
+          "eaten": []
+        },
+        {
+          "id": "os-r-12",
+          "leaked": [
+            "Bąkiewiczowi"
+          ],
+          "eaten": []
+        },
+        {
+          "id": "os-r-13",
+          "leaked": [
+            "Trzebiatowskiego"
+          ],
+          "eaten": []
+        },
+        {
+          "id": "os-r-14",
+          "leaked": [
+            "Młodzianowskiej"
+          ],
+          "eaten": []
+        },
+        {
+          "id": "os-r-15",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-r-16",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-r-17",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-r-18",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-r-19",
+          "leaked": [
+            "Fiołkowska"
+          ],
+          "eaten": []
+        },
+        {
+          "id": "os-r-20",
+          "leaked": [
+            "Gzowska"
+          ],
+          "eaten": []
+        },
+        {
+          "id": "os-r-21",
+          "leaked": [
+            "Bąkiewiczowie"
+          ],
+          "eaten": []
+        },
+        {
+          "id": "os-r-22",
+          "leaked": [
+            "Krzemienieckimi"
+          ],
+          "eaten": []
+        },
+        {
+          "id": "os-r-23",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-r-24",
+          "leaked": [
+            "Rzepeckiej-Gil"
+          ],
+          "eaten": []
+        },
+        {
+          "id": "str-01",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-02",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-03",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-04",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-05",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-06",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-07",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-08",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-09",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-10",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-11",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-12",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-13",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-14",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-15",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-16",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-17",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-18",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-19",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-20",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-21",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-22",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-23",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-24",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-25",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-26",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-27",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-28",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-29",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-30",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-31",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-32",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-33",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-34",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-35",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-36",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-37",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-38",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-39",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-40",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-01",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-02",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-03",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-04",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-05",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-06",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-07",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-08",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-09",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-10",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-11",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-12",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-13",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-14",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-15",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-16",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-17",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-18",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-19",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-20",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-21",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-22",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-23",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-24",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-25",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-26",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-27",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-28",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-29",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-30",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-31",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-32",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-33",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-34",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-35",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-36",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-37",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-38",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-39",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-40",
+          "leaked": [],
+          "eaten": [
+            "Tadeusz"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "core+spacy",
+      "desc": "redactPIIFull() + NER spaCy pl_core_news_lg (127.0.0.1:8090)",
+      "elapsedMs": 780,
+      "changedVsCore": 26,
+      "recall": 0.9938650306748467,
+      "precision": 0.9473684210526315,
+      "agg": {
+        "maskTotal": 163,
+        "maskHit": 162,
+        "keepTotal": 171,
+        "keepHit": 162
+      },
+      "perCategory": {
+        "osoby-podstawowe": {
+          "recall": 1,
+          "precision": 0.96,
+          "maskTotal": 44,
+          "maskHit": 44,
+          "keepTotal": 25,
+          "keepHit": 24
+        },
+        "osoby-odmiana": {
+          "recall": 1,
+          "precision": 1,
+          "maskTotal": 36,
+          "maskHit": 36,
+          "keepTotal": 35,
+          "keepHit": 35
+        },
+        "osoby-rzadkie": {
+          "recall": 0.9714285714285714,
+          "precision": 1,
+          "maskTotal": 35,
+          "maskHit": 34,
+          "keepTotal": 24,
+          "keepHit": 24
+        },
+        "strukturalne": {
+          "recall": 1,
+          "precision": 1,
+          "maskTotal": 48,
+          "maskHit": 48,
+          "keepTotal": 44,
+          "keepHit": 44
+        },
+        "negatywy": {
+          "recall": null,
+          "precision": 0.813953488372093,
+          "maskTotal": 0,
+          "maskHit": 0,
+          "keepTotal": 43,
+          "keepHit": 35
+        }
+      },
+      "failures": [
+        {
+          "id": "os-p-02",
+          "category": "osoby-podstawowe",
+          "text": "Powódka Anna Nowak wniosła o zasądzenie kosztów.",
+          "leaked": [],
+          "eaten": [
+            "Powódka"
+          ],
+          "redacted": "[IMIĘ I NAZWISKO] [IMIĘ I NAZWISKO] wniosła o zasądzenie kosztów."
+        },
+        {
+          "id": "os-r-19",
+          "category": "osoby-rzadkie",
+          "text": "Fiołkowska wygrała przetarg na dostawę mebli.",
+          "leaked": [
+            "Fiołkowska"
+          ],
+          "eaten": [],
+          "redacted": "Fiołkowska wygrała przetarg na dostawę mebli."
+        },
+        {
+          "id": "neg-21",
+          "category": "negatywy",
+          "text": "Wilk biegał po lesie za sarną.",
+          "leaked": [],
+          "eaten": [
+            "Wilk"
+          ],
+          "redacted": "[IMIĘ I NAZWISKO] biegał po lesie za sarną."
+        },
+        {
+          "id": "neg-22",
+          "category": "negatywy",
+          "text": "Lis przemknął przez drogę tuż przed autem.",
+          "leaked": [],
+          "eaten": [
+            "Lis"
+          ],
+          "redacted": "[IMIĘ I NAZWISKO] przemknął przez drogę tuż przed autem."
+        },
+        {
+          "id": "neg-23",
+          "category": "negatywy",
+          "text": "Baran to pierwszy znak zodiaku.",
+          "leaked": [],
+          "eaten": [
+            "Baran"
+          ],
+          "redacted": "[IMIĘ I NAZWISKO] to pierwszy znak zodiaku."
+        },
+        {
+          "id": "neg-24",
+          "category": "negatywy",
+          "text": "Mazurek wielkanocny stygł na parapecie.",
+          "leaked": [],
+          "eaten": [
+            "Mazurek"
+          ],
+          "redacted": "[IMIĘ I NAZWISKO] wielkanocny stygł na parapecie."
+        },
+        {
+          "id": "neg-25",
+          "category": "negatywy",
+          "text": "Sowa hukała całą noc pod oknem.",
+          "leaked": [],
+          "eaten": [
+            "Sowa"
+          ],
+          "redacted": "[IMIĘ I NAZWISKO] hukała całą noc pod oknem."
+        },
+        {
+          "id": "neg-26",
+          "category": "negatywy",
+          "text": "Kruk krukowi oka nie wykole, jak mówi przysłowie.",
+          "leaked": [],
+          "eaten": [
+            "Kruk"
+          ],
+          "redacted": "[IMIĘ I NAZWISKO] krukowi oka nie wykole, jak mówi przysłowie."
+        },
+        {
+          "id": "neg-27",
+          "category": "negatywy",
+          "text": "Dudek to ptak o charakterystycznym czubie.",
+          "leaked": [],
+          "eaten": [
+            "Dudek"
+          ],
+          "redacted": "[IMIĘ I NAZWISKO] to ptak o charakterystycznym czubie."
+        },
+        {
+          "id": "neg-40",
+          "category": "negatywy",
+          "text": "Pan Tadeusz to najsłynniejsza polska epopeja narodowa.",
+          "leaked": [],
+          "eaten": [
+            "Tadeusz"
+          ],
+          "redacted": "Pan [IMIĘ I NAZWISKO] to najsłynniejsza polska epopeja narodowa."
+        }
+      ],
+      "perCase": [
+        {
+          "id": "os-p-01",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-p-02",
+          "leaked": [],
+          "eaten": [
+            "Powódka"
+          ]
+        },
+        {
+          "id": "os-p-03",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-p-04",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-p-05",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-p-06",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-p-07",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-p-08",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-p-09",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-p-10",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-p-11",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-p-12",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-p-13",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-p-14",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-p-15",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-p-16",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-p-17",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-p-18",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-p-19",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-p-20",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-p-21",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-p-22",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-p-23",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-o-01",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-o-02",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-o-03",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-o-04",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-o-05",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-o-06",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-o-07",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-o-08",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-o-09",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-o-10",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-o-11",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-o-12",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-o-13",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-o-14",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-o-15",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-o-16",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-o-17",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-o-18",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-o-19",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-o-20",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-o-21",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-o-22",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-o-23",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-o-24",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-o-25",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-o-26",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-o-27",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-o-28",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-o-29",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-o-30",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-o-31",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-o-32",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-r-01",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-r-02",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-r-03",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-r-04",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-r-05",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-r-06",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-r-07",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-r-08",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-r-09",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-r-10",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-r-11",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-r-12",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-r-13",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-r-14",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-r-15",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-r-16",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-r-17",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-r-18",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-r-19",
+          "leaked": [
+            "Fiołkowska"
+          ],
+          "eaten": []
+        },
+        {
+          "id": "os-r-20",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-r-21",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-r-22",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-r-23",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-r-24",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-01",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-02",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-03",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-04",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-05",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-06",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-07",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-08",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-09",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-10",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-11",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-12",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-13",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-14",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-15",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-16",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-17",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-18",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-19",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-20",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-21",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-22",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-23",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-24",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-25",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-26",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-27",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-28",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-29",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-30",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-31",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-32",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-33",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-34",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-35",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-36",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-37",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-38",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-39",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-40",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-01",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-02",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-03",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-04",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-05",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-06",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-07",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-08",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-09",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-10",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-11",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-12",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-13",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-14",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-15",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-16",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-17",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-18",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-19",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-20",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-21",
+          "leaked": [],
+          "eaten": [
+            "Wilk"
+          ]
+        },
+        {
+          "id": "neg-22",
+          "leaked": [],
+          "eaten": [
+            "Lis"
+          ]
+        },
+        {
+          "id": "neg-23",
+          "leaked": [],
+          "eaten": [
+            "Baran"
+          ]
+        },
+        {
+          "id": "neg-24",
+          "leaked": [],
+          "eaten": [
+            "Mazurek"
+          ]
+        },
+        {
+          "id": "neg-25",
+          "leaked": [],
+          "eaten": [
+            "Sowa"
+          ]
+        },
+        {
+          "id": "neg-26",
+          "leaked": [],
+          "eaten": [
+            "Kruk"
+          ]
+        },
+        {
+          "id": "neg-27",
+          "leaked": [],
+          "eaten": [
+            "Dudek"
+          ]
+        },
+        {
+          "id": "neg-28",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-29",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-30",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-31",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-32",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-33",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-34",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-35",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-36",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-37",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-38",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-39",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-40",
+          "leaked": [],
+          "eaten": [
+            "Tadeusz"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "core+fastpdn",
+      "desc": "redactPIIFull() + NER FastPDN/HerBERT (127.0.0.1:8091)",
+      "elapsedMs": 3490,
+      "changedVsCore": 22,
+      "recall": 0.9938650306748467,
+      "precision": 0.9707602339181286,
+      "agg": {
+        "maskTotal": 163,
+        "maskHit": 162,
+        "keepTotal": 171,
+        "keepHit": 166
+      },
+      "perCategory": {
+        "osoby-podstawowe": {
+          "recall": 1,
+          "precision": 1,
+          "maskTotal": 44,
+          "maskHit": 44,
+          "keepTotal": 25,
+          "keepHit": 25
+        },
+        "osoby-odmiana": {
+          "recall": 1,
+          "precision": 1,
+          "maskTotal": 36,
+          "maskHit": 36,
+          "keepTotal": 35,
+          "keepHit": 35
+        },
+        "osoby-rzadkie": {
+          "recall": 0.9714285714285714,
+          "precision": 1,
+          "maskTotal": 35,
+          "maskHit": 34,
+          "keepTotal": 24,
+          "keepHit": 24
+        },
+        "strukturalne": {
+          "recall": 1,
+          "precision": 1,
+          "maskTotal": 48,
+          "maskHit": 48,
+          "keepTotal": 44,
+          "keepHit": 44
+        },
+        "negatywy": {
+          "recall": null,
+          "precision": 0.8837209302325582,
+          "maskTotal": 0,
+          "maskHit": 0,
+          "keepTotal": 43,
+          "keepHit": 38
+        }
+      },
+      "failures": [
+        {
+          "id": "os-r-13",
+          "category": "osoby-rzadkie",
+          "text": "Zaległości Trzebiatowskiego rosły z miesiąca na miesiąc.",
+          "leaked": [
+            "Trzebiatowskiego"
+          ],
+          "eaten": [],
+          "redacted": "Zaległości Trzebiatowskiego rosły z miesiąca na miesiąc."
+        },
+        {
+          "id": "neg-22",
+          "category": "negatywy",
+          "text": "Lis przemknął przez drogę tuż przed autem.",
+          "leaked": [],
+          "eaten": [
+            "Lis"
+          ],
+          "redacted": "[IMIĘ I NAZWISKO] przemknął przez drogę tuż przed autem."
+        },
+        {
+          "id": "neg-25",
+          "category": "negatywy",
+          "text": "Sowa hukała całą noc pod oknem.",
+          "leaked": [],
+          "eaten": [
+            "Sowa"
+          ],
+          "redacted": "[IMIĘ I NAZWISKO] hukała całą noc pod oknem."
+        },
+        {
+          "id": "neg-26",
+          "category": "negatywy",
+          "text": "Kruk krukowi oka nie wykole, jak mówi przysłowie.",
+          "leaked": [],
+          "eaten": [
+            "Kruk"
+          ],
+          "redacted": "[IMIĘ I NAZWISKO] krukowi oka nie wykole, jak mówi przysłowie."
+        },
+        {
+          "id": "neg-27",
+          "category": "negatywy",
+          "text": "Dudek to ptak o charakterystycznym czubie.",
+          "leaked": [],
+          "eaten": [
+            "Dudek"
+          ],
+          "redacted": "[IMIĘ I NAZWISKO] to ptak o charakterystycznym czubie."
+        },
+        {
+          "id": "neg-40",
+          "category": "negatywy",
+          "text": "Pan Tadeusz to najsłynniejsza polska epopeja narodowa.",
+          "leaked": [],
+          "eaten": [
+            "Tadeusz"
+          ],
+          "redacted": "Pan [IMIĘ I NAZWISKO] to najsłynniejsza polska epopeja narodowa."
+        }
+      ],
+      "perCase": [
+        {
+          "id": "os-p-01",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-p-02",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-p-03",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-p-04",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-p-05",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-p-06",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-p-07",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-p-08",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-p-09",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-p-10",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-p-11",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-p-12",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-p-13",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-p-14",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-p-15",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-p-16",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-p-17",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-p-18",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-p-19",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-p-20",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-p-21",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-p-22",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-p-23",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-o-01",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-o-02",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-o-03",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-o-04",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-o-05",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-o-06",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-o-07",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-o-08",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-o-09",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-o-10",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-o-11",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-o-12",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-o-13",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-o-14",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-o-15",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-o-16",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-o-17",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-o-18",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-o-19",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-o-20",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-o-21",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-o-22",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-o-23",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-o-24",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-o-25",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-o-26",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-o-27",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-o-28",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-o-29",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-o-30",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-o-31",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-o-32",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-r-01",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-r-02",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-r-03",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-r-04",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-r-05",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-r-06",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-r-07",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-r-08",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-r-09",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-r-10",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-r-11",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-r-12",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-r-13",
+          "leaked": [
+            "Trzebiatowskiego"
+          ],
+          "eaten": []
+        },
+        {
+          "id": "os-r-14",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-r-15",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-r-16",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-r-17",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-r-18",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-r-19",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-r-20",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-r-21",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-r-22",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-r-23",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-r-24",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-01",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-02",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-03",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-04",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-05",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-06",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-07",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-08",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-09",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-10",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-11",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-12",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-13",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-14",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-15",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-16",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-17",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-18",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-19",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-20",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-21",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-22",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-23",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-24",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-25",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-26",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-27",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-28",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-29",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-30",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-31",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-32",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-33",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-34",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-35",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-36",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-37",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-38",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-39",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-40",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-01",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-02",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-03",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-04",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-05",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-06",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-07",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-08",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-09",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-10",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-11",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-12",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-13",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-14",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-15",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-16",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-17",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-18",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-19",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-20",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-21",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-22",
+          "leaked": [],
+          "eaten": [
+            "Lis"
+          ]
+        },
+        {
+          "id": "neg-23",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-24",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-25",
+          "leaked": [],
+          "eaten": [
+            "Sowa"
+          ]
+        },
+        {
+          "id": "neg-26",
+          "leaked": [],
+          "eaten": [
+            "Kruk"
+          ]
+        },
+        {
+          "id": "neg-27",
+          "leaked": [],
+          "eaten": [
+            "Dudek"
+          ]
+        },
+        {
+          "id": "neg-28",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-29",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-30",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-31",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-32",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-33",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-34",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-35",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-36",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-37",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-38",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-39",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-40",
+          "leaked": [],
+          "eaten": [
+            "Tadeusz"
+          ]
+        }
+      ]
+    }
+  ]
+}

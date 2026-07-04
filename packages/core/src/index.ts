@@ -190,7 +190,9 @@ export function isValidDowod(raw: string): boolean {
  */
 function precededByLegalRef(full: string, offset: number): boolean {
   const before = full.slice(Math.max(0, offset - 16), offset);
-  return /(art\.?|§|ust\.?|pkt|poz\.?|sygn\.?|nr\s|dz\.?\s?u)\s*$/i.test(before);
+  // „regon": ciąg po tej kotwicy to (nie)poprawny REGON — obsłużony (albo słusznie
+  // odrzucony) przez krok REGON; detektor telefonu nie może go pożerać (bug z benchmarku).
+  return /(art\.?|§|ust\.?|pkt|poz\.?|sygn\.?|nr\s|dz\.?\s?u|regon)\s*$/i.test(before);
 }
 
 // ============================================================================
@@ -398,9 +400,11 @@ export function redactPII(input: string, options?: RedactOptions): RedactionResu
   }
 
   // 11) DATA URODZENIA — tylko z jawnym kontekstem (ur./urodzony/data urodzenia) + data.
+  // UWAGA: bez trailing `\b` — po „ur." granica słowa NIE występuje między kropką a spacją,
+  // więc wariant „ur. " nigdy się nie dopasowywał (bug z benchmarku). Separator ogranicza sam.
   if (on('DATA-UR')) {
     text = text.replace(
-      /\b(ur\.|urodzony|urodzona|urodzeni[ae]|data urodzenia)\b([\s:.,-]*)(\d{1,2}[.\-/]\d{1,2}[.\-/]\d{2,4}|\d{4}-\d{2}-\d{2})/gi,
+      /\b(ur\.|urodzony|urodzona|urodzeni[ae]|data urodzenia)([\s:.,-]*)(\d{1,2}[.\-/]\d{1,2}[.\-/]\d{2,4}|\d{4}-\d{2}-\d{2})/gi,
       (_m, kw, sep) => {
         bump('DATA-UR');
         return `${kw}${sep}${M['DATA-UR']}`;
@@ -412,7 +416,8 @@ export function redactPII(input: string, options?: RedactOptions): RedactionResu
   if (on('ADRES')) {
     text = text.replace(
       new RegExp(
-        `\\b(ul\\.|ulica|al\\.|aleja|os\\.|osiedle|pl\\.|plac)\\s+` +
+        // też formy zależne: „na ulicy…", „przy alei…", „na osiedlu…", „na placu…"
+        `\\b(ul\\.|ulic[aiy]|al\\.|ale[ij][aię]?|os\\.|osiedl[eau]|pl\\.|plac[ua]?)\\s+` +
           `[${PL_UP}][${PL_LO}${PL_UP}.-]*(?:\\s+[${PL_UP}0-9][${PL_LO}${PL_UP}0-9.-]*){0,3}\\s+\\d+[A-Za-z]?(?:\\s*/\\s*\\d+[A-Za-z]?)?`,
         'g',
       ),
@@ -444,9 +449,11 @@ export function redactPII(input: string, options?: RedactOptions): RedactionResu
   // „nazwiska" pożerała kolejne małe słowo („Pan Wiśniewski nie" → maskowało także „nie", odwracając
   // sens zdania!). Dlatego wielkość liter wyzwalacza kodujemy jawnie ([Pp]an…), a flaga zostaje samo `g`.
   if (on('IMIE')) {
+    // myślnik dozwolony w KAŻDYM członie — „Pan Habdank-Wojewódzki" to jedno nazwisko
+    // (bez tego maskowała się połowa, a resztka „-Wojewódzki" zatruwała dalsze warstwy).
     const nameTrigger = new RegExp(
       `\\b([Nn]azywam się|[Mm]am na imię|[Ii]mię i nazwisko|[Ii]mie i nazwisko|[Nn]azwisko:|[Pp]ana|[Pp]anią|[Pp]anu|[Pp]ani|[Pp]an)` +
-        `([\\s:]+)([${PL_UP}][${PL_LO}]+(?:\\s+[${PL_UP}][${PL_LO}]+(?:-[${PL_UP}][${PL_LO}]+)?)?)`,
+        `([\\s:]+)([${PL_UP}][${PL_LO}]+(?:-[${PL_UP}][${PL_LO}]+)?(?:\\s+[${PL_UP}][${PL_LO}]+(?:-[${PL_UP}][${PL_LO}]+)?)?)`,
       'g',
     );
     text = text.replace(nameTrigger, (m, kw: string, sep: string, name: string) => {

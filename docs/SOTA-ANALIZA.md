@@ -66,11 +66,19 @@ Lepiej stracić trochę recall niż maskować „Wilk biegał po lesie".
       (destylat HerBERT-a, KPWr z pełną fleksją) — 7/7 osób z kompletnymi spanami,
       lepszy od spaCy (który ucinał człon po myślniku: „[MASKA]-Dul"). Wniosek
       metodologiczny: metryka z karty modelu ≠ jakość na docelowej dystrybucji tekstów.
-- [ ] T3: opcjonalny łącznik Ollama (Bielik) w trybie span-extraction, fail-closed,
-      z walidacją spanów; flaga eksperymentalna.
-- [ ] T4: `scripts/benchmark` — syntetyczny zbiór PL (odmiana, konteksty urzędowe/czatowe),
-      raport P/R per typ dla T0/T1/T2(spaCy)/T2(HerBERT)/T3.
-- [ ] T5: NER w przeglądarce (transformers.js/ONNX) — recall bez instalowania czegokolwiek.
+- [x] T3: `anonimizator/llm` — `redactPIIUltra` przez lokalne Ollama (Bielik), tryb
+      span-extraction z twardą walidacją (halucynacje/injection ⇒ co najwyżej NADmaskowanie),
+      fail-safe + breaker; 11 testów mockowych (Ollama nieobecna lokalnie — bez testu live).
+- [x] T4: `scripts/benchmark` — 159 przypadków (seed 20260704), raport w docs/BENCHMARK.md.
+      **Wyniki po fixach z benchmarku:** core 86,5% R / 99,4% P (strukturalne 100%);
+      core+spaCy 99,4% R / 94,7% P; core+FastPDN **99,4% R / 97,1% P** (najlepszy).
+      Benchmark wykrył i pozwolił naprawić 4 bugi rdzenia (REGON→telefon, „ur. ",
+      „na ulicy…", nazwiska dwuczłonowe po wyzwalaczu).
+- [~] T5: NER bez Dockera — ZROBIONE: konwersja FastPDN→ONNX int8 (125 MB, release
+      `models-fastpdn-onnx-v1`, atrybucja CC-BY-4.0), zweryfikowana jakość w transformers.js
+      (inferencja ~16 ms CPU; strata q8: sporadyczne pominięcia, np. „Szczepankowską"),
+      działający przykład `examples/ner-onnx-node.mjs`. POZOSTAŁO: integracja w UI
+      przeglądarkowym (konflikt z buildem single-file — wymaga osobnego wariantu builda).
 
 ## Źródła
 

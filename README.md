@@ -98,6 +98,54 @@ Z biblioteki: `import { redactPIIFull } from 'anonimizator/ner'` —
 `await redactPIIFull(tekst, { url: 'http://127.0.0.1:8090' })`.
 Szczegóły: [`services/ner/README.md`](./services/ner/README.md).
 
+## NER bez Dockera (ONNX)
+
+Zweryfikowany model FastPDN jest też dostępny jako **ONNX int8 (~125 MB)** w
+[Releases → models-fastpdn-onnx-v1](https://github.com/karolpolikarp/anonimizator/releases/tag/models-fastpdn-onnx-v1)
+— do lokalnego użycia przez `@huggingface/transformers` bez Dockera (Node; inferencja
+na CPU ~kilkanaście ms na akapit). Kompletny przykład: [`examples/ner-onnx-node.mjs`](./examples/ner-onnx-node.mjs).
+Integracja w aplikacji przeglądarkowej — w przygotowaniu.
+
+## Warstwa eksperymentalna: lokalny LLM (Ollama/Bielik)
+
+Najgłębsza (i najwolniejsza) siatka bezpieczeństwa: **lokalny model językowy** wskazuje
+fragmenty tekstu wyglądające na dane osobowe — tryb *span-extraction*. **LLM niczego nie
+przepisuje.** Zwraca wyłącznie listę kandydatów, a maskowanie wykonuje kod biblioteki po
+twardej walidacji: kandydat musi wystąpić w tekście znak w znak (halucynacje odpadają),
+limit 2–80 znaków i max 100 kandydatów, placeholdery odrzucane. Złośliwy tekst (prompt
+injection) może więc co najwyżej doprowadzić do NADmaskowania — nigdy do odmaskowania.
+
+```bash
+# wymaga zainstalowanej Ollamy: https://ollama.com
+ollama pull SpeakLeash/bielik-11b-v2.3-instruct:Q4_K_M   # polski model Bielik (~7 GB)
+# Ollama nasłuchuje domyślnie na http://127.0.0.1:11434
+```
+
+```ts
+import { redactPIIUltra } from 'anonimizator/llm';
+
+const { redacted, found } = await redactPIIUltra(tekst, {
+  ner: { url: 'http://127.0.0.1:8090' },                          // opcjonalnie
+  llm: { model: 'SpeakLeash/bielik-11b-v2.3-instruct:Q4_K_M' },   // Ollama lokalnie
+});
+```
+
+Kolejność warstw: redakcja strukturalna (regex + sumy kontrolne) → opcjonalny NER →
+opcjonalny LLM. Model widzi tekst **już po** redakcji strukturalnej — nigdy surowego
+PESEL/NIP — i wszystko dzieje się lokalnie, na Twoim komputerze.
+
+**Ostrzeżenia:**
+
+- **Eksperymentalne** — jakość zależy od modelu; to dodatkowa siatka, nie gwarancja.
+  Zawsze przejrzyj wynik.
+- **Wolne** — odpowiedź lokalnego LLM to sekundy, nie milisekundy (domyślny timeout 60 s;
+  analizowane jest pierwsze 6000 znaków tekstu).
+- **Wymaga mocnego sprzętu** — Bielik 11B w kwantyzacji Q4 potrzebuje ~8 GB RAM/VRAM;
+  na słabszym sprzęcie wybierz mniejszy model.
+- **Fail-safe jak przy NER** — awaria/timeout/brak Ollamy nigdy nie obniża ochrony:
+  wynik zostaje na wcześniejszych warstwach, a circuit breaker (3 porażki → 30 s)
+  przestaje odpytywać padniętą usługę.
+
 ## Użycie — biblioteka
 
 ```bash
