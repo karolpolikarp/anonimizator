@@ -1,5 +1,18 @@
 # Changelog
 
+## v0.13.0 — 2026-07-05
+
+**Przestrzeń i hierarchia** (feedback: „więcej oddechu, lepszy układ, lepsza kolejność"):
+
+- Wycentrowane hero z dużym światłem (tytuł 2.9rem, tagline, badge'e i plakietka
+  prywatności na osi), sekcje rozsunięte do 5.5–6rem, stopka wycentrowana.
+- **Ustawienia w dwóch kartach obok siebie** („Co maskować" | „Dokładniejsze
+  wykrywanie nazwisk") — koniec pionowego ścisku pod narzędziem; na mobile
+  wracają do jednej kolumny.
+- Większe wszystko: padding paneli 1.75rem, pola 360px z paddingiem 1.3rem,
+  odstęp paneli 2rem, kroki z gap 2rem, komórki tabeli 0.85/1.2rem,
+  delikatniejsza siatka tła.
+
 ## v0.12.0 — 2026-07-04
 
 - **Widok „Porównanie"** — recenzja jak w Wordzie: oryginalna wartość przekreślona
