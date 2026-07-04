@@ -18,4 +18,5 @@ jobs:
       - run: npm run build -w anonimizator
       - run: npm run test -w anonimizator
       - run: npx tsc -p apps/web/tsconfig.json
+      - run: npm run test -w anonimizator-web
       - run: npm run build -w anonimizator-web

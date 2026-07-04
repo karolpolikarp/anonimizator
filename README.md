@@ -178,6 +178,15 @@ Silnik redakcji został wydzielony z produkcyjnego kodu [JakiePrawo.pl](https://
 gdzie maskuje dane osobowe w pytaniach użytkowników, zanim trafią do modelu językowego
 (zgodność z RODO). Reguły i testy regresji pochodzą z realnych przypadków.
 
+## English (summary)
+
+**Anonimizator** is a local-first redactor for Polish PII (personal data): PESEL, NIP, REGON,
+IBAN and national ID numbers are validated against their checksums (very few false positives);
+e-mails, phones, addresses and person names are matched heuristically, with an optional
+self-hosted spaCy NER service for rare surnames. Ships as a zero-dependency npm library +
+CLI (`anonimizator`), and a single-file offline web app (grab `anonimizator-offline.zip`
+from Releases and just open `index.html` — nothing ever leaves your machine). MIT licensed.
+
 ## Licencja
 
 MIT
