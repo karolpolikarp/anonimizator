@@ -1,5 +1,28 @@
 # Changelog
 
+## v0.10.0 — 2026-07-04
+
+Duży szlif UX/UI po audycie panelu 5 agentów (5 soczewek, 39 znalezisk — wdrożone
+wszystkie P0, komplet P1 i większość P2):
+
+- **Mobile naprawione na dobre**: przyciski przenoszą się do własnego wiersza
+  (koniec poziomego overflow), pola krótsze (wynik widoczny bez przewijania),
+  fonty pól ≥16 px (iOS nie robi auto-zoomu), cele dotykowe ≥44 px.
+- **Dostępność**: panel wyniku to nazwany, fokusowalny region (przewijanie
+  z klawiatury); aria-live przeniesione na pasek wyników (czytnik nie czyta całego
+  tekstu przy każdym klawiszu); spójny :focus-visible wszędzie; color-scheme
+  (natywne kontrolki w kolorach motywu); prefers-reduced-motion.
+- **Bezpieczeństwo pracy użytkownika**: upuszczenie pliku GDZIEKOLWIEK wczytuje go
+  (wcześniej drop obok pola kasował stronę z tekstem!); link GitHub w nowej karcie;
+  notka „⚠️ przejrzyj wynik" bezpośrednio pod wynikiem.
+- **Stany**: „Wczytuję…" przy parsowaniu PDF/DOCX, „analizuję…" przy NER + błysk
+  po dołożeniu masek, pasek błędów w UI zamiast alert(), martwe Kopiuj/Pobierz
+  są teraz disabled, mini-przykład „przed → po" w pustym wyniku.
+- **Język i detale**: „Wynik — zanonimizowany", plik zanonimizowany.txt, „Wynik
+  skanowania:" przy zeru trafień, etykieta NER od korzyści (nie od akronimu),
+  poprawiona podwójna negacja w „Co maskować", kontrast CTA w dark (AA),
+  naprawiony promień tabeli, theme-color per motyw, wersja aplikacji w stopce.
+
 ## v0.9.1 — 2026-07-04
 
 - **Ikony w interfejsie** (sprite od użytkownika, wycięte i osadzone inline —

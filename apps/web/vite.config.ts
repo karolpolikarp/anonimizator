@@ -8,6 +8,9 @@ export default defineConfig({
   // origin null), więc rozbite assety NIE działają po podwójnym kliknięciu.
   plugins: [viteSingleFile()],
   base: './',
+  define: {
+    __APP_VERSION__: JSON.stringify(process.env.npm_package_version ?? 'dev'),
+  },
   build: {
     // ikony (~8 kB/szt.) MUSZĄ być inline — osobne pliki assetów złamałyby file://
     assetsInlineLimit: 32768,

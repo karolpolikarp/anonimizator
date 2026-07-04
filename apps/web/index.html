@@ -3,7 +3,9 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#14171b" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#f7f8fa" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#14171b" media="(prefers-color-scheme: dark)" />
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%9B%A1%EF%B8%8F%3C/text%3E%3C/svg%3E" />
     <title>Anonimizator — usuń dane osobowe z tekstu, lokalnie w przeglądarce</title>
     <meta
@@ -36,29 +38,32 @@
           <textarea
             id="input"
             spellcheck="false"
-            placeholder="Wklej tekst albo upuść tutaj plik (.txt, .docx, .pdf) — anonimizacja dzieje się na bieżąco, podczas pisania.&#10;&#10;Nie wiesz od czego zacząć? Kliknij „Przykład” powyżej."
+            placeholder="Wklej tekst albo upuść plik (.txt, .md, .csv, .log, .docx, .pdf) — anonimizacja dzieje się na bieżąco, podczas pisania.&#10;&#10;Nie wiesz od czego zacząć? Kliknij „Przykład” powyżej."
           ></textarea>
         </div>
 
         <div class="panel">
           <div class="panel-head">
-            <label for="output">Wynik — zredagowany</label>
+            <span class="panel-label" id="output-label">Wynik — zanonimizowany</span>
             <div class="actions">
-              <button id="copy" type="button" class="primary ico" title="Skrót: Ctrl+Enter">Kopiuj</button>
+              <button id="copy" type="button" class="primary ico" title="Skrót: Ctrl+Enter" aria-keyshortcuts="Control+Enter">Kopiuj</button>
               <button id="download" type="button" class="ico">Pobierz .txt</button>
             </div>
           </div>
-          <div id="output" class="output" aria-live="polite"></div>
+          <div id="output" class="output" role="region" tabindex="0" aria-labelledby="output-label"></div>
+          <p class="review-note">⚠️ Przejrzyj wynik przed udostępnieniem — wykrywanie nazwisk jest heurystyczne. <a href="#ograniczenia">Ograniczenia</a></p>
         </div>
       </section>
 
-      <section id="findings" class="findings" hidden>
+      <p id="app-error" class="app-error" role="alert" hidden></p>
+
+      <section id="findings" class="findings" aria-live="polite" hidden>
         <span class="findings-label">Zamaskowano:</span>
         <span id="findings-chips"></span>
       </section>
 
       <details class="mask-settings">
-        <summary>Co maskować <span class="muted">(domyślnie wszystko — odznacz, czego nie ukrywać)</span></summary>
+        <summary>Co maskować <span class="muted">(domyślnie wszystko — odznaczone typy zostaną widoczne w wyniku)</span></summary>
         <label class="mask-toggle pseudo-toggle">
           <input type="checkbox" id="pseudonyms" />
           Rozróżniaj osoby: <code>[OSOBA-A]</code>, <code>[OSOBA-B]</code>… — ta sama osoba zachowuje tę samą etykietę (przydatne w umowach i pismach)
@@ -71,7 +76,7 @@
           <label class="ner-toggle">
             <input type="checkbox" id="ner-enabled" />
             <span class="ner-ico" aria-hidden="true"></span>
-            Użyj lokalnego NER — lepsze wykrywanie rzadkich i odmienionych nazwisk
+            Dokładniejsze wykrywanie nazwisk <span class="muted">(lokalny NER — rzadkie i odmienione formy; wymaga jednorazowego uruchomienia)</span>
           </label>
           <span id="ner-status" class="ner-status"></span>
         </div>
@@ -92,10 +97,10 @@
 
       <section class="info">
         <h2>Co wykrywa</h2>
-        <div class="table-wrap">
+        <div class="table-wrap" role="region" tabindex="0" aria-label="Co wykrywa — tabela">
           <table>
             <thead>
-              <tr><th>Dane</th><th>Jak rozpoznaje</th><th>Placeholder</th></tr>
+              <tr><th>Dane</th><th>Jak rozpoznaje</th><th>Znacznik w tekście</th></tr>
             </thead>
             <tbody>
               <tr><td>PESEL</td><td>11 cyfr + <strong>walidacja sumy kontrolnej</strong></td><td><code>[PESEL]</code></td></tr>
@@ -119,7 +124,7 @@
         </p>
       </section>
 
-      <section class="info caveat">
+      <section id="ograniczenia" class="info caveat">
         <h2>Ograniczenia — przeczytaj</h2>
         <p>
           Wykrywanie imion i nazwisk jest <strong>heurystyczne</strong>: rzadkie nazwisko bez
@@ -133,8 +138,10 @@
     <footer class="site-footer">
       <p>
         Kod open source (MIT):
-        <a href="https://github.com/karolpolikarp/anonimizator" rel="noopener">github.com/karolpolikarp/anonimizator</a>
-        · dostępny też jako pakiet npm <code>anonimizator</code> i narzędzie CLI.
+        <a href="https://github.com/karolpolikarp/anonimizator" target="_blank" rel="noopener noreferrer">github.com/karolpolikarp/anonimizator</a>
+        · pakiet npm <code>anonimizator</code> i CLI
+        · <a href="https://github.com/karolpolikarp/anonimizator/issues" target="_blank" rel="noopener noreferrer">zgłoś nietrafione wykrycie</a>
+        · <span class="muted">wersja <span id="app-version"></span></span>
       </p>
     </footer>
 

@@ -127,6 +127,7 @@ const HIGHLIGHT_LIMIT = 300_000;
 
 function renderResult(redacted: string, found: PiiFinding[]): void {
   lastRedacted = redacted;
+  setResultActions(true);
   if (redacted.length > HIGHLIGHT_LIMIT) {
     output.textContent = redacted;
   } else {
@@ -135,7 +136,7 @@ function renderResult(redacted: string, found: PiiFinding[]): void {
   findingsBar.hidden = false;
   const label = findingsBar.querySelector<HTMLSpanElement>('.findings-label')!;
   if (found.length === 0) {
-    label.textContent = 'Zamaskowano:';
+    label.textContent = 'Wynik skanowania:'; // „Zamaskowano: nie wykryto…" czytało się sprzecznie
     // Gdy użytkownik wyłączył część typów, „nic nie znaleziono" nie oznacza „tekst czysty".
     findingsChips.innerHTML = disabledGroups.size > 0
       ? '<span class="chip">nic nie zamaskowano — część typów jest wyłączona w „Co maskować”</span>'
@@ -144,7 +145,7 @@ function renderResult(redacted: string, found: PiiFinding[]): void {
     // (feedback usera: wkleił trudne nazwiska, dostał zielone „czysto" i uznał to za bug).
     if (!nerEnabledBox.checked) {
       findingsChips.innerHTML +=
-        ' <span class="chip chip-hint">💡 rzadkie nazwiska wykryje warstwa NER — włącz „Użyj lokalnego NER” poniżej</span>';
+        ' <span class="chip chip-hint">💡 rzadkie nazwiska złapie „Dokładniejsze wykrywanie nazwisk” poniżej</span>';
     }
   } else {
     const total = found.reduce((s, f) => s + f.count, 0);
@@ -174,6 +175,9 @@ function scheduleNer(baseRedacted: string, baseFound: PiiFinding[]): void {
   if (!imieEnabled()) return; // użytkownik odznaczył imiona — NER nie ma czego dokładać
   const seq = ++nerSeq;
   clearTimeout(nerTimer);
+  nerStatus.textContent = 'analizuję…';
+  nerStatus.className = 'ner-status';
+  output.setAttribute('aria-busy', 'true');
   nerTimer = setTimeout(async () => {
     const ner =
       nerSource() === 'onnx'
@@ -182,12 +186,17 @@ function scheduleNer(baseRedacted: string, baseFound: PiiFinding[]): void {
           })
         : await nerRedact(baseRedacted, nerConfig());
     if (seq !== nerSeq) return; // w międzyczasie użytkownik zmienił tekst
+    output.removeAttribute('aria-busy');
     if (!ner) {
       setNerStatus(false);
       return;
     }
     setNerStatus(true);
     renderResult(ner.redacted, mergeFindings(baseFound, ner.found));
+    // subtelny błysk: wynik właśnie się zmienił „sam z siebie"
+    output.classList.remove('ner-updated');
+    void output.offsetWidth; // restart animacji
+    output.classList.add('ner-updated');
   }, 400);
 }
 
@@ -218,13 +227,23 @@ async function checkNer(): Promise<void> {
   }
 }
 
+function setResultActions(on: boolean): void {
+  copyBtn.disabled = !on;
+  downloadBtn.disabled = !on;
+}
+
 function update(): void {
   const text = input.value;
   nerSeq++; // unieważnij ewentualną spóźnioną odpowiedź NER
   if (!text.trim()) {
-    output.innerHTML = '<span class="placeholder">Tu pojawi się zredagowany tekst.</span>';
+    // mini "przed → po" uczy formatu wyniku szybciej niż jakikolwiek opis
+    output.innerHTML =
+      '<span class="placeholder">Tu pojawi się zanonimizowany tekst, np.:\n\n' +
+      'Jan Kowalski, tel. 600 700 800\n→ ' +
+      '<mark class="mask">[IMIĘ I NAZWISKO]</mark>, tel. <mark class="mask">[TELEFON]</mark></span>';
     findingsBar.hidden = true;
     lastRedacted = '';
+    setResultActions(false);
     return;
   }
   const { redacted, found } = redactPII(text, {
@@ -304,7 +323,8 @@ copyBtn.addEventListener('click', async () => {
     ta.select();
     const ok = document.execCommand('copy');
     ta.remove();
-    flashCopyBtn(ok ? 'Skopiowano ✓' : 'Nie udało się — zaznacz i Ctrl+C');
+    flashCopyBtn(ok ? 'Skopiowano ✓' : 'Kopiuj');
+    if (!ok) showError('Kopiowanie zablokowane przez przeglądarkę — zaznacz wynik i naciśnij Ctrl+C.');
   }
 });
 
@@ -314,7 +334,7 @@ downloadBtn.addEventListener('click', () => {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = 'zredagowany.txt';
+  a.download = 'zanonimizowany.txt';
   a.click();
   URL.revokeObjectURL(url);
 });
@@ -344,6 +364,17 @@ function loadTextFile(file: File): void {
   reader.readAsText(file);
 }
 
+const appError = $<HTMLParagraphElement>('app-error');
+let errorTimer: ReturnType<typeof setTimeout> | undefined;
+
+/** Nietrwały pasek błędu w UI (role=alert) — zamiast blokującego alert(). */
+function showError(msg: string): void {
+  appError.textContent = msg;
+  appError.hidden = false;
+  clearTimeout(errorTimer);
+  errorTimer = setTimeout(() => (appError.hidden = true), 8000);
+}
+
 async function loadAnyFile(file: File): Promise<void> {
   const isDocx = /\.docx$/i.test(file.name);
   const isPdf = /\.pdf$/i.test(file.name);
@@ -351,12 +382,23 @@ async function loadAnyFile(file: File): Promise<void> {
     loadTextFile(file);
     return;
   }
+  // duży PDF parsuje się sekundy — bez stanu ładowania wygląda na "nie działa"
+  loadFileBtn.disabled = true;
+  loadFileBtn.classList.add('busy');
+  const prevLabel = loadFileBtn.textContent;
+  loadFileBtn.textContent = 'Wczytuję';
+  output.setAttribute('aria-busy', 'true');
   try {
     const buf = new Uint8Array(await file.arrayBuffer());
     input.value = isDocx ? extractDocxText(buf) : await extractPdfText(buf);
     update();
   } catch (err) {
-    alert(err instanceof Error ? err.message : 'Nie udało się odczytać pliku.');
+    showError(err instanceof Error ? err.message : 'Nie udało się odczytać pliku.');
+  } finally {
+    loadFileBtn.disabled = false;
+    loadFileBtn.classList.remove('busy');
+    loadFileBtn.textContent = prevLabel;
+    output.removeAttribute('aria-busy');
   }
 }
 
@@ -375,7 +417,17 @@ input.addEventListener('dragover', (e) => {
 input.addEventListener('dragleave', () => input.classList.remove('dragover'));
 input.addEventListener('drop', (e) => {
   e.preventDefault();
+  e.stopPropagation(); // handler na window nie może wczytać pliku drugi raz
   input.classList.remove('dragover');
+  const file = e.dataTransfer?.files?.[0];
+  if (file) void loadAnyFile(file);
+});
+
+// Upuszczenie pliku GDZIEKOLWIEK na stronie = wczytaj (domyślna nawigacja przeglądarki
+// do pliku kasowałaby wpisany tekst — najdotkliwsza możliwa utrata pracy).
+window.addEventListener('dragover', (e) => e.preventDefault());
+window.addEventListener('drop', (e) => {
+  e.preventDefault();
   const file = e.dataTransfer?.files?.[0];
   if (file) void loadAnyFile(file);
 });
@@ -393,9 +445,12 @@ document.addEventListener('keydown', (e) => {
 const params = new URLSearchParams(location.search);
 if (params.has('demo')) {
   input.value = EXAMPLE_TEXT;
-} else {
+} else if (matchMedia('(pointer: fine)').matches) {
+  // autofocus tylko z myszą/trackpadem — na dotyku wywołuje klawiaturę zasłaniającą pół ekranu
   input.focus();
 }
+
+document.getElementById('app-version')!.textContent = __APP_VERSION__;
 
 // ?nertest=onnx — E2E ścieżki NER w przeglądarce: trudne nazwiska, których nie zna
 // warstwa deterministyczna, + wymuszone źródło ONNX.
