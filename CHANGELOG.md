@@ -3,6 +3,14 @@
 Format wersji: [SemVer](https://semver.org/lang/pl/). Tagi `vX.Y.Z` budują paczkę
 offline (`anonimizator-offline.zip`) w [Releases](https://github.com/karolpolikarp/anonimizator/releases).
 
+## v0.6.0 — 2026-07-04
+
+- **Spójna pseudonimizacja** (T1b): opcja `pseudonyms` / flaga CLI `--osoby` /
+  checkbox „Rozróżniaj osoby" — każda osoba dostaje stałą etykietę [OSOBA-A]/[OSOBA-B]…,
+  zachowywaną w odmianie (Kowalski/Kowalskiego → ta sama litera). Zachowuje strukturę
+  relacji w dokumentach prawnych. Ograniczenie: klucz = nazwisko, więc Jan i Anna
+  Kowalscy dzielą etykietę. +6 testów.
+
 ## v0.5.0 — 2026-07-04
 
 Start programu „najlepszy anonimizator PL 2026/2027" — analiza SOTA i architektura

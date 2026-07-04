@@ -19,6 +19,7 @@ const HELP = `anonimizator — lokalna redakcja polskich danych osobowych (PII)
 Użycie:
   anonimizator [plik...]           zredaguj pliki, wynik na stdout
   anonimizator --out wynik.txt     zapisz wynik do pliku zamiast stdout
+  anonimizator --osoby             rozróżniaj osoby: [OSOBA-A], [OSOBA-B]…
   anonimizator --cicho             nie wypisuj statystyk na stderr
   anonimizator --help              ta pomoc
 
@@ -29,6 +30,7 @@ const args = process.argv.slice(2);
 const files = [];
 let outPath = null;
 let quiet = false;
+let pseudonyms = false;
 
 for (let i = 0; i < args.length; i++) {
   const a = args[i];
@@ -43,6 +45,8 @@ for (let i = 0; i < args.length; i++) {
     }
   } else if (a === '--cicho' || a === '-q' || a === '--quiet') {
     quiet = true;
+  } else if (a === '--osoby' || a === '--pseudonimy') {
+    pseudonyms = true;
   } else if (a.startsWith('-')) {
     console.error(`Nieznana opcja: ${a}\n`);
     console.error(HELP);
@@ -66,7 +70,7 @@ try {
   process.exit(1);
 }
 
-const { redacted, found } = redactPII(input);
+const { redacted, found } = redactPII(input, { pseudonyms });
 
 if (outPath) {
   writeFileSync(outPath, redacted, 'utf8');

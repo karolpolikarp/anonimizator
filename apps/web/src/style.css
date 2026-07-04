@@ -234,6 +234,14 @@ mark.mask {
   margin-top: 0.6rem;
 }
 
+.pseudo-toggle {
+  display: flex;
+  margin-top: 0.6rem;
+  padding-bottom: 0.6rem;
+  border-bottom: 1px solid var(--border);
+  white-space: normal;
+}
+
 .mask-toggle {
   display: flex;
   align-items: center;

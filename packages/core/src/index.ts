@@ -21,7 +21,7 @@
  * (np. dwa niezależne przejścia redakcji) niczego nie psuje.
  */
 
-import { surnameBase } from './surnames.js';
+import { normalizeSurnameKey, surnameBase } from './surnames.js';
 
 export type PiiType =
   | 'EMAIL'
@@ -56,6 +56,25 @@ export interface RedactOptions {
    * ani „@" — inaczej ponowny przebieg redakcji mógłby go pożreć jako PII.
    */
   masks?: Partial<Record<PiiType, string>>;
+  /**
+   * Spójna pseudonimizacja osób: zamiast jednej maski [IMIĘ I NAZWISKO] każda osoba
+   * dostaje stałą etykietę [OSOBA-A], [OSOBA-B]… — ta sama osoba (także w odmianie:
+   * Kowalski/Kowalskiego/Kowalskiemu) zachowuje tę samą literę. Zachowuje strukturę
+   * relacji w dokumencie. Klucz tożsamości = znormalizowane nazwisko, więc osoby
+   * o tym samym nazwisku (Jan i Anna Kowalscy) dostają wspólną etykietę — ograniczenie.
+   */
+  pseudonyms?: boolean;
+}
+
+/** 0→A, 1→B… 25→Z, 26→AA… (etykiety bez cyfr — idempotencja placeholderów). */
+function indexToLetters(i: number): string {
+  let s = '';
+  let n = i;
+  do {
+    s = String.fromCharCode(65 + (n % 26)) + s;
+    n = Math.floor(n / 26) - 1;
+  } while (n >= 0);
+  return s;
 }
 
 /** Etykiety placeholderów (czytelne dla człowieka i modelu, bez cyfr → idempotentne). */
@@ -240,6 +259,20 @@ export function redactPII(input: string, options?: RedactOptions): RedactionResu
   const on = (t: PiiType) => enabled === null || enabled.has(t);
   const M: Record<PiiType, string> = options?.masks ? { ...MASK, ...options.masks } : MASK;
 
+  // Pseudonimizacja: klucz (znormalizowane nazwisko) → stała etykieta [OSOBA-X].
+  // Etykiety przydzielane w kolejności WYKRYCIA (pary → wyzwalacze → solo), deterministycznie.
+  const personLabels = options?.pseudonyms ? new Map<string, string>() : null;
+  const personMask = (surnameToken: string): string => {
+    if (!personLabels) return M.IMIE;
+    const key = normalizeSurnameKey(surnameToken);
+    let label = personLabels.get(key);
+    if (!label) {
+      label = indexToLetters(personLabels.size);
+      personLabels.set(key, label);
+    }
+    return `[OSOBA-${label}]`;
+  };
+
   let text = input;
 
   // Kolejność MA znaczenie: najpierw e-mail (zawiera @, nie koliduje z cyframi),
@@ -400,7 +433,7 @@ export function redactPII(input: string, options?: RedactOptions): RedactionResu
     text = text.replace(DICT_NAME_RE, (m, surname: string) => {
       if (LEGAL_ENTITY_WORDS.has(surname.toLowerCase())) return m;
       bump('IMIE');
-      return M.IMIE;
+      return personMask(surname);
     });
   }
 
@@ -418,10 +451,11 @@ export function redactPII(input: string, options?: RedactOptions): RedactionResu
     );
     text = text.replace(nameTrigger, (m, kw: string, sep: string, name: string) => {
       // nie maskuj, jeśli „nazwa" to encja prawna („Pani Sąd"… praktycznie nie wystąpi, ale chronimy)
-      const firstWord = name.split(/\s+/)[0].toLowerCase();
-      if (LEGAL_ENTITY_WORDS.has(firstWord)) return m;
+      const words = name.split(/\s+/);
+      if (LEGAL_ENTITY_WORDS.has(words[0].toLowerCase())) return m;
       bump('IMIE');
-      return `${kw}${sep}${M.IMIE}`;
+      // klucz tożsamości: ostatnie słowo (nazwisko przy „Imię Nazwisko", samo przy pojedynczym)
+      return `${kw}${sep}${personMask(words[words.length - 1])}`;
     });
   }
 
@@ -436,7 +470,7 @@ export function redactPII(input: string, options?: RedactOptions): RedactionResu
         if (LEGAL_ENTITY_WORDS.has(m.toLowerCase())) return m;
         if (!surnameBase(m)) return m;
         bump('IMIE');
-        return M.IMIE;
+        return personMask(m);
       },
     );
   }

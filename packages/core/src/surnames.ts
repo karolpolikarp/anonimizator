@@ -89,6 +89,26 @@ function lookup(candidate: string): string | null {
  * Zwraca formę bazową nazwiska ze słownika (lowercase) albo null.
  * `word` — pojedynczy token (bez spacji), wielkość liter dowolna.
  */
+/**
+ * Deterministyczny klucz tożsamości dla pseudonimizacji: forma bazowa ze słownika,
+ * a dla nazwisk spoza słownika — normalizacja czysto morfologiczna (reguły przymiotnikowe,
+ * potem odcięcie typowej końcówki). Nie musi być poprawna językowo — musi być STABILNA
+ * (te same formy tej samej osoby → ten sam klucz). Alternacje tematu (Stępień/Stępnia)
+ * mogą dać różne klucze — udokumentowane ograniczenie.
+ */
+export function normalizeSurnameKey(word: string): string {
+  const w = word.toLowerCase();
+  const base = surnameBase(w);
+  if (base) return base;
+  for (const [re, rep] of ADJ_RULES) {
+    if (re.test(w)) return w.replace(re, rep);
+  }
+  for (const end of NOUN_ENDINGS) {
+    if (w.length - end.length >= 4 && w.endsWith(end)) return w.slice(0, -end.length);
+  }
+  return w;
+}
+
 export function surnameBase(word: string): string | null {
   const w = word.toLowerCase();
   if (w.length < 3) return null;

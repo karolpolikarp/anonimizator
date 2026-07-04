@@ -185,6 +185,41 @@ test('krok 13c nie psuje idempotencji', () => {
   expect(redactPII(once).redacted).toBe(once);
 });
 
+// ── Pseudonimizacja: spójne etykiety [OSOBA-X] ──
+test('pseudonimy — ta sama osoba w odmianie dostaje tę samą etykietę', () => {
+  const r = redactPII('Kowalski złożył pozew, a sąd wezwał Kowalskiego ponownie', {
+    pseudonyms: true,
+  });
+  expect(r.redacted.match(/\[OSOBA-A\]/g)?.length).toBe(2);
+  expect(r.redacted.includes('[OSOBA-B]')).toBe(false);
+});
+test('pseudonimy — różne osoby dostają różne etykiety', () => {
+  const r = redactPII('Nowak pozwał Wiśniewskiego o zapłatę', { pseudonyms: true });
+  expect(r.redacted).toContain('[OSOBA-A]');
+  expect(r.redacted).toContain('[OSOBA-B]');
+});
+test('pseudonimy — para „Imię Nazwisko” i solo-odmiana spójne', () => {
+  const r = redactPII('Jan Kowalski wynajął lokal. Kowalskiemu doręczono wypowiedzenie.', {
+    pseudonyms: true,
+  });
+  expect(r.redacted.match(/\[OSOBA-A\]/g)?.length).toBe(2);
+  expect(r.redacted.includes('OSOBA-B')).toBe(false);
+});
+test('pseudonimy — wyzwalacz „Pan” zachowuje sens zdania', () => {
+  const r = redactPII('Pan Wiśniewski nie zapłacił czynszu', { pseudonyms: true });
+  expect(r.redacted).toContain('[OSOBA-A]');
+  expect(r.redacted).toContain('nie zapłacił');
+});
+test('pseudonimy — wyłączone domyślnie (stara maska)', () => {
+  const r = redactPII('Jan Kowalski mieszka tu');
+  expect(r.redacted).toContain('[IMIĘ I NAZWISKO]');
+  expect(r.redacted.includes('OSOBA')).toBe(false);
+});
+test('pseudonimy — idempotencja (drugi przebieg nic nie zmienia)', () => {
+  const once = redactPII('Nowak i Wiśniewski oraz PESEL 44051401359', { pseudonyms: true }).redacted;
+  expect(redactPII(once, { pseudonyms: true }).redacted).toBe(once);
+});
+
 // ── Opcje: wybór typów i własne placeholdery ──
 test('options.types — maskuje TYLKO wskazane typy', () => {
   const r = redactPII('PESEL 44051401359, mail x@y.pl, Jan Kowalski', { types: ['PESEL'] });

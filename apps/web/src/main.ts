@@ -41,6 +41,12 @@ const MASK_GROUPS: Array<{ key: string; label: string; types: PiiType[] }> = [
 ];
 
 const maskTogglesEl = $<HTMLDivElement>('mask-toggles');
+const pseudonymsBox = $<HTMLInputElement>('pseudonyms');
+pseudonymsBox.checked = localStorage.getItem('pseudonyms') === '1';
+pseudonymsBox.addEventListener('change', () => {
+  localStorage.setItem('pseudonyms', pseudonymsBox.checked ? '1' : '');
+  update();
+});
 const disabledGroups = new Set<string>(
   (localStorage.getItem('mask-disabled') ?? '').split(',').filter(Boolean),
 );
@@ -96,7 +102,7 @@ function escapeHtml(s: string): string {
 /** Podświetl placeholdery ([PESEL], [IMIĘ I NAZWISKO]…) w zredagowanym tekście. */
 function highlightMasks(escaped: string): string {
   return escaped.replace(
-    /\[(PESEL|NIP|REGON|NR-KONTA|NR-DOWODU|EMAIL|TELEFON|KOD-POCZTOWY|DATA-URODZENIA|ADRES|IMIĘ I NAZWISKO)\]/g,
+    /\[(PESEL|NIP|REGON|NR-KONTA|NR-DOWODU|EMAIL|TELEFON|KOD-POCZTOWY|DATA-URODZENIA|ADRES|IMIĘ I NAZWISKO|OSOBA-[A-Z]+)\]/g,
     '<mark class="mask">[$1]</mark>',
   );
 }
@@ -198,7 +204,10 @@ function update(): void {
     lastRedacted = '';
     return;
   }
-  const { redacted, found } = redactPII(text, { types: activeTypes() });
+  const { redacted, found } = redactPII(text, {
+    types: activeTypes(),
+    pseudonyms: pseudonymsBox.checked,
+  });
   renderResult(redacted, found);
   scheduleNer(redacted, found);
 }

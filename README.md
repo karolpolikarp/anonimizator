@@ -119,6 +119,11 @@ redactPII(tekst, { types: ['PESEL', 'EMAIL'] });
 
 // własny placeholder (bez cyfr i „@" — inaczej łamiesz idempotencję)
 redactPII(tekst, { masks: { PESEL: '[UKRYTO]' } });
+
+// spójna pseudonimizacja: ta sama osoba → ta sama etykieta (także w odmianie)
+redactPII('Kowalski pozwał Nowaka. Kowalskiemu zależy na ugodzie.', { pseudonyms: true });
+// → '[OSOBA-A] pozwał [OSOBA-B]. [OSOBA-A] zależy na ugodzie.'
+// (w CLI: flaga --osoby; w aplikacji: „Rozróżniaj osoby" w panelu „Co maskować")
 ```
 
 Eksportowane są też walidatory sum kontrolnych: `isValidPesel`, `isValidNip`, `isValidRegon9`,
