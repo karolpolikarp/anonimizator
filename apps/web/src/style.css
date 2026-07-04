@@ -68,15 +68,12 @@ h1, h2 { line-height: 1.22; }
   max-width: 58ch;
 }
 
-.privacy-badge {
-  display: inline-block;
-  margin: 0 0 1.4rem;
-  padding: 0.7rem 1.2rem;
-  background: var(--bg1);
-  border: 1px solid var(--line-strong);
-  border-radius: 10px;
-  font-size: 0.92rem;
-  color: #c9d1de;
+/* smukła linijka zamiast pudła — badge „100% Offline" niesie już główny komunikat */
+.privacy-line {
+  margin: 1.1rem auto 0;
+  font-size: 0.88rem;
+  color: var(--muted);
+  max-width: 66ch;
 }
 
 /* badge'e: jednolite, spokojne — bez tęczy */
@@ -419,40 +416,45 @@ mark.mask {
 
 /* ── Kroki ── */
 
+/* kompaktowy pasek „jak to działa" NAD narzędziem — edukacja bez spychania panelu */
 .steps {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 2rem;
-  margin: 6rem 0 0;
+  gap: 1.2rem;
+  margin: 0 0 2.6rem;
   padding: 0;
   list-style: none;
   counter-reset: step;
 }
 
-@media (max-width: 820px) { .steps { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 820px) { .steps { grid-template-columns: repeat(2, 1fr); gap: 0.9rem; } }
 
 .steps li {
   counter-increment: step;
-  text-align: center;
-  font-size: 0.87rem;
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  font-size: 0.82rem;
   color: var(--muted);
+  min-width: 0;
 }
 
-.steps li strong { display: block; color: var(--text); margin-bottom: 0.15rem; font-weight: 600; }
+.steps li strong { display: block; color: var(--text); font-weight: 600; font-size: 0.87rem; }
+.steps li span { display: block; line-height: 1.35; }
 
 .steps li::before {
   content: counter(step);
+  flex: none;
   display: grid;
   place-items: center;
-  width: 40px;
-  height: 40px;
-  margin: 0 auto 0.7rem;
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
   border: 1px solid var(--line-strong);
   background: var(--bg1);
   color: #c6cfdd;
   font-weight: 600;
-  font-size: 0.95rem;
+  font-size: 0.85rem;
 }
 
 /* ── Sekcje informacyjne ── */
@@ -500,6 +502,22 @@ code {
   padding: 0.12em 0.4em;
   border-radius: 5px;
 }
+
+/* kropki kategorii w tabeli — spójne ze znacznikami w wyniku */
+.tdot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 0.6rem;
+  vertical-align: 1px;
+}
+
+.td-id { background: #d9a949; }
+.td-money { background: #6fc79b; }
+.td-contact { background: #67c8dc; }
+.td-place { background: #7ea6e8; }
+.td-person { background: #a596e8; }
 
 .caveat { border-left: 2px solid var(--warn-text); padding-left: 1.2rem; }
 .caveat p { color: var(--text); }

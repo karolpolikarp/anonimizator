@@ -1,5 +1,19 @@
 # Changelog
 
+## v0.15.0 — 2026-07-05
+
+**Ułożenie treści** (architektura informacji):
+
+- Hero odchudzone: wielkie pudło prywatności → smukła linijka pod badge'ami
+  (komunikat „100% Offline" niesie już badge); mniej dublowania, szybciej do narzędzia.
+- **Kroki 1→4 przeniesione NAD narzędzie** jako kompaktowy poziomy pasek
+  (numer + tytuł + krótki opis) — edukacja przed użyciem, bez spychania panelu;
+  znika duża sekcja kroków z dołu strony.
+- **Tabela „Co wykrywa" pogrupowana kategoriami** w kolejności: identyfikatory →
+  finanse → kontakt → adres/czas → osoby, z kolorowymi kropkami zgodnymi ze
+  znacznikami w wyniku — treść strony i wynik mówią jednym językiem;
+  zaktualizowany opis wiersza „Imię i nazwisko" (~230 nazwisk z odmianą).
+
 ## v0.14.0 — 2026-07-05
 
 **Repozycjonowanie stylu: dark enterprise zamiast „cyber-gaming"** (feedback:
