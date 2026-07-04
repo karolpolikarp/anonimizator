@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.9.1 — 2026-07-04
+
+- **Ikony w interfejsie** (sprite od użytkownika, wycięte i osadzone inline —
+  paczka offline nadal jednoplikowa): nagłówek, Przykład/Wczytaj/Wyczyść/Kopiuj/
+  Pobierz, „Co maskować", plakietka NER. Świeży zrzut w README.
+- **Podpowiedź o warstwie NER**: gdy rdzeń nic nie znajdzie, a NER jest wyłączony,
+  pasek wyników podpowiada włączenie NER (feedback: trudne nazwiska bez NER dawały
+  mylące zielone „nie wykryto danych osobowych").
+- **Benchmark warstwy ONNX (int8)** na tym samym zbiorze 159 przypadków:
+  **97,5% recall / 98,8% precision** (~7 ms/tekst na CPU) — recall minimalnie niższy
+  od FastPDN w Dockerze (kwantyzacja), precyzja najwyższa ze wszystkich warstw NER.
+
 ## v0.9.0 — 2026-07-04
 
 - **NER w przeglądarce (ONNX)** — finał programu SOTA T1–T5: rozpakuj

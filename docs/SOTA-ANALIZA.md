@@ -71,7 +71,9 @@ Lepiej stracić trochę recall niż maskować „Wilk biegał po lesie".
       fail-safe + breaker; 11 testów mockowych (Ollama nieobecna lokalnie — bez testu live).
 - [x] T4: `scripts/benchmark` — 159 przypadków (seed 20260704), raport w docs/BENCHMARK.md.
       **Wyniki po fixach z benchmarku:** core 86,5% R / 99,4% P (strukturalne 100%);
-      core+spaCy 99,4% R / 94,7% P; core+FastPDN **99,4% R / 97,1% P** (najlepszy).
+      core+spaCy 99,4% R / 94,7% P; core+FastPDN **99,4% R / 97,1% P** (najlepszy);
+      core+ONNX(int8, warstwa v0.9): **97,5% R / 98,8% P** (~7 ms/tekst CPU) —
+      kwantyzacja kosztuje ~2 p.p. recallu, w zamian najwyższa precyzja wśród NER.
       Benchmark wykrył i pozwolił naprawić 4 bugi rdzenia (REGON→telefon, „ur. ",
       „na ulicy…", nazwiska dwuczłonowe po wyzwalaczu).
 - [x] T5: NER bez Dockera — konwersja FastPDN→ONNX int8 (125 MB, release

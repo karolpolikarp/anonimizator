@@ -27,9 +27,9 @@
           <div class="panel-head">
             <label for="input">Tekst źródłowy</label>
             <div class="actions">
-              <button id="example" type="button">Przykład</button>
-              <button id="load-file" type="button">Wczytaj plik</button>
-              <button id="clear" type="button">Wyczyść</button>
+              <button id="example" type="button" class="ico">Przykład</button>
+              <button id="load-file" type="button" class="ico">Wczytaj plik</button>
+              <button id="clear" type="button" class="ico">Wyczyść</button>
               <input id="file-input" type="file" accept=".txt,.md,.csv,.log,.docx,.pdf" hidden />
             </div>
           </div>
@@ -44,8 +44,8 @@
           <div class="panel-head">
             <label for="output">Wynik — zredagowany</label>
             <div class="actions">
-              <button id="copy" type="button" class="primary" title="Skrót: Ctrl+Enter">Kopiuj</button>
-              <button id="download" type="button">Pobierz .txt</button>
+              <button id="copy" type="button" class="primary ico" title="Skrót: Ctrl+Enter">Kopiuj</button>
+              <button id="download" type="button" class="ico">Pobierz .txt</button>
             </div>
           </div>
           <div id="output" class="output" aria-live="polite"></div>
@@ -70,6 +70,7 @@
         <div class="ner-row">
           <label class="ner-toggle">
             <input type="checkbox" id="ner-enabled" />
+            <span class="ner-ico" aria-hidden="true"></span>
             Użyj lokalnego NER — lepsze wykrywanie rzadkich i odmienionych nazwisk
           </label>
           <span id="ner-status" class="ner-status"></span>

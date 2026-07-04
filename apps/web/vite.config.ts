@@ -8,6 +8,10 @@ export default defineConfig({
   // origin null), więc rozbite assety NIE działają po podwójnym kliknięciu.
   plugins: [viteSingleFile()],
   base: './',
+  build: {
+    // ikony (~8 kB/szt.) MUSZĄ być inline — osobne pliki assetów złamałyby file://
+    assetsInlineLimit: 32768,
+  },
   resolve: {
     alias: {
       // Importujemy rdzeń bezpośrednio ze źródeł TS — dev/build nie wymaga

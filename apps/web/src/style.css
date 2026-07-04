@@ -207,6 +207,12 @@ mark.mask {
   color: var(--ok-text);
 }
 
+.chip-hint {
+  background: var(--accent-soft);
+  color: var(--text);
+  font-weight: 400;
+}
+
 .mask-settings {
   margin-top: 0.9rem;
   padding: 0.7rem 0.9rem;
@@ -359,3 +365,39 @@ code {
 }
 
 a { color: var(--accent); }
+
+/* ── Ikony (wycięte ze sprite'a użytkownika; ciemny kafelek wygląda spójnie w obu motywach) ── */
+
+h1::before,
+button.ico::before,
+.mask-settings summary::before,
+.ner-ico {
+  content: '';
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  background-color: #171b21;
+  background-position: center;
+  background-size: contain;
+  background-repeat: no-repeat;
+  margin-right: 0.45rem;
+  vertical-align: -4px;
+}
+
+h1::before {
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
+  margin-right: 0.6rem;
+  vertical-align: -6px;
+  background-image: url('./icons/anonimizuj.png');
+}
+
+#example::before { background-image: url('./icons/przyklad.png'); }
+#copy::before { background-image: url('./icons/kopiuj.png'); }
+#clear::before { background-image: url('./icons/wyczysc.png'); }
+#load-file::before { background-image: url('./icons/plik-txt.png'); }
+#download::before { background-image: url('./icons/plik-txt.png'); }
+.mask-settings summary::before { background-image: url('./icons/ustawienia.png'); }
+.ner-ico { background-image: url('./icons/ner.png'); width: 24px; }

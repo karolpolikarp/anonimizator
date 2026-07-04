@@ -140,6 +140,12 @@ function renderResult(redacted: string, found: PiiFinding[]): void {
     findingsChips.innerHTML = disabledGroups.size > 0
       ? '<span class="chip">nic nie zamaskowano — część typów jest wyłączona w „Co maskować”</span>'
       : '<span class="chip chip-ok">nie wykryto danych osobowych</span>';
+    // Rzadkie nazwiska w odmianie wykrywa dopiero warstwa NER — podpowiedz, gdy wyłączona
+    // (feedback usera: wkleił trudne nazwiska, dostał zielone „czysto" i uznał to za bug).
+    if (!nerEnabledBox.checked) {
+      findingsChips.innerHTML +=
+        ' <span class="chip chip-hint">💡 rzadkie nazwiska wykryje warstwa NER — włącz „Użyj lokalnego NER” poniżej</span>';
+    }
   } else {
     const total = found.reduce((s, f) => s + f.count, 0);
     label.textContent = `Zamaskowano (${total}):`;
