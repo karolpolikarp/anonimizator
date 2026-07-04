@@ -3,6 +3,18 @@
 Format wersji: [SemVer](https://semver.org/lang/pl/). Tagi `vX.Y.Z` budują paczkę
 offline (`anonimizator-offline.zip`) w [Releases](https://github.com/karolpolikarp/anonimizator/releases).
 
+## v0.7.0 — 2026-07-04
+
+- **Usługa NER z dwoma backendami** (T2): `spacy` (domyślny, lekki) i `herbert`
+  (transformers — `clarin-pl/FastPDN`, destylat HerBERT-a trenowany na KPWr).
+  Na teście 7 trudnych nazwisk w odmianie: FastPDN 7/7 z kompletnymi spanami
+  (w tym „Sarneckiej-Dul"), spaCy 7/7 z uciętym członem po myślniku.
+  Wybór: `docker compose build --build-arg NER_BACKEND=herbert`.
+- Odrzucony po testach: `pczarnik/herbert-base-ner` (wikiann) — mimo F1≈0,90
+  na karcie modelu nie generalizował na realne zdania (szczegóły w SOTA-ANALIZA).
+- Naprawa subwordowych offsetów (expand-to-word + scalanie), chunking długich
+  tekstów z zakładką, filtr etykiet PER/nam_liv_person.
+
 ## v0.6.0 — 2026-07-04
 
 - **Spójna pseudonimizacja** (T1b): opcja `pseudonyms` / flaga CLI `--osoby` /

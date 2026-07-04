@@ -59,8 +59,13 @@ Lepiej stracić trochę recall niż maskować „Wilk biegał po lesie".
 - [x] T1a: słownik ~300 najczęstszych nazwisk (rejestr PESEL) + obsługa fleksji
       (-ski/-cki/-dzki + końcówki rzeczownikowe) + strażnik homonimów.
 - [ ] T1b: spójna pseudonimizacja (opcjonalna: [OSOBA-A], [OSOBA-B]…).
-- [ ] T2: `services/ner` z wyborem backendu: `spacy` | `herbert` (transformers,
-      np. HerBERT-NER); benchmark obu.
+- [x] T2: `services/ner` z wyborem backendu: `spacy` | `herbert` (transformers).
+      **Wynik empiryczny (2026-07-04):** `pczarnik/herbert-base-ner` (wikiann, „F1 0,896")
+      poległ na realnych zdaniach — na 7 osób wykrył fragment jednej; fine-tune'y wikiann
+      nie generalizują (Wikipedia ≈ mianowniki). Wybrany model: **`clarin-pl/FastPDN`**
+      (destylat HerBERT-a, KPWr z pełną fleksją) — 7/7 osób z kompletnymi spanami,
+      lepszy od spaCy (który ucinał człon po myślniku: „[MASKA]-Dul"). Wniosek
+      metodologiczny: metryka z karty modelu ≠ jakość na docelowej dystrybucji tekstów.
 - [ ] T3: opcjonalny łącznik Ollama (Bielik) w trybie span-extraction, fail-closed,
       z walidacją spanów; flaga eksperymentalna.
 - [ ] T4: `scripts/benchmark` — syntetyczny zbiór PL (odmiana, konteksty urzędowe/czatowe),

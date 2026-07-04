@@ -1,0 +1,8 @@
+# Backend "herbert" (SOTA PL): transformers + torch CPU.
+# Torch w wersji CPU-only instaluj z indeksu PyTorch (mniejszy obraz):
+#   pip install torch --index-url https://download.pytorch.org/whl/cpu
+fastapi>=0.110,<1
+uvicorn[standard]>=0.27,<1
+pydantic>=2,<3
+transformers>=4.44,<5
+torch>=2.2

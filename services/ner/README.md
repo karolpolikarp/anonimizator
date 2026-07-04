@@ -1,11 +1,27 @@
-# Anonimizator NER — opcjonalna lokalna usługa (spaCy PL)
+# Anonimizator NER — opcjonalna lokalna usługa (spaCy / HerBERT)
 
 Usługa wykrywania **imion i nazwisk** (encje osobowe) podnosząca skuteczność anonimizatora.
-Domyka lukę, której nie złapie warstwa regex+słownik: rzadkie i odmienione nazwiska bez
+Domyka lukę, której nie złapie warstwa regex+słowniki: rzadkie i odmienione nazwiska bez
 wyzwalacza kontekstu („Wczoraj Bąkiewicz podpisał umowę z Szczepankowską").
 
 **Uruchamiasz ją na własnym komputerze** — tekst nadal nie opuszcza Twojej maszyny.
-Bez tej usługi anonimizator działa normalnie (sama warstwa regex + sumy kontrolne).
+Bez tej usługi anonimizator działa normalnie (warstwa regex + sumy kontrolne + słownik nazwisk).
+
+## Dwa backendy do wyboru (`PII_NER_BACKEND`)
+
+| Backend | Model | Jakość (osoby) | Rozmiar obrazu | Kiedy |
+|---|---|---|---|---|
+| `spacy` (domyślny) | `pl_core_news_lg` | bardzo dobra (test: 7/7, ale ucina człony po myślniku) | ~1,5 GB | słabszy sprzęt, ARM/Raspberry Pi |
+| `herbert` (SOTA PL) | `clarin-pl/FastPDN` (destylat HerBERT, KPWr) | najlepsza (test: 7/7 z kompletnymi spanami, np. „Sarneckiej-Dul" w całości) | ~2,4 GB | nowoczesny komputer, priorytet: recall |
+
+Backend transformerowy: `docker compose build --build-arg NER_BACKEND=herbert` albo
+odkomentuj `args` w `docker-compose.yml`. Tuning: `PII_NER_MIN_SCORE` (domyślnie `0.5`),
+`PII_NER_AGGREGATION` (domyślnie `simple`).
+
+> Uwaga empiryczna: popularny fine-tune `pczarnik/herbert-base-ner` (wikiann, F1≈0,90
+> na własnym teście) w praktyce NIE generalizuje na realne zdania — przegapiał nawet
+> mianownikowe nazwiska. Dlatego domyślny model to FastPDN (trenowany na KPWr z pełną
+> fleksją). Nie ufaj metrykom z karty modelu — testuj na swoich danych.
 
 ## Architektura (fail-safe)
 

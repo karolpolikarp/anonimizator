@@ -83,6 +83,10 @@ cd services/ner
 docker compose up -d      # usługa na 127.0.0.1:8090 (tylko localhost)
 ```
 
+Dostępne są dwa backendy: **spaCy** (domyślny, lekki) i **HerBERT** (SOTA dla polskiego,
+F1≈0,90 — najlepszy recall rzadkich nazwisk; `--build-arg NER_BACKEND=herbert`).
+Szczegóły: [`services/ner/README.md`](./services/ner/README.md).
+
 Potem w aplikacji webowej zaznacz „Użyj lokalnego NER". Architektura jest **fail-safe**:
 
 - NER dostaje tekst JUŻ po redakcji strukturalnej — **nigdy nie widzi** surowego PESEL/NIP;
