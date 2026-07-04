@@ -3,5 +3,5 @@
 #   python -m spacy download pl_core_news_lg
 fastapi>=0.110,<1
 uvicorn[standard]>=0.27,<1
-spacy>=3.7,<4
+spacy>=3.8.14,<4
 pydantic>=2,<3
