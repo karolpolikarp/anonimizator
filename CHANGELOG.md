@@ -1,5 +1,15 @@
 # Changelog
 
+## v0.9.0 — 2026-07-04
+
+- **NER w przeglądarce (ONNX)** — finał programu SOTA T1–T5: rozpakuj
+  `anonimizator-onnx-pack.zip` (z release'u `models-fastpdn-onnx-v1`) obok `index.html`,
+  a przy serwowaniu po http w ustawieniach NER pojawia się źródło „w przeglądarce
+  (ONNX, bez Dockera)" — pełny recall FastPDN w 100% offline, bez instalowania
+  czegokolwiek. E2E zweryfikowane (Playwright): 4/4 trudne nazwiska w odmianie.
+  Build aplikacji bez zmian rozmiaru (dynamiczny import spoza bundla); z `file://`
+  opcja się nie pojawia (ograniczenie wasm/fetch przeglądarek).
+
 Format wersji: [SemVer](https://semver.org/lang/pl/). Tagi `vX.Y.Z` budują paczkę
 offline (`anonimizator-offline.zip`) w [Releases](https://github.com/karolpolikarp/anonimizator/releases).
 

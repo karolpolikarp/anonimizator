@@ -98,13 +98,20 @@ Z biblioteki: `import { redactPIIFull } from 'anonimizator/ner'` —
 `await redactPIIFull(tekst, { url: 'http://127.0.0.1:8090' })`.
 Szczegóły: [`services/ner/README.md`](./services/ner/README.md).
 
-## NER bez Dockera (ONNX)
+## NER bez Dockera (ONNX) — także w przeglądarce
 
-Zweryfikowany model FastPDN jest też dostępny jako **ONNX int8 (~125 MB)** w
-[Releases → models-fastpdn-onnx-v1](https://github.com/karolpolikarp/anonimizator/releases/tag/models-fastpdn-onnx-v1)
-— do lokalnego użycia przez `@huggingface/transformers` bez Dockera (Node; inferencja
-na CPU ~kilkanaście ms na akapit). Kompletny przykład: [`examples/ner-onnx-node.mjs`](./examples/ner-onnx-node.mjs).
-Integracja w aplikacji przeglądarkowej — w przygotowaniu.
+Zweryfikowany model FastPDN jest dostępny jako **ONNX int8 (~125 MB)** w
+[Releases → models-fastpdn-onnx-v1](https://github.com/karolpolikarp/anonimizator/releases/tag/models-fastpdn-onnx-v1):
+
+- **W aplikacji przeglądarkowej**: pobierz `anonimizator-onnx-pack.zip` i rozpakuj
+  **obok `index.html`** (katalogi `vendor/` i `models/`). Gdy aplikacja jest serwowana
+  po http (np. `npx serve .`, hosting, `npm run preview`) — w ustawieniach NER pojawi
+  się źródło „w przeglądarce (ONNX, bez Dockera)". Model ładuje się przy pierwszym
+  użyciu i działa w pełni offline (inferencja ~kilkadziesiąt ms).
+  Uwaga: z `file://` (podwójny klik) przeglądarki blokują wasm/fetch — ta opcja
+  wymaga serwowania; paczka offline działa wtedy na warstwie regex+słowniki.
+- **W Node**: kompletny przykład [`examples/ner-onnx-node.mjs`](./examples/ner-onnx-node.mjs)
+  (`@huggingface/transformers`, ~16 ms na akapit na CPU).
 
 ## Warstwa eksperymentalna: lokalny LLM (Ollama/Bielik)
 

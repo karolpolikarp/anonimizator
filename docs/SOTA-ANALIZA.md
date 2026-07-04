@@ -74,11 +74,15 @@ Lepiej stracić trochę recall niż maskować „Wilk biegał po lesie".
       core+spaCy 99,4% R / 94,7% P; core+FastPDN **99,4% R / 97,1% P** (najlepszy).
       Benchmark wykrył i pozwolił naprawić 4 bugi rdzenia (REGON→telefon, „ur. ",
       „na ulicy…", nazwiska dwuczłonowe po wyzwalaczu).
-- [~] T5: NER bez Dockera — ZROBIONE: konwersja FastPDN→ONNX int8 (125 MB, release
-      `models-fastpdn-onnx-v1`, atrybucja CC-BY-4.0), zweryfikowana jakość w transformers.js
-      (inferencja ~16 ms CPU; strata q8: sporadyczne pominięcia, np. „Szczepankowską"),
-      działający przykład `examples/ner-onnx-node.mjs`. POZOSTAŁO: integracja w UI
-      przeglądarkowym (konflikt z buildem single-file — wymaga osobnego wariantu builda).
+- [x] T5: NER bez Dockera — konwersja FastPDN→ONNX int8 (125 MB, release
+      `models-fastpdn-onnx-v1`, atrybucja CC-BY-4.0), przykład Node
+      (`examples/ner-onnx-node.mjs`, ~16 ms CPU) ORAZ integracja w UI przeglądarki:
+      drop-in „onnx-pack" (vendor+model obok index.html) wykrywany automatycznie,
+      źródło „w przeglądarce (ONNX)" w ustawieniach NER, E2E zweryfikowane Playwrightem.
+      Pułapki udokumentowane w kodzie: `transformers.web.min.js` z npm NIE jest
+      samowystarczalny (goły import onnxruntime-web → własny bundle esbuildem);
+      `env.allowLocalModels=true` konieczne w przeglądarce; `localModelPath` MUSI być
+      względne (absolutny URL → gałąź lokalna pomijana); id modelu musi być dwuczłonowe.
 
 ## Źródła
 

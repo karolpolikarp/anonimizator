@@ -2,6 +2,7 @@ import { redactPII, type PiiFinding, type PiiType } from 'anonimizator';
 import { mergeFindings, nerHealthCheck, nerRedact } from 'anonimizator/ner';
 import { extractDocxText } from './docx';
 import { extractPdfText } from './pdf';
+import { browserNerAvailable, browserNerRedact } from './ner-browser';
 import './style.css';
 
 const $ = <T extends HTMLElement>(id: string): T => document.getElementById(id) as T;
@@ -18,6 +19,7 @@ const loadFileBtn = $<HTMLButtonElement>('load-file');
 const fileInput = $<HTMLInputElement>('file-input');
 const nerEnabledBox = $<HTMLInputElement>('ner-enabled');
 const nerDetails = $<HTMLDivElement>('ner-details');
+const nerSourceSel = $<HTMLSelectElement>('ner-source');
 const nerUrlInput = $<HTMLInputElement>('ner-url');
 const nerStatus = $<HTMLSpanElement>('ner-status');
 
@@ -156,13 +158,23 @@ function nerConfig() {
   return { url: nerUrlInput.value.trim(), timeoutMs: 5000 };
 }
 
+function nerSource(): 'http' | 'onnx' {
+  return nerSourceSel.value === 'onnx' ? 'onnx' : 'http';
+}
+
 function scheduleNer(baseRedacted: string, baseFound: PiiFinding[]): void {
-  if (!nerEnabledBox.checked || !nerUrlInput.value.trim()) return;
+  if (!nerEnabledBox.checked) return;
+  if (nerSource() === 'http' && !nerUrlInput.value.trim()) return;
   if (!imieEnabled()) return; // użytkownik odznaczył imiona — NER nie ma czego dokładać
   const seq = ++nerSeq;
   clearTimeout(nerTimer);
   nerTimer = setTimeout(async () => {
-    const ner = await nerRedact(baseRedacted, nerConfig());
+    const ner =
+      nerSource() === 'onnx'
+        ? await browserNerRedact(baseRedacted, (msg) => {
+            if (seq === nerSeq) nerStatus.textContent = msg;
+          })
+        : await nerRedact(baseRedacted, nerConfig());
     if (seq !== nerSeq) return; // w międzyczasie użytkownik zmienił tekst
     if (!ner) {
       setNerStatus(false);
@@ -174,11 +186,12 @@ function scheduleNer(baseRedacted: string, baseFound: PiiFinding[]): void {
 }
 
 function setNerStatus(ok: boolean | null): void {
+  const viaOnnx = nerSource() === 'onnx' ? ' (ONNX w przeglądarce)' : '';
   if (ok === null) {
     nerStatus.textContent = 'sprawdzam…';
     nerStatus.className = 'ner-status';
   } else if (ok) {
-    nerStatus.textContent = 'aktywny ✓';
+    nerStatus.textContent = `aktywny ✓${viaOnnx}`;
     nerStatus.className = 'ner-status ner-ok';
   } else {
     nerStatus.textContent = 'niedostępny — działa warstwa regex';
@@ -192,7 +205,11 @@ async function checkNer(): Promise<void> {
     return;
   }
   setNerStatus(null);
-  setNerStatus(await nerHealthCheck(nerConfig()));
+  if (nerSource() === 'onnx') {
+    setNerStatus(await browserNerAvailable());
+  } else {
+    setNerStatus(await nerHealthCheck(nerConfig()));
+  }
 }
 
 function update(): void {
@@ -225,6 +242,24 @@ nerUrlInput.addEventListener('change', () => {
   localStorage.setItem('ner-url', nerUrlInput.value.trim());
   checkNer();
   update();
+});
+
+nerSourceSel.addEventListener('change', () => {
+  localStorage.setItem('ner-source', nerSourceSel.value);
+  nerUrlInput.hidden = nerSource() === 'onnx';
+  checkNer();
+  update();
+});
+
+// pokaż wybór źródła tylko, gdy obok aplikacji leży onnx-pack (vendor/ + models/)
+void browserNerAvailable().then((ok) => {
+  if (!ok) return;
+  nerSourceSel.hidden = false;
+  if (localStorage.getItem('ner-source') === 'onnx') {
+    nerSourceSel.value = 'onnx';
+    nerUrlInput.hidden = true;
+    checkNer();
+  }
 });
 
 // przywróć ustawienia NER z poprzedniej wizyty (localStorage — lokalnie, jak wszystko tutaj)
@@ -354,6 +389,19 @@ if (params.has('demo')) {
   input.value = EXAMPLE_TEXT;
 } else {
   input.focus();
+}
+
+// ?nertest=onnx — E2E ścieżki NER w przeglądarce: trudne nazwiska, których nie zna
+// warstwa deterministyczna, + wymuszone źródło ONNX.
+if (params.get('nertest') === 'onnx') {
+  input.value =
+    'Wczoraj Bąkiewicz podpisał umowę z Szczepankowską. Zeznania Krzemienieckiej ' +
+    'potwierdził świadek Gzowski.';
+  nerEnabledBox.checked = true;
+  nerDetails.hidden = false;
+  nerSourceSel.value = 'onnx';
+  nerUrlInput.hidden = true;
+  checkNer();
 }
 
 // ?pdftest — samodiagnostyka ścieżki PDF (fake worker w buildzie single-file):

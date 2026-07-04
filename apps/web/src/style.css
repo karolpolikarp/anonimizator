@@ -280,6 +280,16 @@ mark.mask {
 
 .ner-details { margin-top: 0.6rem; }
 
+.ner-details select {
+  margin: 0 0.5rem 0.4rem 0;
+  padding: 0.35rem 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 0.85rem;
+}
+
 .ner-details input {
   width: 100%;
   max-width: 360px;

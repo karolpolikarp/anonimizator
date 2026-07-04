@@ -75,6 +75,10 @@
           <span id="ner-status" class="ner-status"></span>
         </div>
         <div id="ner-details" class="ner-details" hidden>
+          <select id="ner-source" aria-label="Źródło NER" hidden>
+            <option value="http">usługa lokalna (Docker)</option>
+            <option value="onnx">w przeglądarce (ONNX, bez Dockera)</option>
+          </select>
           <input id="ner-url" type="text" value="http://127.0.0.1:8090" spellcheck="false" aria-label="Adres lokalnej usługi NER" />
           <p class="ner-note">
             Opcjonalna usługa uruchamiana <strong>na Twoim komputerze</strong> — folder
