@@ -1,5 +1,19 @@
 # Changelog
 
+## v0.14.0 — 2026-07-05
+
+**Repozycjonowanie stylu: dark enterprise zamiast „cyber-gaming"** (feedback:
+„zbyt gamingowo, za mało profesjonalnie"):
+
+- Usunięte: siatka i kolorowe poświaty tła, neonowe glow na kartach/CTA/badge'ach,
+  gradientowy tytuł, prefiks `//` nagłówków, kreskówkowe ikony ze sprite'a
+  w przyciskach (zostaje favicon).
+- W zamian: płaskie powierzchnie z subtelną elewacją, czysty wordmark, jednolite
+  spokojne badge'e, pełny solidny akcent #3663d9, minimalistyczne kroki 1→4,
+  mniejsze promienie (8–12px), typografia w duchu Linear/Vercel.
+- Kolory znaczników PII zostają (funkcja czytania wyniku), ale w stonowanych
+  odcieniach; przekreślenia w Porównaniu przygaszone.
+
 ## v0.13.0 — 2026-07-05
 
 **Przestrzeń i hierarchia** (feedback: „więcej oddechu, lepszy układ, lepsza kolejność"):
