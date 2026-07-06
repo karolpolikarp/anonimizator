@@ -1,5 +1,22 @@
 # Changelog
 
+## v0.18.0 — 2026-07-06
+
+- **AI jednym kliknięciem, bez Dockera** — launcher `START-ANONIMIZATOR.bat` +
+  `launcher/serve.ps1`: mini-serwer na `127.0.0.1` (zwykły `TcpListener`, bez uprawnień
+  administratora, bez zależności) podaje aplikację po `http`, dzięki czemu model
+  ONNX w przeglądarce rusza po podwójnym kliknięciu. Launcher trafia do paczki offline;
+  instrukcja krok po kroku: [`docs/AI-BEZ-DOCKERA.md`](./docs/AI-BEZ-DOCKERA.md).
+  Odpowiedź na feedback: „większość urzędników nie zainstaluje Dockera”.
+- **NER przeprojektowany na „AI, opcjonalne”** — karta zwinięta domyślnie (mniej
+  natłoku), prowadzi ścieżką przeglądarkową (Docker zdegradowany do „zaawansowane”),
+  status widoczny na zwiniętym nagłówku. Selektor źródła zawsze dostępny (koniec
+  uwięzienia użytkowników Dockera bez paczki ONNX).
+- **Czytelniejsza legenda kategorii** — duże kolorowe kropki zamiast maleńkich ikon,
+  wyraźniejsze etykiety i kontrast (feedback: „wiersz słabo widoczny, ikonki za małe”).
+- **Mniej natłoku** — tabela „Co wykrywa” zwinięta domyślnie (czysty widok narzędzia,
+  szczegóły po kliknięciu).
+
 ## v0.16.0 — 2026-07-05
 
 - **Ikony wróciły** (sprite użytkownika) — nagłówek, przyciski, karty ustawień;

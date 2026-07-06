@@ -22,11 +22,14 @@ jobs:
       - run: npm run build -w anonimizator
       - run: npm run test -w anonimizator
       - run: npm run build -w anonimizator-web
+      - name: Dołącz launcher (mini-serwer na localhost, bez instalacji)
+        run: cp launcher/START-ANONIMIZATOR.bat launcher/serve.ps1 apps/web/dist/
       - name: Dodaj instrukcję do paczki
         run: |
           cat > apps/web/dist/JAK-UZYC.txt <<'EOF'
           ANONIMIZATOR — jak zacząć (30 sekund)
 
+          NAJPROŚCIEJ
           1. Otwórz plik index.html podwójnym kliknięciem (uruchomi się w przeglądarce).
           2. Wklej tekst albo upuść plik (.txt, .docx lub .pdf) na lewe pole.
           3. Po prawej masz wersję z zamaskowanymi danymi — kliknij „Kopiuj".
@@ -34,8 +37,15 @@ jobs:
           Wszystko dzieje się na Twoim komputerze. Aplikacja nie łączy się
           z internetem — możesz wyłączyć Wi-Fi i sprawdzić.
 
-          Uwaga: wykrywanie imion i nazwisk jest heurystyczne — zawsze przejrzyj
-          wynik, zanim go komuś wyślesz.
+          DOKŁADNIEJSZE WYKRYWANIE NAZWISK (opcjonalne AI, bez Dockera)
+          1. Pobierz paczkę „anonimizator-onnx-pack.zip" z sekcji Releases i rozpakuj
+             jej zawartość TUTAJ, obok pliku index.html.
+          2. Zamiast index.html uruchom START-ANONIMIZATOR.bat (podwójny klik).
+          3. W sekcji „Wykrywanie nazwisk AI" włącz AI — model rusza lokalnie.
+          (Mini-serwer nasłuchuje tylko na 127.0.0.1 — nic nie wychodzi do sieci.)
+
+          Uwaga: wykrywanie nazwisk bywa niepełne — zawsze przejrzyj wynik,
+          zanim go komuś wyślesz.
 
           Kod źródłowy i dokumentacja:
           https://github.com/karolpolikarp/anonimizator

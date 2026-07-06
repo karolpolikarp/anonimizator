@@ -82,31 +82,24 @@
       <!-- ══════════ LEGENDA KATEGORII ══════════ -->
       <section class="card legend g12" aria-label="Legenda kategorii danych">
         <div class="card-h">
-          <span class="ic" data-tip="Każdy wykryty typ danych należy do jednej z pięciu kategorii" tabindex="0"><img src="./src/icons/regula.png" alt="" /></span>
-          <div class="card-t"><h2>Kategorie danych</h2><p>kolor znacznika = kategoria</p></div>
+          <div class="card-t"><h2>Kolory znaczników</h2><p>każda kategoria danych ma swój kolor — ten sam w wyniku i w tabeli niżej</p></div>
           <div class="legend-items">
-            <span class="lg" data-tip="Imię i nazwisko — słownik, wyzwalacze kontekstu, opcjonalny NER" tabindex="0">
-              <span class="ic ic-s c-person"><img src="./src/icons/dane-osobowe.png" alt="" /></span>
-              <span><b><span class="dot dot-person"></span> Osoby</b><span>1 typ danych</span></span>
+            <span class="lg" data-tip="Imię i nazwisko — słownik, wyzwalacze kontekstu, opcjonalne AI" tabindex="0">
+              <span class="dot dot-person"></span><b>Osoby</b><span class="lg-n">1 typ</span>
             </span>
             <span class="lg" data-tip="E-mail i telefon" tabindex="0">
-              <span class="ic ic-s c-contact"><img src="./src/icons/telefon.png" alt="" /></span>
-              <span><b><span class="dot dot-contact"></span> Kontakt</b><span>2 typy danych</span></span>
+              <span class="dot dot-contact"></span><b>Kontakt</b><span class="lg-n">2 typy</span>
             </span>
             <span class="lg" data-tip="PESEL, NIP, REGON, numer dowodu — zawsze z walidacją sumy kontrolnej" tabindex="0">
-              <span class="ic ic-s c-ident"><img src="./src/icons/pesel.png" alt="" /></span>
-              <span><b><span class="dot dot-ident"></span> Identyfikatory</b><span>4 typy danych</span></span>
+              <span class="dot dot-ident"></span><b>Identyfikatory</b><span class="lg-n">4 typy</span>
             </span>
             <span class="lg" data-tip="IBAN / numer konta — walidacja mod 97" tabindex="0">
-              <span class="ic ic-s c-fin"><img src="./src/icons/iban.png" alt="" /></span>
-              <span><b><span class="dot dot-fin"></span> Finanse</b><span>1 typ danych</span></span>
+              <span class="dot dot-fin"></span><b>Finanse</b><span class="lg-n">1 typ</span>
             </span>
             <span class="lg" data-tip="Adres, kod pocztowy, data urodzenia" tabindex="0">
-              <span class="ic ic-s c-place"><img src="./src/icons/dom.png" alt="" /></span>
-              <span><b><span class="dot dot-place"></span> Adres i czas</b><span>3 typy danych</span></span>
+              <span class="dot dot-place"></span><b>Adres i czas</b><span class="lg-n">3 typy</span>
             </span>
           </div>
-          <span class="help" data-tip="Te same kolory znajdziesz w wyniku, w pasku „Zamaskowano” i w tabeli „Co wykrywa”" data-tip-pos="left" tabindex="0">?</span>
         </div>
       </section>
 
@@ -207,53 +200,53 @@
       </details>
 
       <!-- ══════════ NER ══════════ -->
-      <details class="card g5" open>
+      <details class="card g5" id="ner-card">
         <summary class="card-h">
           <span class="ic"><img src="./src/icons/ner.png" alt="" /></span>
-          <div class="card-t"><h2>Dokładniejsze wykrywanie nazwisk</h2><p>lokalny NER — rzadkie i odmienione formy</p></div>
+          <div class="card-t"><h2>Wykrywanie nazwisk AI <span class="tag-opt">opcjonalne</span></h2><p>rzadkie i odmienione formy — bez Dockera, jedno kliknięcie</p></div>
           <span class="card-sp"></span>
-          <span class="help" data-tip="NER to model rozpoznawania nazw własnych. Uzupełnia słownik o rzadkie i odmienione nazwiska. Wymaga jednorazowego uruchomienia" data-tip-pos="left" tabindex="0">?</span>
+          <span class="pill-off" id="ner-pill">wyłączone</span>
           <span class="chev">▸</span>
         </summary>
         <div class="card-b">
-          <label class="ner-row" data-tip="Włącza lokalny model NER — lepsze wykrywanie rzadkich i odmienionych nazwisk">
+          <p class="ner-lead">Warstwa reguł, słowników i sum kontrolnych działa <strong>zawsze</strong>. To AI dokłada rzadkie i odmienione nazwiska (np. „sprawa Grzegorzewskiego”). Model działa u Ciebie — tekst nadal nie opuszcza komputera.</p>
+          <label class="ner-row" data-tip="Włącza lokalny model AI — lepsze wykrywanie rzadkich i odmienionych nazwisk">
             <span class="ic ic-s"><img src="./src/icons/onoff.png" alt="" /></span>
-            <span class="tg-t"><b>Włącz lokalny NER</b><span class="sub ner-status" id="ner-status"></span></span>
-            <span class="pill-off" id="ner-pill">wyłączony</span>
-            <input type="checkbox" class="sw" id="ner-enabled" aria-label="Włącz lokalny NER" />
+            <span class="tg-t"><b>Włącz AI</b><span class="sub ner-status" id="ner-status"></span></span>
+            <input type="checkbox" class="sw" id="ner-enabled" aria-label="Włącz lokalne AI (NER)" />
           </label>
           <div id="ner-details" hidden>
-            <label class="ner-row" data-tip="Źródło modelu: usługa w Dockerze albo model ONNX wprost w przeglądarce">
+            <label class="ner-row" data-tip="Zalecane: model w przeglądarce (jedno kliknięcie). Zaawansowane: własna usługa w Dockerze">
               <span class="ic ic-s"><img src="./src/icons/ustawienia.png" alt="" /></span>
-              <span class="tg-t"><b>Źródło NER</b><span class="sub">skąd brać model</span></span>
-              <select id="ner-source" class="field field-inline" aria-label="Źródło NER" hidden>
-                <option value="http">usługa lokalna (Docker)</option>
-                <option value="onnx">w przeglądarce (ONNX)</option>
+              <span class="tg-t"><b>Skąd model</b><span class="sub">domyślnie: w przeglądarce</span></span>
+              <select id="ner-source" class="field field-inline" aria-label="Źródło modelu AI">
+                <option value="onnx">w przeglądarce (zalecane)</option>
+                <option value="http">usługa w Dockerze (zaawansowane)</option>
               </select>
             </label>
-            <label class="ner-row" data-tip="Tekst trafia wyłącznie pod wskazany adres lokalny — nadal nic nie wychodzi do internetu">
+            <label class="ner-row" id="ner-url-row" data-tip="Tekst trafia wyłącznie pod wskazany adres lokalny — nadal nic nie wychodzi do internetu">
               <span class="ic ic-s"><img src="./src/icons/haslo.png" alt="" /></span>
               <span class="tg-t"><b>Adres usługi</b><span class="sub">tylko adres lokalny</span></span>
               <input id="ner-url" type="text" value="http://127.0.0.1:8090" spellcheck="false" class="field field-inline" aria-label="Adres lokalnej usługi NER" />
             </label>
             <p class="ner-note">
-              Opcjonalna usługa uruchamiana <strong>na Twoim komputerze</strong> — folder <code>services/ner</code>
-              w repozytorium, start jedną komendą: <code>docker compose up -d</code>.
-              Gdy usługa nie działa, anonimizacja opiera się na warstwie regex + sumy kontrolne.
+              <strong>Najprościej (bez Dockera):</strong> pobierz paczkę „AI w przeglądarce”, rozpakuj obok
+              aplikacji i kliknij dwukrotnie <code>START-ANONIMIZATOR.bat</code> — model rusza lokalnie.
+              <a href="https://github.com/karolpolikarp/anonimizator/blob/main/docs/AI-BEZ-DOCKERA.md" target="_blank" rel="noopener noreferrer">instrukcja krok po kroku</a>.
             </p>
           </div>
         </div>
         <div class="card-f">
           <img src="./src/icons/sprawdz.png" alt="" />
-          <span>Bez NER nadal działają: <strong>reguły, słownik imion i sumy kontrolne</strong> — nic nie wychodzi do internetu.</span>
+          <span>Nie chcesz AI? Nic nie rób — <strong>reguły, słowniki i sumy kontrolne</strong> działają od razu.</span>
         </div>
       </details>
 
       <!-- ══════════ CO WYKRYWA ══════════ -->
-      <details class="card g12" open id="co-wykrywa">
+      <details class="card g12" id="co-wykrywa">
         <summary class="card-h">
           <span class="ic"><img src="./src/icons/sprawdz.png" alt="" /></span>
-          <div class="card-t"><h2>Co wykrywa</h2><p>11 typów danych w 5 kategoriach — każdy identyfikator z walidacją sumy kontrolnej</p></div>
+          <div class="card-t"><h2>Co wykrywa <span class="tag-opt">szczegóły</span></h2><p>11 typów danych w 5 kategoriach — każdy identyfikator z walidacją sumy kontrolnej</p></div>
           <span class="card-sp"></span>
           <span class="help" data-tip="Suma kontrolna odróżnia prawdziwy numer od przypadkowego ciągu cyfr — stąd mało fałszywych trafień" data-tip-pos="left" tabindex="0">?</span>
           <span class="chev">▸</span>

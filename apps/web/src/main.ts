@@ -440,33 +440,32 @@ nerUrlInput.addEventListener('change', () => {
   update();
 });
 
+// Adres usługi (Docker) ma sens tylko dla źródła „http" — dla przeglądarki go chowamy.
+function syncUrlRowVisibility(): void {
+  nerUrlInput.closest('.ner-row')?.toggleAttribute('hidden', nerSource() === 'onnx');
+}
+
 nerSourceSel.addEventListener('change', () => {
   localStorage.setItem('ner-source', nerSourceSel.value);
-  nerUrlInput.closest('.ner-row')!.toggleAttribute('hidden', nerSource() === 'onnx');
+  syncUrlRowVisibility();
   checkNer();
   update();
 });
 
-// źródło ONNX pokazujemy tylko, gdy obok aplikacji leży onnx-pack
-void browserNerAvailable().then((ok) => {
-  if (!ok) return;
-  nerSourceSel.hidden = false;
-  if (localStorage.getItem('ner-source') === 'onnx') {
-    nerSourceSel.value = 'onnx';
-    nerUrlInput.closest('.ner-row')!.setAttribute('hidden', '');
-    checkNer();
-  }
-});
+// Źródło modelu: przywróć zapamiętany wybór, w przeciwnym razie zostaje domyślne
+// „w przeglądarce" (pierwsza opcja). Selektor jest zawsze widoczny — użytkownik
+// Dockera może przełączyć na „usługa w Dockerze" nawet bez paczki ONNX.
+const savedSource = localStorage.getItem('ner-source');
+if (savedSource === 'http' || savedSource === 'onnx') nerSourceSel.value = savedSource;
+syncUrlRowVisibility();
 
 const savedUrl = localStorage.getItem('ner-url');
 if (savedUrl) nerUrlInput.value = savedUrl;
 if (localStorage.getItem('ner-enabled')) {
   nerEnabledBox.checked = true;
   nerDetails.hidden = false;
-  checkNer();
-} else {
-  checkNer();
 }
+checkNer();
 
 /* ── Akcje ── */
 

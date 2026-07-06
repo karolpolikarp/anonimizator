@@ -329,20 +329,21 @@ select.field { font-family: "Segoe UI", system-ui, sans-serif; line-height: norm
 }
 
 /* ============ LEGENDA ============ */
-.legend .card-h { border-bottom: none; }
+.legend .card-h { border-bottom: none; flex-wrap: wrap; gap: 12px 18px; }
 .legend-items {
-  display: flex; align-items: center; gap: 10px;
-  margin-left: 8px; flex: 1; justify-content: space-evenly; flex-wrap: wrap;
+  display: flex; align-items: center; gap: 8px;
+  flex: 1; justify-content: flex-end; flex-wrap: wrap;
 }
 .lg {
-  display: inline-flex; align-items: center; gap: 10px;
-  padding: 6px 12px 6px 7px; border-radius: var(--r-ctl); cursor: default;
-  border: 1px solid transparent;
+  display: inline-flex; align-items: center; gap: 9px;
+  padding: 8px 14px; border-radius: var(--r-ctl); cursor: default;
+  border: 1px solid var(--line); background: var(--card-2);
 }
-.lg:hover { border-color: var(--line-2); background: var(--card-2); }
-.lg b { font-size: 13px; font-weight: 650; display: block; }
-.lg span { font-size: 11.5px; color: var(--mut); display: block; }
-.dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+.lg:hover { border-color: var(--line-2); }
+.lg b { font-size: 14px; font-weight: 650; color: var(--txt); }
+.lg-n { font-size: 11.5px; color: var(--mut); }
+.dot { width: 13px; height: 13px; border-radius: 50%; display: inline-block; flex: none;
+  box-shadow: 0 0 0 1px rgba(0,0,0,.35), 0 1px 3px rgba(0,0,0,.4); }
 .dot-person  { background: var(--person); }
 .dot-contact { background: var(--contact); }
 .dot-ident   { background: var(--ident); }
@@ -510,6 +511,13 @@ textarea.editor-ta.dragover {
   border-left: 3px solid var(--line-2); padding: 2px 0 2px 12px;
 }
 .ner-note code { color: #b9c4d6; }
+.ner-lead { font-size: 13px; color: var(--mut); margin: 0 0 12px; line-height: 1.55; }
+.ner-lead strong { color: var(--txt); }
+.tag-opt {
+  font-size: 10.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+  color: var(--mut); background: var(--well); border: 1px solid var(--line-2);
+  border-radius: 999px; padding: 2px 8px; margin-left: 8px; vertical-align: middle;
+}
 
 /* ============ TABELA ============ */
 .table-wrap { overflow: visible; }
