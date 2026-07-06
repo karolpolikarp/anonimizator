@@ -248,6 +248,134 @@ test('„Rozdział 5"/„Załącznik 2" NIE są adresem (brak kodu pocztowego ob
   expect(redactPII('Załącznik 2 do pisma').redacted.includes('[ADRES]')).toBe(false);
 });
 
+// ── Ulica zaczynająca się od liczby lub skrótu rangi/tytułu ──
+test('ulica z liczbą w nazwie („ul. 3 Maja 1")', () => {
+  const r = redactPII('mieszka przy ul. 3 Maja 1');
+  expect(r.redacted).toContain('[ADRES]');
+  expect(r.redacted.includes('3 Maja')).toBe(false);
+});
+test('ulica z liczbą dwucyfrową („ul. 11 Listopada 5/3")', () => {
+  const r = redactPII('ul. 11 Listopada 5/3');
+  expect(r.redacted).toContain('[ADRES]');
+  expect(r.redacted.includes('Listopada')).toBe(false);
+});
+test('aleja z liczbą („al. 3 Maja 12")', () => {
+  const r = redactPII('al. 3 Maja 12');
+  expect(r.redacted).toContain('[ADRES]');
+});
+test('ulica ze skrótem rangi („ul. gen. Andersa 5")', () => {
+  const r = redactPII('ul. gen. Andersa 5');
+  expect(r.redacted).toContain('[ADRES]');
+  expect(r.redacted.includes('Andersa')).toBe(false);
+});
+test('ulica ze skrótem „ks." („ul. ks. Popiełuszki 3")', () => {
+  const r = redactPII('ul. ks. Popiełuszki 3');
+  expect(r.redacted).toContain('[ADRES]');
+  expect(r.redacted.includes('Popiełuszki')).toBe(false);
+});
+test('zwykła ulica nadal działa (regresja)', () => {
+  const r = redactPII('ul. Marszałkowska 10/5');
+  expect(r.redacted).toContain('[ADRES]');
+  expect(r.redacted.includes('Marszałkowska')).toBe(false);
+});
+
+// ── MIEJSCOWOŚĆ — miasto po kodzie pocztowym (kotwica = kod), nie w tekście ──
+test('miasto po kodzie pocztowym maskowane (Warszawa)', () => {
+  const r = redactPII('Królewska 27, 00-060 Warszawa');
+  expect(r.redacted).toContain('[MIEJSCOWOŚĆ]');
+  expect(r.redacted.includes('Warszawa')).toBe(false);
+  // pełny adres schodzi do trzech kotwic, nic nie wycieka
+  expect(r.redacted).toBe('[ADRES], [KOD-POCZTOWY] [MIEJSCOWOŚĆ]');
+});
+test('miasto po kodzie z prefiksem „ul." (Kraków)', () => {
+  const r = redactPII('ul. Floriańska 3, 31-000 Kraków');
+  expect(r.redacted).toContain('[MIEJSCOWOŚĆ]');
+  expect(r.redacted.includes('Kraków')).toBe(false);
+});
+test('miasto WIELOWYRAZOWE po kodzie (Nowy Sącz) — oba człony', () => {
+  const r = redactPII('Zamieszkały: 33-300 Nowy Sącz, ul. Długa 5');
+  expect(r.redacted).toContain('[MIEJSCOWOŚĆ]');
+  expect(r.redacted.includes('Nowy')).toBe(false);
+  expect(r.redacted.includes('Sącz')).toBe(false);
+});
+test('miasto z myślnikiem po kodzie (Bielsko-Biała) — jeden token', () => {
+  const r = redactPII('adres: 43-300 Bielsko-Biała');
+  expect(r.redacted).toContain('[MIEJSCOWOŚĆ]');
+  expect(r.redacted.includes('Bielsko')).toBe(false);
+});
+test('zdanie po miejscowości NIE jest pożerane (kropka granicą)', () => {
+  const r = redactPII('Nadano w 00-950 Warszawa. Sprawę rozpatrzył sąd.');
+  expect(r.redacted).toContain('[MIEJSCOWOŚĆ]');
+  expect(r.redacted).toContain('Sprawę rozpatrzył sąd');
+});
+test('drugi wyraz spoza słownika NIE jest doklejany (Warszawa Zarząd)', () => {
+  const r = redactPII('00-950 Warszawa Zarząd Dróg Miejskich');
+  expect(r.redacted).toContain('[MIEJSCOWOŚĆ]');
+  expect(r.redacted).toContain('Zarząd Dróg Miejskich');
+});
+test('miasto w TEKŚCIE (bez kodu) NIE jest maskowane', () => {
+  const r = redactPII('Powód mieszka w Warszawie i pracuje w Krakowie');
+  expect(r.redacted.includes('[MIEJSCOWOŚĆ]')).toBe(false);
+  expect(r.redacted).toBe('Powód mieszka w Warszawie i pracuje w Krakowie');
+});
+test('nazwa sądu z miastem NIE jest ruszana (Warszawy-Śródmieścia)', () => {
+  const t = 'Sąd Rejonowy dla Warszawy-Śródmieścia rozpatrzył sprawę';
+  expect(redactPII(t).redacted).toBe(t);
+});
+test('MIEJSCOWOŚĆ ma osobny przełącznik (wyłączona ⇒ miasto zostaje)', () => {
+  const r = redactPII('00-060 Warszawa', { types: ['KOD-POCZTOWY'] });
+  expect(r.redacted).toContain('[KOD-POCZTOWY]');
+  expect(r.redacted.includes('[MIEJSCOWOŚĆ]')).toBe(false);
+  expect(r.redacted).toContain('Warszawa');
+});
+test('miejscowość — idempotencja (drugi przebieg nic nie psuje)', () => {
+  const once = redactPII('Królewska 27, 00-060 Warszawa').redacted;
+  expect(redactPII(once).redacted).toBe(once);
+});
+
+// ── MIEJSCOWOŚĆ przed adresem BEZ kodu (słownik miast, tylko w pozycji „…, ul.") ──
+test('miasto przed adresem bez kodu (Warszawa, ul. …)', () => {
+  const r = redactPII('Warszawa, ul. Królewska 27');
+  expect(r.redacted).toBe('[MIEJSCOWOŚĆ], [ADRES]');
+});
+test('miasto WIELOWYRAZOWE przed adresem bez kodu (Zielona Góra, ul. …)', () => {
+  const r = redactPII('Zielona Góra, ul. Długa 5');
+  expect(r.redacted).toContain('[MIEJSCOWOŚĆ]');
+  expect(r.redacted.includes('Zielona')).toBe(false);
+  expect(r.redacted.includes('Góra')).toBe(false);
+});
+test('forma zależna miasta przed adresem (w Poznaniu, ul. …)', () => {
+  const r = redactPII('Sąd Okręgowy w Poznaniu, ul. Hejmowskiego 2');
+  expect(r.redacted).toContain('[MIEJSCOWOŚĆ]');
+  expect(r.redacted.includes('Poznaniu')).toBe(false);
+  // nazwa sądu (przed „w") zostaje nietknięta
+  expect(r.redacted).toContain('Sąd Okręgowy w');
+});
+test('miasto z myślnikiem przed adresem (Kędzierzyn-Koźle, ul. …)', () => {
+  const r = redactPII('Kędzierzyn-Koźle, ul. Rynek 2');
+  expect(r.redacted).toContain('[MIEJSCOWOŚĆ]');
+  expect(r.redacted.includes('Kędzierzyn')).toBe(false);
+});
+test('ogon nazwy instytucji przed adresem NIE jest miastem (Zarząd Dróg Miejskich, ul. …)', () => {
+  const r = redactPII('Zarząd Dróg Miejskich, ul. Chmielna 5');
+  expect(r.redacted.includes('[MIEJSCOWOŚĆ]')).toBe(false);
+  expect(r.redacted).toContain('Zarząd Dróg Miejskich');
+});
+test('słownik miast NIE działa w wolnym tekście (bez „, ul./[ADRES]")', () => {
+  const r = redactPII('Sprawa dotyczy Warszawy oraz Krakowa i Poznania');
+  expect(r.redacted.includes('[MIEJSCOWOŚĆ]')).toBe(false);
+});
+test('miasto przed adresem — idempotencja', () => {
+  const once = redactPII('Warszawa, ul. Królewska 27').redacted;
+  expect(redactPII(once).redacted).toBe(once);
+});
+test('miasto przed adresem respektuje przełącznik MIEJSCOWOŚĆ', () => {
+  const r = redactPII('Warszawa, ul. Długa 5', { types: ['ADRES'] });
+  expect(r.redacted).toContain('[ADRES]');
+  expect(r.redacted.includes('[MIEJSCOWOŚĆ]')).toBe(false);
+  expect(r.redacted).toContain('Warszawa');
+});
+
 // ── Odwrócona kolejność „Nazwisko Imię" (nagłówki e-maili Outlook) ──
 test('„Nazwisko Imię" (Kowalska Ewa) maskowane w całości', () => {
   const r = redactPII('Kowalska Ewa');

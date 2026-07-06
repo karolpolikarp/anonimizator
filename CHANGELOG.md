@@ -1,5 +1,30 @@
 # Changelog
 
+## v0.26.0 — 2026-07-06
+
+- **Miejscowość w adresie już nie wycieka** — dotąd maskowaliśmy ulicę i kod pocztowy,
+  ale nazwa miasta tuż za kodem zostawała jawna („Królewska 27, 00-060 **Warszawa**").
+  Teraz cały blok schodzi do `[ADRES], [KOD-POCZTOWY] [MIEJSCOWOŚĆ]`. Kotwica to kod
+  pocztowy: w polskim adresie miejscowość ZAWSZE stoi za kodem („XX-XXX Miasto"), więc
+  rozpoznanie jest pozycyjne i pewne. Miasta jedno- i wielowyrazowe („Nowy Sącz"), z
+  myślnikiem („Bielsko-Biała") — maskowane w całości; drugi/trzeci człon doklejany tylko
+  gdy tworzy znaną wielowyrazową miejscowość (słownik ~75 pozycji), więc następne zdanie
+  („00-950 Warszawa. **Sprawę**…") nie jest pożerane.
+- **Miasto PRZED adresem bez kodu też maskowane** — „Warszawa, ul. Królewska 27",
+  „Zielona Góra, ul. Długa 5", „Sąd Okręgowy w Poznaniu, ul. …" (także forma zależna).
+  Tu nie ma kodu-kotwicy, więc używamy słownika ~250 polskich miast (mianownik + częste
+  formy zależne dużych miast) **wyłącznie w pozycji adresowej** „…, ul./[ADRES]". Dzięki
+  temu ogon nazwy instytucji NIE jest ruszany („Zarząd Dróg Miejskich, ul. …",
+  „Ministerstwo Cyfryzacji, ul. …" → nazwa zostaje).
+- **Miasto w WOLNYM TEKŚCIE pozostaje nietknięte** (świadomy wybór: wysoka precyzja, zero
+  nadmaskowania) — „mieszka w Warszawie", „dotyczy Warszawy oraz Krakowa", „Sąd Rejonowy
+  dla Warszawy-Śródmieścia" bez „, ul./[ADRES]" obok NIE są ruszane. Słownik miast działa
+  tylko w pozycji adresowej. Osobny przełącznik „Miejscowość" w „Co maskować".
+- **Ulice z liczbą lub skrótem w nazwie już maskowane** — „ul. 3 Maja 1",
+  „ul. 11 Listopada 5/3", „ul. gen. Andersa 5", „ul. ks. Popiełuszki 3", „ul. św. Marcin 8".
+  Wcześniej wzorzec adresu oczekiwał nazwy z wielkiej litery zaraz po „ul.", więc ulice
+  zaczynające się od cyfry lub małego skrótu rangi/tytułu zostawały jawne.
+
 ## v0.25.0 — 2026-07-06
 
 - **Dwa imiona + nazwisko — nazwisko już nie wycieka** — „Monika Ewa Nojszewska",

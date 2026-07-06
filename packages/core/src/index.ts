@@ -35,6 +35,7 @@ export type PiiType =
   | 'KOD-POCZTOWY'
   | 'DATA-UR'
   | 'ADRES'
+  | 'MIEJSCOWOSC'
   | 'IMIE';
 
 export interface PiiFinding {
@@ -90,6 +91,7 @@ const MASK: Record<PiiType, string> = {
   'KOD-POCZTOWY': '[KOD-POCZTOWY]',
   'DATA-UR': '[DATA-URODZENIA]',
   ADRES: '[ADRES]',
+  MIEJSCOWOSC: '[MIEJSCOWOŚĆ]',
   IMIE: '[IMIĘ I NAZWISKO]',
 };
 
@@ -249,6 +251,73 @@ const LEGAL_ENTITY_WORDS = new Set<string>(
 const TITLE_WORDS = new Set<string>(
   'pan pani pana panu panią panie państwo szanowny szanowna dr prof mgr inż'.split(/\s+/),
 );
+
+/**
+ * Polskie miejscowości WIELOWYRAZOWE (człony rozdzielone spacją) — używane WYŁĄCZNIE do
+ * rozstrzygnięcia, ile słów za kodem pocztowym doklejać do maski miejscowości (krok 12c).
+ * Miasta jednowyrazowe NIE muszą tu być — pierwszy wyraz po kodzie i tak jest maskowany
+ * pozycyjnie. Nazwy z myślnikiem („Bielsko-Biała") to jeden token, więc też nie wymagają
+ * wpisu — dodajemy jednak ich wariant zapisany spacją („bielsko biała"), bo bywa pisany
+ * rozłącznie. Nietrafiona/brakująca pozycja degraduje łagodnie: maskujemy sam pierwszy
+ * (główny) człon, a zostaje przymiotnik regionalny („[MIEJSCOWOŚĆ] Wielkopolski").
+ */
+const MULTIWORD_CITIES = new Set<string>(
+  (
+    'nowy sącz|nowy targ|nowy dwór mazowiecki|nowy dwór gdański|nowy wiśnicz|nowy żmigród|' +
+    'nowe miasto lubawskie|nowe miasto nad pilicą|nowe miasto nad wartą|nowa sól|nowa ruda|' +
+    'nowa dęba|nowa słupia|stary sącz|zielona góra|jelenia góra|kamienna góra|góra kalwaria|' +
+    'góra śląska|dąbrowa górnicza|dąbrowa tarnowska|dąbrowa białostocka|ruda śląska|stalowa wola|' +
+    'ostrów wielkopolski|ostrów mazowiecka|ostrowiec świętokrzyski|biała podlaska|biała rawska|' +
+    'bielsko biała|wysokie mazowieckie|grodzisk mazowiecki|grodzisk wielkopolski|tomaszów mazowiecki|' +
+    'tomaszów lubelski|piotrków trybunalski|rawa mazowiecka|sokołów podlaski|wodzisław śląski|' +
+    'aleksandrów kujawski|aleksandrów łódzki|konstantynów łódzki|gorzów wielkopolski|górowo iławeckie|' +
+    'szklarska poręba|bystrzyca kłodzka|nowogród bobrzański|maków mazowiecki|maków podhalański|' +
+    'mińsk mazowiecki|kostrzyn nad odrą|miejska górka|tarnowskie góry|czerwionka leszczyny|' +
+    'sępólno krajeńskie|solec kujawski|środa wielkopolska|środa śląska|oborniki śląskie|brzeg dolny|' +
+    'skarżysko kamienna|murowana goślina|miasteczko śląskie|ożarów mazowiecki|kędzierzyn koźle|' +
+    'duszniki zdrój|kudowa zdrój|polanica zdrój|lądek zdrój|busko zdrój|rabka zdrój|iwonicz zdrój|' +
+    'konstancin jeziorna|jastrzębie zdrój|goczałkowice zdrój|połczyn zdrój|świeradów zdrój'
+  ).split('|'),
+);
+
+/**
+ * Słownik polskich MIAST (mianownik + częste formy zależne dużych miast) — używany WYŁĄCZNIE
+ * do rozpoznania miejscowości stojącej PRZED adresem BEZ kodu pocztowego („Warszawa, ul. …",
+ * „w Poznaniu, ul. …"), krok 12d. Kotwicą jest wtedy sam wskaźnik adresu (nie kod), więc bez
+ * słownika nie odróżnilibyśmy miasta od ogona nazwy instytucji („Zarząd Dróg Miejskich, ul. …").
+ * Słownik NIE działa w wolnym tekście — tylko w pozycji „…, ul./[ADRES]" — więc „mieszka w
+ * Warszawie" pozostaje nietknięte (zero nadmaskowania). Krótkie, wieloznaczne nazwy (Biała,
+ * Wola, Góra, Nowe) celowo POMINIĘTE jako samodzielne — łapiemy je tylko w formie wielowyrazowej.
+ */
+const POLISH_CITIES = new Set<string>([
+  ...MULTIWORD_CITIES,
+  ...(
+    // mianownik — miasta wojewódzkie, na prawach powiatu i większe ośrodki
+    'warszawa|kraków|łódź|wrocław|poznań|gdańsk|szczecin|bydgoszcz|lublin|białystok|katowice|' +
+    'gdynia|częstochowa|radom|sosnowiec|toruń|kielce|rzeszów|gliwice|zabrze|olsztyn|bytom|rybnik|' +
+    'opole|tychy|elbląg|płock|wałbrzych|włocławek|tarnów|chorzów|koszalin|kalisz|legnica|grudziądz|' +
+    'słupsk|jaworzno|konin|piła|inowrocław|lubin|suwałki|stargard|gniezno|głogów|pabianice|leszno|' +
+    'żory|zamość|pruszków|łomża|ełk|chełm|mielec|przemyśl|tczew|bełchatów|świdnica|będzin|zgierz|' +
+    'racibórz|legionowo|ostrołęka|świętochłowice|zawiercie|starachowice|wejherowo|skierniewice|' +
+    'świnoujście|puławy|tarnobrzeg|kutno|nysa|ciechanów|sopot|sieradz|radomsko|kołobrzeg|szczecinek|' +
+    'otwock|świdnik|bochnia|oświęcim|krosno|sanok|cieszyn|dębica|jarosław|luboń|malbork|żyrardów|' +
+    'kwidzyn|oleśnica|chrzanów|jasło|brodnica|kraśnik|wągrowiec|giżycko|sochaczew|olkusz|świebodzice|' +
+    'augustów|brzeg|andrychów|wyszków|bartoszyce|mława|kętrzyn|nakło|turek|świecie|oława|krotoszyn|' +
+    'kościan|gostyń|jarocin|śrem|trzebnica|bolesławiec|zgorzelec|lubań|dzierżoniów|kluczbork|brzesko|' +
+    'wieliczka|myślenice|gorlice|limanowa|zakopane|trzebinia|libiąż|wadowice|żywiec|pszczyna|mikołów|' +
+    'lubliniec|knurów|pyskowice|nowogard|police|goleniów|gryfino|choszczno|wałcz|złotów|chodzież|' +
+    'oborniki|wolsztyn|września|środa|krapkowice|kędzierzyn|namysłów|prudnik|strzelce|ozimek|' +
+    // miasta z myślnikiem (jeden token — słownik musi mieć formę z myślnikiem)
+    'bielsko-biała|kędzierzyn-koźle|jastrzębie-zdrój|skarżysko-kamienna|konstancin-jeziorna|' +
+    'kudowa-zdrój|polanica-zdrój|duszniki-zdrój|lądek-zdrój|busko-zdrój|rabka-zdrój|iwonicz-zdrój|' +
+    'świeradów-zdrój|połczyn-zdrój|goczałkowice-zdrój|' +
+    // częste formy zależne dużych miast (pozycja „w <mieście>, ul. …")
+    'warszawie|warszawy|krakowie|krakowa|łodzi|wrocławiu|wrocławia|poznaniu|poznania|gdańsku|gdańska|' +
+    'szczecinie|bydgoszczy|lublinie|lublina|katowicach|gdyni|częstochowie|radomiu|radomia|sosnowcu|' +
+    'toruniu|torunia|kielcach|rzeszowie|olsztynie|opolu|płocku|tarnowie|koszalinie|kaliszu|legnicy|' +
+    'słupsku|zamościu|chełmie|elblągu|gliwicach|bytomiu|rybniku'
+  ).split('|'),
+]);
 
 // Rdzenie imion (mianownik bez końcowego „a" dla imion żeńskich) — do rozpoznawania
 // form ODMIENIONYCH: „Anną", „Annę", „Janem", „Aleksandrą". Słownik ma tylko mianownik,
@@ -499,6 +568,10 @@ export function redactPII(input: string, options?: RedactOptions): RedactionResu
       new RegExp(
         // też formy zależne: „na ulicy…", „przy alei…", „na osiedlu…", „na placu…"
         `\\b(ul\\.|ulic[aiy]|al\\.|ale[ij][aię]?|os\\.|osiedl[eau]|pl\\.|plac[ua]?)\\s+` +
+          // nazwa ulicy może zaczynać się od LICZBY („3 Maja", „11 Listopada") lub od
+          // małego SKRÓTU rangi/tytułu („gen. Andersa", „ks. Popiełuszki", „św. Marcin") —
+          // bez tego ulice te zostawały jawne (nazwa nie startowała wielką literą).
+          `(?:(?:\\d+|gen|płk|ppłk|mjr|kpt|por|ks|św|bp|abp|kard|marsz|prof|dr|inż|hr)\\.?\\s+){0,2}` +
           `[${PL_UP}][${PL_LO}${PL_UP}.-]*(?:\\s+[${PL_UP}0-9][${PL_LO}${PL_UP}0-9.-]*){0,3}\\s+\\d+[A-Za-z]?(?:\\s*/\\s*\\d+[A-Za-z]?)?`,
         'g',
       ),
@@ -524,6 +597,63 @@ export function redactPII(input: string, options?: RedactOptions): RedactionResu
       (_m, _street: string, sep: string, kod: string) => {
         bump('ADRES');
         return `${M.ADRES}${sep}${kod}`;
+      },
+    );
+  }
+
+  // 12c) MIEJSCOWOŚĆ — nazwa miejscowości stojąca BEZPOŚREDNIO po kodzie pocztowym.
+  // W polskim adresie miejscowość ZAWSZE następuje po kodzie („XX-XXX Miasto"), więc kod
+  // (już zamaskowany w kroku 10, ewentualnie surowy gdy maskowanie kodu wyłączone) to
+  // niezawodna kotwica: pierwszy wyraz z wielkiej litery za nim to miejscowość, nie fragment
+  // zdania. To odróżnia adres od tekstu: „w Warszawie" czy „Sąd dla Warszawy-Śródmieścia"
+  // nie mają obok kodu pocztowego, więc reguła ich NIE rusza (zero nadmaskowania w tekście).
+  // Miasta jedno- i wielowyrazowe: pierwszy człon maskujemy zawsze (pozycyjnie), kolejne
+  // TYLKO gdy tworzą znaną wielowyrazową miejscowość (słownik) — inaczej zostają nietknięte,
+  // żeby nie pożreć następnego zdania („[KOD] Warszawa. Sprawę…" → „Sprawę" zostaje).
+  if (on('MIEJSCOWOSC')) {
+    const KOD = M['KOD-POCZTOWY'].replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const cap = `[${PL_UP}][${PL_LO}]+(?:-[${PL_UP}][${PL_LO}]+)*`;
+    text = text.replace(
+      new RegExp(`(${KOD}|(?<![\\d-])\\d{2}-\\d{3})(\\s+)(${cap})((?:\\s+${cap}){0,2})`, 'g'),
+      (m, anchor: string, sep: string, first: string, restRaw: string, offset: number) => {
+        // surowy kod poprzedzony odwołaniem prawnym („poz. 12-345 Rejestr") → nie adres
+        if (anchor !== M['KOD-POCZTOWY'] && precededByLegalRef(text, offset)) return m;
+        const rest = restRaw.trim() ? restRaw.trim().split(/\s+/) : [];
+        // ile kolejnych wyrazów doklejamy: najdłuższe dopasowanie do słownika wielowyrazowego
+        let take = 0;
+        let combo = first.toLowerCase();
+        for (let i = 0; i < rest.length; i++) {
+          combo += ' ' + rest[i].toLowerCase();
+          if (MULTIWORD_CITIES.has(combo)) take = i + 1;
+        }
+        bump('MIEJSCOWOSC');
+        const leftover = rest.slice(take).join(' ');
+        return `${anchor}${sep}${M.MIEJSCOWOSC}${leftover ? ' ' + leftover : ''}`;
+      },
+    );
+
+    // 12d) MIEJSCOWOŚĆ przed adresem BEZ kodu pocztowego — „Warszawa, ul. …" / „w Poznaniu, [ADRES]".
+    // Bez kodu-kotwicy jedynym sygnałem jest bezpośrednio następujący wskaźnik adresu: zamaskowany
+    // [ADRES] (krok 12 biegnie wcześniej) albo surowy „ul./al./os./pl.". Żeby NIE ruszyć ogona nazwy
+    // instytucji („Zarząd Dróg Miejskich, ul. …"), wymagamy, aby wyraz(y) przed przecinkiem był ZNANĄ
+    // miejscowością ze słownika. Słownik działa TYLKO w tej pozycji — „mieszka w Warszawie" (bez
+    // „, ul./[ADRES]" obok) nie jest ruszane. Bierzemy NAJDŁUŻSZY pasujący sufiks (do 3 słów:
+    // „Zielona Góra", „Nowy Sącz"), a wyrazy przed nim zostawiamy nietknięte.
+    const ADR = M.ADRES.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const capCity = `[${PL_UP}][${PL_LO}]+(?:-[${PL_UP}][${PL_LO}]+)*`;
+    text = text.replace(
+      new RegExp(`((?:${capCity}\\s+){0,2}${capCity})(\\s*,?\\s+)(${ADR}|ul\\.|al\\.|os\\.|pl\\.)`, 'g'),
+      (m, capRun: string, sep: string, anchor: string) => {
+        const words = capRun.split(/\s+/);
+        for (let n = Math.min(3, words.length); n >= 1; n--) {
+          const cand = words.slice(words.length - n).join(' ').toLowerCase();
+          if (POLISH_CITIES.has(cand)) {
+            bump('MIEJSCOWOSC');
+            const prefix = words.slice(0, words.length - n).join(' ');
+            return `${prefix ? prefix + ' ' : ''}${M.MIEJSCOWOSC}${sep}${anchor}`;
+          }
+        }
+        return m;
       },
     );
   }
@@ -632,6 +762,7 @@ const HUMAN_LABEL: Record<PiiType, string> = {
   'KOD-POCZTOWY': 'kod pocztowy',
   'DATA-UR': 'datę urodzenia',
   ADRES: 'adres',
+  MIEJSCOWOSC: 'miejscowość',
   IMIE: 'imię i nazwisko',
 };
 

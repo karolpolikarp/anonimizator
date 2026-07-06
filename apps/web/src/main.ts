@@ -73,7 +73,7 @@ function maskCategory(name: string): Cat {
   if (name.startsWith('OSOBA-') || name === 'IMIĘ I NAZWISKO') return 'person';
   if (name === 'EMAIL' || name === 'TELEFON') return 'contact';
   if (name === 'NR-KONTA') return 'fin';
-  if (name === 'ADRES' || name === 'KOD-POCZTOWY' || name === 'DATA-URODZENIA') return 'place';
+  if (name === 'ADRES' || name === 'KOD-POCZTOWY' || name === 'DATA-URODZENIA' || name === 'MIEJSCOWOŚĆ') return 'place';
   return 'ident'; // PESEL / NIP / REGON / NR-DOWODU
 }
 
@@ -88,6 +88,7 @@ const MASK_TIP: Record<string, string> = {
   TELEFON: 'Kontakt · 9 cyfr, opcjonalnie +48',
   ADRES: 'Adres i czas · wzorzec ul./al./os./pl. + nazwa + numer',
   'KOD-POCZTOWY': 'Adres i czas · wzorzec XX-XXX',
+  'MIEJSCOWOŚĆ': 'Adres i czas · miejscowość po kodzie pocztowym',
   'DATA-URODZENIA': 'Adres i czas · data z kontekstem „ur./urodzony”',
   'IMIĘ I NAZWISKO': 'Osoby · słownik imion/nazwisk lub wyzwalacz kontekstu; opcjonalnie NER',
 };
@@ -120,6 +121,7 @@ const MASK_GROUPS: MaskGroup[] = [
   { key: 'telefon', label: 'Telefon', types: ['TELEFON'], cat: 'contact', icon: icoTelefon, code: '[TELEFON]', tip: '9 cyfr, opcjonalnie prefiks +48' },
   { key: 'adres', label: 'Adres', types: ['ADRES'], cat: 'place', icon: icoDom, code: '[ADRES]', tip: 'ul./al./os./pl. + nazwa + numer' },
   { key: 'kod', label: 'Kod pocztowy', types: ['KOD-POCZTOWY'], cat: 'place', icon: icoMapaPl, code: '[KOD-POCZTOWY]', tip: 'Wzorzec XX-XXX' },
+  { key: 'miejscowosc', label: 'Miejscowość', types: ['MIEJSCOWOSC'], cat: 'place', icon: icoMapaPl, code: '[MIEJSCOWOŚĆ]', tip: 'Miejscowość po kodzie pocztowym (w adresie)' },
   { key: 'dataur', label: 'Data urodzenia', types: ['DATA-UR'], cat: 'place', icon: icoKalendarz, code: '[DATA-URODZENIA]', tip: 'Data z kontekstem „ur./urodzony”' },
   { key: 'imie', label: 'Imię i nazwisko', types: ['IMIE'], cat: 'person', icon: icoDaneOsobowe, code: '[IMIĘ I NAZWISKO] — wykrywanie heurystyczne; odznaczenie wyłącza też NER', tip: 'Słownik ~200 imion i ~230 nazwisk z odmianą + wyzwalacze kontekstu; odznaczenie wyłącza też NER', full: true },
 ];
@@ -199,7 +201,7 @@ function escapeHtml(s: string): string {
 }
 
 const MASK_TOKEN_RE =
-  /\[(PESEL|NIP|REGON|NR-KONTA|NR-DOWODU|EMAIL|TELEFON|KOD-POCZTOWY|DATA-URODZENIA|ADRES|IMIĘ I NAZWISKO|OSOBA-[A-Z]+)\]/g;
+  /\[(PESEL|NIP|REGON|NR-KONTA|NR-DOWODU|EMAIL|TELEFON|KOD-POCZTOWY|DATA-URODZENIA|ADRES|MIEJSCOWOŚĆ|IMIĘ I NAZWISKO|OSOBA-[A-Z]+)\]/g;
 
 function maskHtml(name: string): string {
   return `<mark class="pii pii-${maskCategory(name)}" data-tip="${escapeHtml(maskTip(name))}" tabindex="0">[${name}]</mark>`;
@@ -299,6 +301,7 @@ const CHIP_META: Record<string, { label: string; cat: Cat; icon: string }> = {
   TELEFON: { label: 'telefon', cat: 'contact', icon: icoTelefon },
   ADRES: { label: 'adres', cat: 'place', icon: icoDom },
   'KOD-POCZTOWY': { label: 'kod pocztowy', cat: 'place', icon: icoMapaPl },
+  MIEJSCOWOSC: { label: 'miejscowość', cat: 'place', icon: icoMapaPl },
   'DATA-UR': { label: 'data urodzenia', cat: 'place', icon: icoKalendarz },
 };
 
