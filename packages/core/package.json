@@ -1,6 +1,6 @@
 {
   "name": "anonimizator",
-  "version": "0.16.0",
+  "version": "0.17.0",
   "description": "Lokalny anonimizator polskich danych osobowych (PII): PESEL, NIP, REGON, IBAN, nr dowodu (z walidacją sum kontrolnych), e-mail, telefon, adres, imię i nazwisko. Zero zależności — działa w Node, Deno, Bun i przeglądarce.",
   "license": "MIT",
   "type": "module",

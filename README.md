@@ -62,25 +62,34 @@ przebieg po zredagowanym tekście niczego nie psuje.
 | REGON | 9/14 cyfr + suma kontrolna | `[REGON]` |
 | IBAN / nr konta | mod 97 lub kontekst „konto/rachunek" + 26 cyfr | `[NR-KONTA]` |
 | Nr dowodu | 3 litery + 6 cyfr + suma kontrolna | `[NR-DOWODU]` |
+| Nr paszportu | kontekst „paszport" + 2 litery + 7 cyfr | `[NR-PASZPORTU]` |
 | E-mail | wzorzec adresu | `[EMAIL]` |
 | Telefon | 9 cyfr, opcjonalnie +48 | `[TELEFON]` |
 | Kod pocztowy | XX-XXX | `[KOD-POCZTOWY]` |
 | Data urodzenia | data z kontekstem „ur./urodzony" | `[DATA-URODZENIA]` |
-| Adres | ul./al./os./pl. + nazwa + numer | `[ADRES]` |
-| Imię i nazwisko | słownik ~200 imion + ~230 najczęstszych nazwisk (z odmianą) + wyzwalacze kontekstu („nazywam się", „Pan/Pani") | `[IMIĘ I NAZWISKO]` |
+| Adres | ul./al./os./pl. + nazwa + numer (też „3 Maja", „gen./ks./św.") | `[ADRES]` |
+| Miejscowość | po kodzie pocztowym lub przed adresem („Warszawa, ul. …") | `[MIEJSCOWOŚĆ]` |
+| Imię i nazwisko | słownik imion + nazwisk (z odmianą), **morfologia nazwisk** (-ski/-cki/-icz/-czyk), kolejność odwrócona (nagłówki e-maili), wyzwalacze kontekstu | `[IMIĘ I NAZWISKO]` |
 
 ## Ograniczenia (przeczytaj przed użyciem)
 
-Wykrywanie **imion i nazwisk warstwą podstawową jest heurystyczne** — rzadkie nazwisko bez
-imienia ze słownika i bez wyzwalacza kontekstu może przejść niewykryte. Lukę domyka opcjonalny
-lokalny NER (niżej), ale zasada pozostaje: to narzędzie pomocnicze — **zawsze przejrzyj wynik
-przed udostępnieniem**.
+Wykrywanie **imion i nazwisk warstwą podstawową jest heurystyczne**. Warstwa łapie nazwiska ze
+słownika (z odmianą), nazwiska o charakterystycznym polskim sufiksie **morfologicznie**
+(-ski/-cki/-dzki, -icz/-wicz, -czyk — także rzadkie i odmienione, np. „Gzowskiego", „Bąkiewiczowi"),
+pary imię+nazwisko i kolejność odwróconą oraz wyzwalacze kontekstu. Poza zasięgiem warstwy offline
+zostają głównie **nazwiska bez polskiego sufiksu, spoza słownika i bez kontekstu** (np. obce:
+„Nguyen", „Grynberg"). Domyka je opcjonalny lokalny NER (niżej). Zasada pozostaje: to narzędzie
+pomocnicze — **zawsze przejrzyj wynik przed udostępnieniem**.
+
+Benchmark warstwy offline (deterministyczny zbiór, `docs/BENCHMARK.md`): **recall 100%,
+precyzja‑proxy 99,4%** (rdzeń, bez NER).
 
 ## Opcjonalny lokalny NER (rzadkie i odmienione nazwiska)
 
-Zdanie „Wczoraj Bąkiewicz podpisał umowę z Szczepankowską" nie zawiera ani imienia ze słownika,
-ani wyzwalacza kontekstu — warstwa regex go nie zamaskuje. Rozwiązaniem jest **NER** (model
-spaCy PL rozpoznający osoby z kontekstu zdania), uruchamiany **na Twoim komputerze**:
+Zdanie „Wczoraj Nguyen podpisał umowę z Grynbergiem" zawiera nazwiska bez polskiego sufiksu,
+spoza słownika i bez wyzwalacza — warstwa offline ich nie zamaskuje (nazwiska z sufiksem
+-ski/-cki/-icz/-czyk łapie już morfologicznie). Rozwiązaniem dla takich przypadków jest **NER**
+(model spaCy PL rozpoznający osoby z kontekstu zdania), uruchamiany **na Twoim komputerze**:
 
 ```bash
 cd services/ner

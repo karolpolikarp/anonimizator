@@ -235,6 +235,18 @@ const PL_LO = 'a-ząćęłńóśźż';
 // Sprawdza, czy tuż przed dopasowaniem stoi WYRAZ z wielkiej litery + spacja (2. człon złożenia).
 const PRECEDED_BY_CAP = new RegExp(`[${PL_UP}][${PL_LO}]+\\s+$`);
 
+// Regexy reguł IMIĘ skompilowane RAZ na moduł (nie przy każdym wywołaniu redactPII).
+// Kotwica PL-aware zamiast ASCII \b (działa przed Ł/Ś/Ż/Ą). Bezstanowe użycie przez .replace
+// (String.replace zeruje lastIndex), więc współdzielenie RE_PAIR między krokami (a2)/(a3) jest bezpieczne.
+const CAP_WORD = `[${PL_UP}][${PL_LO}]+(?:-[${PL_UP}][${PL_LO}]+)?`;
+const RE_SPOUSES = new RegExp(`(?<![${PL_UP}${PL_LO}-])(${CAP_WORD})\\s+(?:i|oraz)\\s+(${CAP_WORD})\\s+(${CAP_WORD})`, 'g');
+const RE_NAME_SEQ = new RegExp(`(?<![${PL_UP}${PL_LO}-])${CAP_WORD}(?:\\s+${CAP_WORD}){1,3}`, 'g');
+const RE_PAIR = new RegExp(`(?<![${PL_UP}${PL_LO}-])(${CAP_WORD})\\s+(${CAP_WORD})`, 'g');
+const RE_SOLO_DICT = new RegExp(`(?<![${PL_UP}${PL_LO}-])[${PL_UP}][${PL_LO}]+(?![${PL_LO}-])`, 'g');
+const RE_SOLO_MORPH = new RegExp(`(?<![${PL_UP}${PL_LO}-])[${PL_UP}][${PL_LO}]+(?:-[${PL_UP}][${PL_LO}]+)?`, 'g');
+const RE_SURNAME_OBLIQUE =
+  /(?:sk|ck|dzk)(?:iego|iej|iemu|im|imi|ich|ą)$|icz(?:a|owi|em|owie|ami|ach)$|czyk(?:a|owi|iem|ami|ach|owie)$/;
+
 /**
  * Encje prawne/instytucje, których NIE traktujemy jako „imię nazwisko"
  * (np. „Sąd Najwyższy", „Kodeks Cywilny", „Prawo Pracy").
@@ -713,14 +725,12 @@ export function redactPII(input: string, options?: RedactOptions): RedactionResu
   // Inaczej wyraz z wielkiej przed imieniem („Pracownik Tomasz Lewandowski") jest zżerany jako para
   // „Pracownik Tomasz", a „Tomasz Lewandowski" nigdy się nie dopasowuje.
   if (on('IMIE')) {
-    const capWord = `[${PL_UP}][${PL_LO}]+(?:-[${PL_UP}][${PL_LO}]+)?`;
-
     // (a0) „Imię i Imię Nazwisko" — małżonkowie/rodzeństwo o WSPÓLNYM nazwisku („Anna i Jan
     // Kowalscy"). Bez tego (a) maskuje tylko „Jan Kowalscy", a pierwsze imię („Anna") wycieka.
     // Wymaga DWÓCH imion słownikowych + spójnika + trzeciego wyrazu z wielkiej (nazwisko) —
     // wąski, wysokoprecyzyjny wzorzec (nie rusza „Sąd i Trybunał Konstytucyjny").
     text = text.replace(
-      new RegExp(`(?<![${PL_UP}${PL_LO}-])(${capWord})\\s+(?:i|oraz)\\s+(${capWord})\\s+(${capWord})`, 'g'),
+      RE_SPOUSES,
       (m, a: string, b: string, c: string) => {
         if (!isFirstNameLike(a) || !isFirstNameLike(b)) return m;
         if (LEGAL_ENTITY_WORDS.has(c.toLowerCase())) return m;
@@ -734,7 +744,7 @@ export function redactPII(input: string, options?: RedactOptions): RedactionResu
     // Kotwiczymy na PIERWSZYM słowie-imieniu w ciągu wyrazów z wielkiej litery: wyrazy przed nim
     // („Pracownik", „Wczoraj") zostają, a całe „imiona+nazwisko" maskujemy JEDNĄ etykietą.
     // To naprawia dwa imiona — wcześniej para zjadała same imiona, a nazwisko zostawało jawne.
-    text = text.replace(new RegExp(`(?<![${PL_UP}${PL_LO}-])${capWord}(?:\\s+${capWord}){1,3}`, 'g'), (m) => {
+    text = text.replace(RE_NAME_SEQ, (m) => {
       const words = m.split(/\s+/);
       let start = 0;
       while (start < words.length && !isFirstNameLike(words[start])) start++;
@@ -758,14 +768,12 @@ export function redactPII(input: string, options?: RedactOptions): RedactionResu
     //     maskujemy oba, chyba że w1 to encja/tytuł/rola (wtedy samo nazwisko lub nic).
     // Kotwica PL-aware (nie `\b` — ASCII \b nie działa przed „Ś/Ł/Ą…"). Po (a), więc pary
     // z imieniem słownikowym już zamaskowane. Stoplista chroni „Warszawski/Lekarska" (krok wyżej).
-    const surnameOblique =
-      /(?:sk|ck|dzk)(?:iego|iej|iemu|im|imi|ich|ą)$|icz(?:a|owi|em|owie|ami|ach)$|czyk(?:a|owi|iem|ami|ach|owie)$/;
     text = text.replace(
-      new RegExp(`(?<![${PL_UP}${PL_LO}-])(${capWord})\\s+(${capWord})`, 'g'),
+      RE_PAIR,
       (m, w1: string, w2: string) => {
         if (!looksLikeSurname(w2)) return m;
         const w1l = w1.toLowerCase();
-        if (surnameOblique.test(w2.toLowerCase())) {
+        if (RE_SURNAME_OBLIQUE.test(w2.toLowerCase())) {
           bump('IMIE'); // dzierżawczy dopełniacz → rzeczownik/imię w w1 zostaje
           return `${w1} ${personMask(w2)}`;
         }
@@ -784,7 +792,7 @@ export function redactPII(input: string, options?: RedactOptions): RedactionResu
     // „Kowalska Ewa", „Ejkszto Anna"). DRUGIE słowo musi być znanym imieniem, pierwsze —
     // nazwiskiem (nie tytuł „Pan/Pani", nie encja prawna/rzeczownik dokumentowy).
     text = text.replace(
-      new RegExp(`(?<![${PL_UP}${PL_LO}-])(${capWord})\\s+(${capWord})`, 'g'),
+      RE_PAIR,
       (m, w1: string, w2: string, offset: number) => {
         if (!isFirstNameLike(w2)) return m;
         const w1l = w1.toLowerCase();
@@ -842,7 +850,7 @@ export function redactPII(input: string, options?: RedactOptions): RedactionResu
   // jednoznaczne (homonimy typu Wilk/Baran wymagają kontekstu — patrz surnames.ts).
   if (on('IMIE')) {
     text = text.replace(
-      new RegExp(`(?<![${PL_UP}${PL_LO}-])[${PL_UP}][${PL_LO}]+(?![${PL_LO}-])`, 'g'),
+      RE_SOLO_DICT,
       (m) => {
         if (LEGAL_ENTITY_WORDS.has(m.toLowerCase())) return m;
         if (!surnameBase(m)) return m;
@@ -859,7 +867,7 @@ export function redactPII(input: string, options?: RedactOptions): RedactionResu
   // Obsługuje formy dwuczłonowe (kotwica na pierwszym członie).
   if (on('IMIE')) {
     text = text.replace(
-      new RegExp(`(?<![${PL_UP}${PL_LO}-])[${PL_UP}][${PL_LO}]+(?:-[${PL_UP}][${PL_LO}]+)?`, 'g'),
+      RE_SOLO_MORPH,
       (m, offset: number) => {
         if (LEGAL_ENTITY_WORDS.has(m.toLowerCase())) return m;
         const first = m.split('-')[0];

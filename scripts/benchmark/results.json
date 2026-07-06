@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-07-06T19:14:17.745Z",
+  "generatedAt": "2026-07-06T19:24:03.259Z",
   "seed": 20260704,
-  "coreVersion": "0.16.0",
+  "coreVersion": "0.17.0",
   "casesTotal": 159,
   "mustMaskTotal": 164,
   "mustKeepTotal": 170,

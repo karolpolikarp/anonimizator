@@ -1,5 +1,15 @@
 # Changelog
 
+## v0.31.0 — 2026-07-06
+
+- **Edycja „urzędnik" ~94% mniejsza: 1,77 MB → 99 kB.** Odcięto bibliotekę pdfjs (dominowała
+  rozmiar) — w tej edycji obsługa PDF nie jest potrzebna. Plik otwiera się natychmiast i łatwo
+  go rozesłać e-mailem. Pełna edycja **zachowuje PDF** (ładowany dynamicznie dopiero przy otwarciu
+  pliku PDF). Urzędnik przy próbie wczytania PDF pokazuje jasny komunikat (wklej tekst / TXT / DOCX).
+- **Wydajność:** regexy wykrywania nazwisk kompilowane raz (moduł), nie przy każdym wywołaniu.
+- **Dokumentacja:** README zsynchronizowane z rzeczywistością (recall 100% offline, morfologiczne
+  nazwiska, nowe typy: miejscowość i numer paszportu, ulice z liczbą/skrótem).
+
 ## v0.30.0 — 2026-07-06
 
 Zbiorcza optymalizacja z wieloagentowego audytu (9 soczewek → backlog). 17 poprawek,

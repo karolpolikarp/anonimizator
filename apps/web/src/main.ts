@@ -1,7 +1,6 @@
 import { redactPII, type PiiFinding, type PiiType } from 'anonimizator';
 import { mergeFindings, nerHealthCheck, nerRedact } from 'anonimizator/ner';
 import { extractDocxText } from './docx';
-import { extractPdfText } from './pdf';
 import { browserNerAvailable, browserNerRedact } from './ner-browser';
 import './style.css';
 
@@ -59,6 +58,10 @@ if (CLERK_EDITION) {
   if (badge) badge.textContent = 'Reguły + sumy kontrolne';
   const step2 = document.getElementById('step2-sub');
   if (step2) step2.textContent = 'reguły, słowniki i sumy kontrolne';
+  // edycja urzędnik nie zawiera pdfjs — usuń PDF z akceptowanych plików i podpowiedzi
+  fileInput.setAttribute('accept', '.txt,.md,.csv,.log,.docx');
+  const hint = document.querySelector('.toolbar .hint');
+  if (hint) hint.textContent = 'TXT · DOCX';
 }
 
 /* ── Kategorie i metadane typów PII (jedna rodzina kolorów w całej aplikacji) ── */
@@ -681,7 +684,15 @@ async function loadAnyFile(file: File): Promise<void> {
   output.setAttribute('aria-busy', 'true');
   try {
     const buf = new Uint8Array(await file.arrayBuffer());
-    input.value = isDocx ? extractDocxText(buf) : await extractPdfText(buf);
+    if (isDocx) {
+      input.value = extractDocxText(buf);
+    } else if (CLERK_EDITION) {
+      // edycja „urzędnik" NIE zawiera pdfjs (plik ~85% mniejszy) — PDF nieobsługiwany
+      throw new Error('Wczytywanie PDF nie jest dostępne w tej wersji. Wklej tekst albo użyj pliku TXT lub DOCX.');
+    } else {
+      const { extractPdfText } = await import('./pdf'); // pdfjs ładowany dopiero przy PDF
+      input.value = await extractPdfText(buf);
+    }
     update();
     // dokumenty najlepiej przegląda się w trybie recenzji
     setViewMode('compare');
@@ -750,8 +761,9 @@ if (params.get('nertest') === 'onnx') {
   checkNer();
 }
 
-// ?pdftest — samodiagnostyka ścieżki PDF (fake worker w buildzie single-file)
-if (params.has('pdftest')) {
+// ?pdftest — samodiagnostyka ścieżki PDF (fake worker w buildzie single-file).
+// Tylko pełna edycja (urzędnik nie zawiera pdfjs → DCE usuwa cały ten blok).
+if (!CLERK_EDITION && params.has('pdftest')) {
   const body = 'BT /F1 12 Tf 72 720 Td (PDFTEST PESEL 44051401359) Tj ET';
   const objs = [
     '1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj\n',
@@ -772,7 +784,7 @@ if (params.has('pdftest')) {
   const pdfBytes = new TextEncoder().encode(
     '%PDF-1.4\n' + objs.join('') + xref + `trailer<</Size 6/Root 1 0 R>>\nstartxref\n${off}\n%%EOF`,
   );
-  extractPdfText(pdfBytes)
+  import('./pdf').then(({ extractPdfText }) => extractPdfText(pdfBytes))
     .then((t) => {
       input.value = `[PDF OK] ${t}`;
       update();
