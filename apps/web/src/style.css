@@ -8,24 +8,24 @@
   color-scheme: light;
   /* Jasny, przyjazny motyw — bliski oprogramowaniu biurowemu/urzędowemu (gov.pl),
      mniej onieśmielający dla urzędników niż ciemny „enterprise". */
-  --bg:        #eef2f8;
+  --bg:        #e6ebf3;
   --card:      #ffffff;
   --card-2:    #f4f7fc;
-  --well:      #eef2f8;
-  --line:      #e3e8f0;
+  --well:      #f2f5fb;
+  --line:      #d7deea;
   --line-2:    #cdd6e3;
   --text:      #1b2533;
   --mut:       #556174;
-  --mut-2:     #677284; /* ≥4,5:1 na --well/--card (audyt kontrastu) */
+  --mut-2:     #5e6a7c; /* AA także na --well (audyt kontrastu) */
   --acc:       #2159c5;
   --acc-soft:  rgba(33, 89, 197, .10);
   --acc-line:  rgba(33, 89, 197, .42);
 
   /* kategorie PII — jedna rodzina kolorów, przyciemniona dla kontrastu na jasnym tle */
   --person:  #6b4fd6;
-  --contact: #0e7d99;
-  --ident:   #9a6a00;
-  --fin:     #17835a;
+  --contact: #0c7288;
+  --ident:   #8a5f00;
+  --fin:     #127049;
   --place:   #2f5fc0;
 
   /* stany — NIEZALEŻNE od kolorów kategorii PII (semantyka kategorii nietykalna) */
@@ -35,7 +35,7 @@
   --r-card: 14px;
   --r-ctl:  10px;
   --mono: ui-monospace, "Cascadia Mono", Consolas, "JetBrains Mono", monospace;
-  --shadow: 0 6px 20px rgba(30, 50, 90, .08);
+  --shadow: 0 4px 16px rgba(30, 50, 90, .07);
   accent-color: var(--acc);
 }
 
@@ -50,7 +50,7 @@ body {
     radial-gradient(1100px 480px at 50% -160px, rgba(54, 99, 217, .10), transparent 70%),
     var(--bg);
   color: var(--text);
-  font: 15px/1.55 "Segoe UI", system-ui, -apple-system, sans-serif;
+  font: 16px/1.55 "Segoe UI", system-ui, -apple-system, sans-serif;
   padding: 28px 24px 40px;
   -webkit-font-smoothing: antialiased;
 }
@@ -82,7 +82,7 @@ kbd {
   background: var(--card);
   border: 1px solid var(--line);
   border-radius: var(--r-card);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .025), var(--shadow);
+  box-shadow: var(--shadow);
   display: flex; flex-direction: column;
 }
 
@@ -93,9 +93,9 @@ kbd {
   min-height: 68px;
 }
 .card-t { min-width: 0; }
-.card-t h1, .card-t h2, .card-t h3 { font-size: 15.5px; font-weight: 650; letter-spacing: .01em; }
-.card-t h1 { font-size: 22px; }
-.card-t p  { font-size: 12.5px; color: var(--mut); margin-top: 1px; }
+.card-t h1, .card-t h2, .card-t h3 { font-size: 17px; font-weight: 600; letter-spacing: 0; }
+.card-t h1 { font-size: 27px; font-weight: 700; letter-spacing: -.01em; }
+.card-t p  { font-size: 13.5px; color: var(--mut); margin-top: 2px; }
 .card-sp { margin-left: auto; }
 
 .card-b { padding: 16px; flex: 1; }
@@ -104,27 +104,32 @@ kbd {
   padding: 10px 16px; border-top: 1px solid var(--line);
   font-size: 12.5px; color: var(--mut);
 }
-.card-f img { width: 20px; height: 20px; }
+.card-f .gi { width: 20px; height: 20px; }
 
-/* --- kafelek ikony (3 rozmiary) --- */
+/* --- inline-SVG ikona: glif dziedziczy kolor z currentColor kontekstu --- */
+.gi { display: inline-block; line-height: 0; flex: none; }
+.gi svg { display: block; width: 100%; height: 100%; }
+
+/* --- kafelek ikony (3 rozmiary) — glif w kolorze kontekstu --- */
 .ic {
   flex: none; display: grid; place-items: center;
   width: 46px; height: 46px; border-radius: 12px;
-  background: linear-gradient(180deg, #ffffff, var(--card-2));
-  border: 1px solid var(--line-2);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .6);
+  color: var(--acc); /* neutralny glif = akcent; warianty kategorii nadpisują */
+  background: linear-gradient(180deg, #f5f8fd, #e8eef7);
+  border: 1px solid #c6d0de;
+  box-shadow: inset 0 1px 0 #fff, 0 1px 2px rgba(30, 50, 90, .06);
 }
-.ic img { width: 28px; height: 28px; filter: drop-shadow(0 1px 2px rgba(30, 50, 90, .18)); }
-.ic-xl { width: 56px; height: 56px; border-radius: 14px; }
-.ic-xl img { width: 32px; height: 32px; }
+.ic .gi { width: 30px; height: 30px; }
+.ic-xl { width: 56px; height: 56px; border-radius: 15px; }
+.ic-xl .gi { width: 34px; height: 34px; }
 .ic-s { width: 34px; height: 34px; border-radius: 9px; }
-.ic-s img { width: 20px; height: 20px; }
+.ic-s .gi { width: 21px; height: 21px; }
 
-.ic.c-person  { border-color: rgba(165, 150, 232, .40); background: linear-gradient(180deg, rgba(165,150,232,.12), var(--card-2)); }
-.ic.c-contact { border-color: rgba(103, 200, 220, .40); background: linear-gradient(180deg, rgba(103,200,220,.12), var(--card-2)); }
-.ic.c-ident   { border-color: rgba(217, 169, 73,  .40); background: linear-gradient(180deg, rgba(217,169,73,.12),  var(--card-2)); }
-.ic.c-fin     { border-color: rgba(111, 199, 155, .40); background: linear-gradient(180deg, rgba(111,199,155,.12), var(--card-2)); }
-.ic.c-place   { border-color: rgba(126, 166, 232, .40); background: linear-gradient(180deg, rgba(126,166,232,.12), var(--card-2)); }
+.ic.c-person  { color: var(--person);  border-color: rgba(107,79,214,.30);  background: linear-gradient(180deg, rgba(107,79,214,.13), rgba(107,79,214,.05)); }
+.ic.c-contact { color: var(--contact); border-color: rgba(14,125,153,.30);  background: linear-gradient(180deg, rgba(14,125,153,.13), rgba(14,125,153,.05)); }
+.ic.c-ident   { color: var(--ident);   border-color: rgba(154,106,0,.30);   background: linear-gradient(180deg, rgba(154,106,0,.13),  rgba(154,106,0,.05)); }
+.ic.c-fin     { color: var(--fin);     border-color: rgba(23,131,90,.30);   background: linear-gradient(180deg, rgba(23,131,90,.13),  rgba(23,131,90,.05)); }
+.ic.c-place   { color: var(--place);   border-color: rgba(47,95,192,.30);   background: linear-gradient(180deg, rgba(47,95,192,.13),  rgba(47,95,192,.05)); }
 
 /* --- przycisk pomocy „?" --- */
 .help {
@@ -171,7 +176,7 @@ details.card::details-content {
   padding: 7px 10px;
   font: 400 12px/1.45 "Segoe UI", system-ui, sans-serif;
   letter-spacing: 0; text-align: left; white-space: normal; text-transform: none;
-  box-shadow: 0 10px 26px rgba(0, 0, 0, .5);
+  box-shadow: 0 8px 24px rgba(30, 50, 90, .22);
   opacity: 0; visibility: hidden; pointer-events: none;
   transition: opacity .13s ease, transform .13s ease;
 }
@@ -227,7 +232,7 @@ details.card::details-content {
   cursor: pointer; white-space: nowrap;
   transition: background-color .13s ease, border-color .13s ease, color .13s ease;
 }
-.btn img { width: 24px; height: 24px; filter: drop-shadow(0 1px 1px rgba(30,50,90,.15)); }
+.btn .gi { width: 18px; height: 18px; }
 .btn:hover { background: #f0f4fa; border-color: var(--acc-line); }
 .btn:active:not(:disabled) { transform: translateY(1px); }
 .btn:disabled { opacity: .45; cursor: not-allowed; }
@@ -236,16 +241,15 @@ details.card::details-content {
   background: linear-gradient(180deg, #2f6ae0, #2159c5);
   border-color: #2159c5; color: #ffffff;
 }
-.btn-acc img { filter: drop-shadow(0 1px 1px rgba(0,0,0,.25)); }
 .btn-acc:hover { background: linear-gradient(180deg, #3a74e8, #1f52bb); border-color: #1f52bb; }
-.btn-acc:disabled:hover { background: linear-gradient(180deg, #2f6ae0, #2159c5); border-color: #2159c5; }
+.btn-acc:disabled, .btn-acc:disabled:hover { background: var(--card-2); color: var(--mut); border-color: var(--line-2); box-shadow: none; opacity: 1; }
 
 /* duże pionowe ikono-przyciski toolbara (przeszczep z wariantu A) */
 .tbtn {
   flex-direction: column; gap: 5px;
   height: auto; min-width: 86px; padding: 8px 12px 7px;
 }
-.tbtn img { width: 26px; height: 26px; }
+.tbtn .gi { width: 26px; height: 26px; }
 .tbtn span { font-size: 12px; font-weight: 600; }
 
 /* segmentowany przełącznik widoku */
@@ -260,7 +264,7 @@ details.card::details-content {
   border: 1px solid transparent; background: transparent; color: var(--mut);
   font-size: 12px;
 }
-.seg .btn img { width: 26px; height: 26px; }
+.seg .btn .gi { width: 26px; height: 26px; }
 .seg .btn:not(.on):hover { background: rgba(30, 50, 90, .04); border-color: transparent; color: var(--text); }
 .seg .btn.on { background: var(--acc-soft); border-color: var(--acc-line); color: var(--acc); }
 
@@ -303,7 +307,7 @@ select.field { font-family: "Segoe UI", system-ui, sans-serif; line-height: norm
   height: 32px; padding: 0 12px; border-radius: 999px;
   font-size: 12.5px; font-weight: 600; cursor: default;
 }
-.badge img { width: 18px; height: 18px; }
+.badge .gi { width: 18px; height: 18px; }
 /* badge'e hero NEUTRALNE — kolory 5 kategorii zarezerwowane dla semantyki PII (audyt P0) */
 .b-fin, .b-place, .b-person, .b-ident {
   color: var(--mut);
@@ -320,7 +324,7 @@ select.field { font-family: "Segoe UI", system-ui, sans-serif; line-height: norm
   border: 1px dashed rgba(23, 131, 90, .42); background: rgba(23, 131, 90, .07);
   color: #146848; font-size: 13px; max-width: 46ch;
 }
-.privacy img { width: 24px; height: 24px; flex: none; }
+.privacy .gi { width: 24px; height: 24px; }
 
 /* ============ KROKI 1–4 ============ */
 .step { position: relative; }
@@ -329,30 +333,24 @@ select.field { font-family: "Segoe UI", system-ui, sans-serif; line-height: norm
 .step .kick { font-size: 10.5px; font-weight: 700; letter-spacing: .14em; color: var(--acc); text-transform: uppercase; }
 .step .card-t h2 { font-size: 14.5px; }
 .step .card-b p { font-size: 12.5px; color: var(--mut); }
-.step-no {
-  position: absolute; top: 12px; right: 12px;
-  display: grid; place-items: center;
-  width: 24px; height: 24px; border-radius: 50%;
-  background: var(--acc-soft); border: 1px solid var(--acc-line);
-  color: var(--acc); font-size: 12px; font-weight: 700;
-}
+.step-no { display: none; } /* numer niesie już kicker „KROK N" */
 
 /* ============ LEGENDA ============ */
 .legend .card-h { border-bottom: none; flex-wrap: wrap; gap: 12px 18px; }
 .legend-items {
   display: flex; align-items: center; gap: 8px;
-  flex: 1; justify-content: flex-end; flex-wrap: wrap;
+  flex: 1; justify-content: flex-start; flex-wrap: wrap;
 }
 .lg {
   display: inline-flex; align-items: center; gap: 9px;
-  padding: 8px 14px; border-radius: var(--r-ctl); cursor: default;
+  padding: 7px 14px; border-radius: 999px; cursor: default;
   border: 1px solid var(--line); background: var(--card-2);
 }
 .lg:hover { border-color: var(--line-2); }
-.lg b { font-size: 14px; font-weight: 650; color: var(--txt); }
+.lg b { font-size: 14px; font-weight: 600; color: var(--text); }
 .lg-n { font-size: 11.5px; color: var(--mut); }
 .dot { width: 13px; height: 13px; border-radius: 50%; display: inline-block; flex: none;
-  box-shadow: 0 0 0 1px rgba(0,0,0,.35), 0 1px 3px rgba(0,0,0,.4); }
+  box-shadow: 0 0 0 1px rgba(30,50,90,.12), 0 1px 2px rgba(30,50,90,.25); }
 .dot-person  { background: var(--person); }
 .dot-contact { background: var(--contact); }
 .dot-ident   { background: var(--ident); }
@@ -372,7 +370,7 @@ select.field { font-family: "Segoe UI", system-ui, sans-serif; line-height: norm
   background: var(--well);
   border: 1px solid var(--line); border-radius: var(--r-ctl);
   padding: 13px 14px 13px 8px;
-  font: 400 13.5px/1.9 var(--mono);
+  font: 400 14px/1.6 var(--mono);
   color: var(--text);
   min-height: 300px;
   max-height: 560px;
@@ -465,7 +463,7 @@ textarea.editor-ta.dragover {
   height: 34px; padding: 0 12px 0 7px; border-radius: 999px;
   font-size: 12.5px; font-weight: 600; cursor: default; border: 1px solid;
 }
-.chip img { width: 20px; height: 20px; }
+.chip .gi { width: 18px; height: 18px; }
 .chip .x { font-family: var(--mono); font-weight: 700; font-size: 11.5px; opacity: .85; }
 .ch-person  { color: var(--person);  border-color: rgba(165,150,232,.42); background: rgba(165,150,232,.08); }
 .ch-contact { color: var(--contact); border-color: rgba(103,200,220,.42); background: rgba(103,200,220,.08); }
@@ -527,7 +525,7 @@ html[data-hide-full] [data-full] { display: none !important; }
 html[data-hide-full] #co-maskowac { grid-column: 1 / -1; }
 .toggles { grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); }
 .ner-lead { font-size: 13px; color: var(--mut); margin: 0 0 12px; line-height: 1.55; }
-.ner-lead strong { color: var(--txt); }
+.ner-lead strong { color: var(--text); }
 .tag-opt {
   font-size: 10.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
   color: var(--mut); background: var(--well); border: 1px solid var(--line-2);
@@ -574,7 +572,7 @@ table .pii { cursor: default; }
   display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
   font-size: 13px; color: var(--mut); padding: 14px 16px;
 }
-.foot img { width: 20px; height: 20px; }
+.foot .gi { width: 18px; height: 18px; }
 .foot .sep { color: var(--mut-2); }
 .foot .card-sp { margin-left: auto; }
 

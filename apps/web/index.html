@@ -19,7 +19,7 @@
       <header class="card hero g12">
         <div class="card-h">
           <span class="ic ic-xl" data-tip="Anonimizator — wszystko dzieje się lokalnie, w Twojej przeglądarce" tabindex="0">
-            <img src="./src/icons/anonimizuj.png" alt="" />
+            <i class="gi" data-i="anonimizuj"></i>
           </span>
           <div class="card-t">
             <h1>Anonimizator</h1>
@@ -28,16 +28,16 @@
           </div>
           <span class="card-sp"></span>
           <ul class="badges" aria-label="Cechy">
-            <li class="badge b-fin" data-tip="Działa bez internetu — możesz rozłączyć sieć i sprawdzić" tabindex="0"><img src="./src/icons/onoff.png" alt="" />100% Offline</li>
-            <li class="badge b-place" data-tip="Tekst nie opuszcza przeglądarki — zero wysyłania na serwery" tabindex="0"><img src="./src/icons/haslo.png" alt="" />Bezpieczne</li>
-            <li class="badge b-person" data-tip="Kod otwarty na licencji MIT — możesz go samodzielnie zweryfikować" tabindex="0"><img src="./src/icons/regula.png" alt="" />Open Source · MIT</li>
-            <li class="badge b-ident" id="badge-ai" data-tip="Warstwa reguł i sum kontrolnych + opcjonalny lokalny model NER" tabindex="0"><img src="./src/icons/ner.png" alt="" /><span id="badge-ai-txt">Reguły + lokalne AI</span></li>
+            <li class="badge b-fin" data-tip="Działa bez internetu — możesz rozłączyć sieć i sprawdzić" tabindex="0"><i class="gi" data-i="onoff"></i>100% Offline</li>
+            <li class="badge b-place" data-tip="Tekst nie opuszcza przeglądarki — zero wysyłania na serwery" tabindex="0"><i class="gi" data-i="haslo"></i>Bezpieczne</li>
+            <li class="badge b-person" data-tip="Kod otwarty na licencji MIT — możesz go samodzielnie zweryfikować" tabindex="0"><i class="gi" data-i="regula"></i>Open Source · MIT</li>
+            <li class="badge b-ident" id="badge-ai" data-tip="Warstwa reguł i sum kontrolnych + opcjonalny lokalny model NER" tabindex="0"><i class="gi" data-i="ner"></i><span id="badge-ai-txt">Reguły + lokalne AI</span></li>
           </ul>
         </div>
         <div class="card-b hero-b">
           <p class="hero-lead">Usuń dane osobowe z tekstu — <strong>zanim wkleisz go do czatu, e-maila czy formularza.</strong></p>
           <div class="privacy" data-tip="Cała analiza odbywa się w Twojej przeglądarce — możesz rozłączyć internet i sprawdzić" tabindex="0">
-            <img src="./src/icons/haslo.png" alt="" />
+            <i class="gi" data-i="haslo"></i>
             <span>Tekst nigdzie nie jest wysyłany — wszystko dzieje się w&nbsp;Twojej przeglądarce.</span>
           </div>
         </div>
@@ -47,7 +47,7 @@
       <section class="card step g3" aria-label="Krok 1">
         <span class="step-no">1</span>
         <div class="card-h">
-          <span class="ic" data-tip="Obsługiwane formaty: TXT, MD, CSV, LOG, DOCX, PDF" tabindex="0"><img src="./src/icons/plik-txt.png" alt="" /></span>
+          <span class="ic" data-tip="Obsługiwane formaty: TXT, MD, CSV, LOG, DOCX, PDF" tabindex="0"><i class="gi" data-i="plik-txt"></i></span>
           <div class="card-t"><span class="kick">Krok 1</span><h2>Wklej tekst</h2></div>
         </div>
         <div class="card-b"><p>lub upuść plik (TXT, DOCX, PDF) w dowolnym miejscu strony</p></div>
@@ -56,7 +56,7 @@
       <section class="card step g3" aria-label="Krok 2">
         <span class="step-no">2</span>
         <div class="card-h">
-          <span class="ic" data-tip="Analiza działa na bieżąco, podczas pisania" tabindex="0"><img src="./src/icons/sprawdz.png" alt="" /></span>
+          <span class="ic" data-tip="Analiza działa na bieżąco, podczas pisania" tabindex="0"><i class="gi" data-i="sprawdz"></i></span>
           <div class="card-t"><span class="kick">Krok 2</span><h2>Analiza</h2></div>
         </div>
         <div class="card-b"><p id="step2-sub">reguły, sumy kontrolne, opcjonalny lokalny NER</p></div>
@@ -65,7 +65,7 @@
       <section class="card step g3" aria-label="Krok 3">
         <span class="step-no">3</span>
         <div class="card-h">
-          <span class="ic" data-tip="Każda kategoria danych ma swój kolor znacznika" tabindex="0"><img src="./src/icons/maskowanie.png" alt="" /></span>
+          <span class="ic" data-tip="Każda kategoria danych ma swój kolor znacznika" tabindex="0"><i class="gi" data-i="maskowanie"></i></span>
           <div class="card-t"><span class="kick">Krok 3</span><h2>Maskowanie</h2></div>
         </div>
         <div class="card-b"><p>kolorowe znaczniki zamiast danych osobowych</p></div>
@@ -74,7 +74,7 @@
       <section class="card step g3" aria-label="Krok 4">
         <span class="step-no">4</span>
         <div class="card-h">
-          <span class="ic" data-tip="Skrót Ctrl+Enter kopiuje wynik do schowka" tabindex="0"><img src="./src/icons/walidacja.png" alt="" /></span>
+          <span class="ic" data-tip="Skrót Ctrl+Enter kopiuje wynik do schowka" tabindex="0"><i class="gi" data-i="walidacja"></i></span>
           <div class="card-t"><span class="kick">Krok 4</span><h2>Gotowe</h2></div>
         </div>
         <div class="card-b"><p>skopiuj bezpieczny tekst lub pobierz plik</p></div>
@@ -107,15 +107,15 @@
       <!-- ══════════ TEKST ŹRÓDŁOWY ══════════ -->
       <section class="card g6" aria-label="Tekst źródłowy">
         <div class="card-h">
-          <span class="ic"><img src="./src/icons/szablon.png" alt="" /></span>
+          <span class="ic"><i class="gi" data-i="szablon"></i></span>
           <div class="card-t"><h2>Tekst źródłowy</h2><p>analiza na bieżąco, podczas pisania</p></div>
           <span class="card-sp"></span>
           <span class="help" data-tip="Tekst analizowany jest lokalnie w czasie pisania — nic nie wychodzi z przeglądarki" data-tip-pos="left" tabindex="0">?</span>
         </div>
         <div class="toolbar">
-          <button type="button" id="example" class="btn tbtn" data-tip="Wstawia przykładowy tekst z danymi — przetestujesz działanie bez wklejania własnych"><img src="./src/icons/przyklad.png" alt="" /><span>Przykład</span></button>
-          <button type="button" id="load-file" class="btn tbtn" data-tip="Otwiera plik TXT, MD, CSV, LOG, DOCX lub PDF z dysku"><img src="./src/icons/plik-txt.png" alt="" /><span id="load-file-label">Wczytaj plik</span></button>
-          <button type="button" id="clear" class="btn tbtn" data-tip="Usuwa cały tekst z obu paneli"><img src="./src/icons/wyczysc.png" alt="" /><span>Wyczyść</span></button>
+          <button type="button" id="example" class="btn tbtn" data-tip="Wstawia przykładowy tekst z danymi — przetestujesz działanie bez wklejania własnych"><i class="gi" data-i="przyklad"></i><span>Przykład</span></button>
+          <button type="button" id="load-file" class="btn tbtn" data-tip="Otwiera plik TXT, MD, CSV, LOG, DOCX lub PDF z dysku"><i class="gi" data-i="plik-txt"></i><span id="load-file-label">Wczytaj plik</span></button>
+          <button type="button" id="clear" class="btn tbtn" data-tip="Usuwa cały tekst z obu paneli"><i class="gi" data-i="wyczysc"></i><span>Wyczyść</span></button>
           <input id="file-input" type="file" accept=".txt,.md,.csv,.log,.docx,.pdf" hidden />
           <span class="hint">TXT · DOCX · PDF</span>
         </div>
@@ -128,7 +128,7 @@
           ></textarea>
         </div>
         <div class="card-f">
-          <img src="./src/icons/plik-txt.png" alt="" />
+          <i class="gi" data-i="plik-txt"></i>
           <span id="src-meta">0 wierszy · 0 znaków — plik możesz upuścić w dowolnym miejscu strony</span>
         </div>
       </section>
@@ -136,25 +136,25 @@
       <!-- ══════════ WYNIK ══════════ -->
       <section class="card g6" aria-label="Wynik — zanonimizowany">
         <div class="card-h">
-          <span class="ic"><img src="./src/icons/podglad.png" alt="" /></span>
+          <span class="ic"><i class="gi" data-i="podglad"></i></span>
           <div class="card-t"><h2 id="output-label">Wynik — zanonimizowany</h2><p>najedź na znacznik, by poznać powód wykrycia</p></div>
           <span class="card-sp"></span>
           <span class="help" data-tip="Kolor znacznika wskazuje kategorię danych — legenda powyżej" data-tip-pos="left" tabindex="0">?</span>
         </div>
         <div class="toolbar">
           <span class="seg" role="group" aria-label="Widok wyniku">
-            <button type="button" id="view-result" class="btn on" data-tip="Pokazuje tylko zanonimizowany tekst"><img src="./src/icons/maskowanie.png" alt="" />Wynik</button>
-            <button type="button" id="view-compare" class="btn" data-tip="Oryginał obok znacznika — jak w recenzji Worda"><img src="./src/icons/podglad.png" alt="" />Porównanie</button>
+            <button type="button" id="view-result" class="btn on" data-tip="Pokazuje tylko zanonimizowany tekst"><i class="gi" data-i="maskowanie"></i>Wynik</button>
+            <button type="button" id="view-compare" class="btn" data-tip="Oryginał obok znacznika — jak w recenzji Worda"><i class="gi" data-i="podglad"></i>Porównanie</button>
           </span>
           <span class="card-sp"></span>
-          <button type="button" id="download" class="btn tbtn" data-tip="Zapisuje wynik jako plik tekstowy na dysku"><img src="./src/icons/plik-txt.png" alt="" /><span>Pobierz .txt</span></button>
-          <button type="button" id="copy" class="btn tbtn btn-acc" data-tip="Kopiuje zanonimizowany tekst do schowka · skrót Ctrl+Enter" data-tip-pos="left" aria-keyshortcuts="Control+Enter"><img src="./src/icons/kopiuj.png" alt="" /><span id="copy-label">Kopiuj</span></button>
+          <button type="button" id="download" class="btn tbtn" data-tip="Zapisuje wynik jako plik tekstowy na dysku"><i class="gi" data-i="plik-txt"></i><span>Pobierz .txt</span></button>
+          <button type="button" id="copy" class="btn tbtn btn-acc" data-tip="Kopiuje zanonimizowany tekst do schowka · skrót Ctrl+Enter" data-tip-pos="left" aria-keyshortcuts="Control+Enter"><i class="gi" data-i="kopiuj"></i><span id="copy-label">Kopiuj</span></button>
         </div>
         <div class="card-b">
           <div id="output" class="editor" role="region" tabindex="0" aria-labelledby="output-label"></div>
         </div>
         <div class="card-f warn-note">
-          <img src="./src/icons/ostrzezenie.png" alt="" />
+          <i class="gi" data-i="ostrzezenie"></i>
           <span>Przejrzyj wynik przed udostępnieniem — wykrywanie nazwisk jest heurystyczne. <a href="#ograniczenia">Ograniczenia</a></span>
         </div>
       </section>
@@ -164,7 +164,7 @@
       <!-- ══════════ ZAMASKOWANO ══════════ -->
       <section class="card stats g12" id="findings" aria-live="polite" hidden>
         <div class="card-h">
-          <span class="ic"><img src="./src/icons/suma.png" alt="" /></span>
+          <span class="ic"><i class="gi" data-i="suma"></i></span>
           <div class="card-t"><h2>Zamaskowano</h2><p>podsumowanie wykryć w tym tekście</p></div>
           <span class="card-sp"></span>
           <span class="stat-total" data-tip="Łączna liczba zamaskowanych fragmentów i kategorii" tabindex="0"><b id="stat-count">0</b> wykryć · <b id="stat-cats">0</b> kategorii</span>
@@ -178,7 +178,7 @@
       <!-- ══════════ CO MASKOWAĆ ══════════ -->
       <details class="card g7" id="co-maskowac" open>
         <summary class="card-h">
-          <span class="ic"><img src="./src/icons/ustawienia.png" alt="" /></span>
+          <span class="ic"><i class="gi" data-i="ustawienia"></i></span>
           <div class="card-t"><h2>Co maskować</h2><p>domyślnie wszystko — odznaczone typy zostaną widoczne w wyniku</p></div>
           <span class="card-sp"></span>
           <span class="help" data-tip="Zmiany działają natychmiast — wynik przelicza się na bieżąco" data-tip-pos="left" tabindex="0">?</span>
@@ -187,7 +187,7 @@
         <div class="card-b">
           <div class="toggles">
             <label class="tg tg-wide" data-tip="Ta sama osoba zachowuje tę samą etykietę w całym dokumencie — przydatne w umowach i pismach">
-              <span class="ic ic-s c-person"><img src="./src/icons/losowanie.png" alt="" /></span>
+              <span class="ic ic-s c-person"><i class="gi" data-i="losowanie"></i></span>
               <span class="tg-t"><b>Rozróżniaj osoby</b><code>[OSOBA-A], [OSOBA-B]…</code></span>
               <input type="checkbox" class="sw" id="pseudonyms" aria-label="Rozróżniaj osoby" />
             </label>
@@ -195,7 +195,7 @@
           </div>
         </div>
         <div class="card-f">
-          <img src="./src/icons/kosz.png" alt="" />
+          <i class="gi" data-i="kosz"></i>
           <span>Odznaczone typy <strong>pozostaną widoczne</strong> w wyniku — zaznaczaj świadomie.</span>
         </div>
       </details>
@@ -203,7 +203,7 @@
       <!-- ══════════ NER ══════════ -->
       <details class="card g5" id="ner-card" data-full>
         <summary class="card-h">
-          <span class="ic"><img src="./src/icons/ner.png" alt="" /></span>
+          <span class="ic"><i class="gi" data-i="ner"></i></span>
           <div class="card-t"><h2>Wykrywanie nazwisk AI <span class="tag-opt">opcjonalne</span></h2><p>rzadkie i odmienione formy — bez Dockera, jedno kliknięcie</p></div>
           <span class="card-sp"></span>
           <span class="pill-off" id="ner-pill">wyłączone</span>
@@ -212,13 +212,13 @@
         <div class="card-b">
           <p class="ner-lead">Warstwa reguł, słowników i sum kontrolnych działa <strong>zawsze</strong>. To AI dokłada rzadkie i odmienione nazwiska (np. „sprawa Grzegorzewskiego”). Model działa u Ciebie — tekst nadal nie opuszcza komputera.</p>
           <label class="ner-row" data-tip="Włącza lokalny model AI — lepsze wykrywanie rzadkich i odmienionych nazwisk">
-            <span class="ic ic-s"><img src="./src/icons/onoff.png" alt="" /></span>
+            <span class="ic ic-s"><i class="gi" data-i="onoff"></i></span>
             <span class="tg-t"><b>Włącz AI</b><span class="sub ner-status" id="ner-status"></span></span>
             <input type="checkbox" class="sw" id="ner-enabled" aria-label="Włącz lokalne AI (NER)" />
           </label>
           <div id="ner-details" hidden>
             <label class="ner-row" data-tip="Zalecane: model w przeglądarce (jedno kliknięcie). Zaawansowane: własna usługa w Dockerze">
-              <span class="ic ic-s"><img src="./src/icons/ustawienia.png" alt="" /></span>
+              <span class="ic ic-s"><i class="gi" data-i="ustawienia"></i></span>
               <span class="tg-t"><b>Skąd model</b><span class="sub">domyślnie: w przeglądarce</span></span>
               <select id="ner-source" class="field field-inline" aria-label="Źródło modelu AI">
                 <option value="onnx">w przeglądarce (zalecane)</option>
@@ -226,7 +226,7 @@
               </select>
             </label>
             <label class="ner-row" id="ner-url-row" data-tip="Tekst trafia wyłącznie pod wskazany adres lokalny — nadal nic nie wychodzi do internetu">
-              <span class="ic ic-s"><img src="./src/icons/haslo.png" alt="" /></span>
+              <span class="ic ic-s"><i class="gi" data-i="haslo"></i></span>
               <span class="tg-t"><b>Adres usługi</b><span class="sub">tylko adres lokalny</span></span>
               <input id="ner-url" type="text" value="http://127.0.0.1:8090" spellcheck="false" class="field field-inline" aria-label="Adres lokalnej usługi NER" />
             </label>
@@ -238,7 +238,7 @@
           </div>
         </div>
         <div class="card-f">
-          <img src="./src/icons/sprawdz.png" alt="" />
+          <i class="gi" data-i="sprawdz"></i>
           <span>Nie chcesz AI? Nic nie rób — <strong>reguły, słowniki i sumy kontrolne</strong> działają od razu.</span>
         </div>
       </details>
@@ -246,7 +246,7 @@
       <!-- ══════════ CO WYKRYWA ══════════ -->
       <details class="card g12" id="co-wykrywa">
         <summary class="card-h">
-          <span class="ic"><img src="./src/icons/sprawdz.png" alt="" /></span>
+          <span class="ic"><i class="gi" data-i="sprawdz"></i></span>
           <div class="card-t"><h2>Co wykrywa <span class="tag-opt">szczegóły</span></h2><p>11 typów danych w 5 kategoriach — każdy identyfikator z walidacją sumy kontrolnej</p></div>
           <span class="card-sp"></span>
           <span class="help" data-tip="Suma kontrolna odróżnia prawdziwy numer od przypadkowego ciągu cyfr — stąd mało fałszywych trafień" data-tip-pos="left" tabindex="0">?</span>
@@ -259,67 +259,67 @@
             </thead>
             <tbody>
               <tr>
-                <td><span class="td-name"><span class="ic ic-s c-ident"><img src="./src/icons/pesel.png" alt="" /></span>PESEL</span></td>
+                <td><span class="td-name"><span class="ic ic-s c-ident"><i class="gi" data-i="pesel"></i></span>PESEL</span></td>
                 <td><span class="catpill cp-ident">identyfikatory</span></td>
                 <td><span class="how">11 cyfr + <strong>walidacja sumy kontrolnej</strong></span></td>
                 <td><mark class="pii pii-ident">[PESEL]</mark></td>
               </tr>
               <tr>
-                <td><span class="td-name"><span class="ic ic-s c-ident"><img src="./src/icons/nip.png" alt="" /></span>NIP</span></td>
+                <td><span class="td-name"><span class="ic ic-s c-ident"><i class="gi" data-i="nip"></i></span>NIP</span></td>
                 <td><span class="catpill cp-ident">identyfikatory</span></td>
                 <td><span class="how">10 cyfr (także z myślnikami) + <strong>suma kontrolna</strong></span></td>
                 <td><mark class="pii pii-ident">[NIP]</mark></td>
               </tr>
               <tr>
-                <td><span class="td-name"><span class="ic ic-s c-ident"><img src="./src/icons/dane-id.png" alt="" /></span>REGON</span></td>
+                <td><span class="td-name"><span class="ic ic-s c-ident"><i class="gi" data-i="dane-id"></i></span>REGON</span></td>
                 <td><span class="catpill cp-ident">identyfikatory</span></td>
                 <td><span class="how">9/14 cyfr + <strong>suma kontrolna</strong></span></td>
                 <td><mark class="pii pii-ident">[REGON]</mark></td>
               </tr>
               <tr>
-                <td><span class="td-name"><span class="ic ic-s c-ident"><img src="./src/icons/numer-dok.png" alt="" /></span>Nr dowodu osobistego</span></td>
+                <td><span class="td-name"><span class="ic ic-s c-ident"><i class="gi" data-i="numer-dok"></i></span>Nr dowodu osobistego</span></td>
                 <td><span class="catpill cp-ident">identyfikatory</span></td>
                 <td><span class="how">3 litery + 6 cyfr + <strong>suma kontrolna</strong></span></td>
                 <td><mark class="pii pii-ident">[NR-DOWODU]</mark></td>
               </tr>
               <tr>
-                <td><span class="td-name"><span class="ic ic-s c-fin"><img src="./src/icons/iban.png" alt="" /></span>IBAN / nr konta</span></td>
+                <td><span class="td-name"><span class="ic ic-s c-fin"><i class="gi" data-i="iban"></i></span>IBAN / nr konta</span></td>
                 <td><span class="catpill cp-fin">finanse</span></td>
                 <td><span class="how">walidacja <strong>mod 97</strong> lub kontekst „konto/rachunek”</span></td>
                 <td><mark class="pii pii-fin">[NR-KONTA]</mark></td>
               </tr>
               <tr>
-                <td><span class="td-name"><span class="ic ic-s c-contact"><img src="./src/icons/login.png" alt="" /></span>E-mail</span></td>
+                <td><span class="td-name"><span class="ic ic-s c-contact"><i class="gi" data-i="login"></i></span>E-mail</span></td>
                 <td><span class="catpill cp-contact">kontakt</span></td>
                 <td><span class="how">wzorzec adresu</span></td>
                 <td><mark class="pii pii-contact">[EMAIL]</mark></td>
               </tr>
               <tr>
-                <td><span class="td-name"><span class="ic ic-s c-contact"><img src="./src/icons/telefon.png" alt="" /></span>Telefon</span></td>
+                <td><span class="td-name"><span class="ic ic-s c-contact"><i class="gi" data-i="telefon"></i></span>Telefon</span></td>
                 <td><span class="catpill cp-contact">kontakt</span></td>
                 <td><span class="how">9 cyfr, opcjonalnie +48</span></td>
                 <td><mark class="pii pii-contact">[TELEFON]</mark></td>
               </tr>
               <tr>
-                <td><span class="td-name"><span class="ic ic-s c-place"><img src="./src/icons/dom.png" alt="" /></span>Adres</span></td>
+                <td><span class="td-name"><span class="ic ic-s c-place"><i class="gi" data-i="dom"></i></span>Adres</span></td>
                 <td><span class="catpill cp-place">adres i czas</span></td>
                 <td><span class="how">ul./al./os./pl. + nazwa + numer</span></td>
                 <td><mark class="pii pii-place">[ADRES]</mark></td>
               </tr>
               <tr>
-                <td><span class="td-name"><span class="ic ic-s c-place"><img src="./src/icons/mapa-pl.png" alt="" /></span>Kod pocztowy</span></td>
+                <td><span class="td-name"><span class="ic ic-s c-place"><i class="gi" data-i="mapa-pl"></i></span>Kod pocztowy</span></td>
                 <td><span class="catpill cp-place">adres i czas</span></td>
                 <td><span class="how">XX-XXX</span></td>
                 <td><mark class="pii pii-place">[KOD-POCZTOWY]</mark></td>
               </tr>
               <tr>
-                <td><span class="td-name"><span class="ic ic-s c-place"><img src="./src/icons/kalendarz.png" alt="" /></span>Data urodzenia</span></td>
+                <td><span class="td-name"><span class="ic ic-s c-place"><i class="gi" data-i="kalendarz"></i></span>Data urodzenia</span></td>
                 <td><span class="catpill cp-place">adres i czas</span></td>
                 <td><span class="how">data z kontekstem „ur./urodzony”</span></td>
                 <td><mark class="pii pii-place">[DATA-URODZENIA]</mark></td>
               </tr>
               <tr>
-                <td><span class="td-name"><span class="ic ic-s c-person"><img src="./src/icons/dane-osobowe.png" alt="" /></span>Imię i nazwisko</span></td>
+                <td><span class="td-name"><span class="ic ic-s c-person"><i class="gi" data-i="dane-osobowe"></i></span>Imię i nazwisko</span></td>
                 <td><span class="catpill cp-person">osoby</span></td>
                 <td><span class="how">słownik ~200 imion i ~230 nazwisk (z odmianą) + wyzwalacze („nazywam się”, „Pan/Pani”)<span data-full>; opcjonalnie <strong>lokalny NER</strong></span></span></td>
                 <td><mark class="pii pii-person">[IMIĘ I NAZWISKO]</mark></td>
@@ -332,7 +332,7 @@
       <!-- ══════════ KARTY INFORMACYJNE ══════════ -->
       <section class="card g4" aria-label="Dlaczego mało fałszywych trafień">
         <div class="card-h">
-          <span class="ic"><img src="./src/icons/suma.png" alt="" /></span>
+          <span class="ic"><i class="gi" data-i="suma"></i></span>
           <div class="card-t"><h3>Dlaczego mało fałszywych trafień</h3><p>sumy kontrolne + strażnik kontekstu</p></div>
           <span class="card-sp"></span>
           <span class="help" data-tip="Suma kontrolna to matematyczna cecha prawdziwych numerów — przypadkowy ciąg cyfr jej nie spełnia" data-tip-pos="left" tabindex="0">?</span>
@@ -346,7 +346,7 @@
 
       <section class="card g4 caveat" id="ograniczenia" aria-label="Ograniczenia">
         <div class="card-h">
-          <span class="ic c-ident"><img src="./src/icons/ostrzezenie.png" alt="" /></span>
+          <span class="ic c-ident"><i class="gi" data-i="ostrzezenie"></i></span>
           <div class="card-t"><h3>Ograniczenia — przeczytaj</h3><p>narzędzie pomocnicze, nie gwarancja</p></div>
           <span class="card-sp"></span>
           <span class="help" data-tip="Żaden automat nie daje 100% pewności — ostatnie słowo należy do Ciebie" data-tip-pos="left" tabindex="0">?</span>
@@ -361,7 +361,7 @@
 
       <section class="card g4" aria-label="Wskazówki">
         <div class="card-h">
-          <span class="ic"><img src="./src/icons/przyklad.png" alt="" /></span>
+          <span class="ic"><i class="gi" data-i="przyklad"></i></span>
           <div class="card-t"><h3>Wskazówki</h3><p>drobiazgi, które przyspieszają pracę</p></div>
           <span class="card-sp"></span>
           <span class="help" data-tip="Pełna lista zachowań — w README repozytorium" data-tip-pos="left" tabindex="0">?</span>
@@ -379,7 +379,7 @@
       <!-- ══════════ STOPKA ══════════ -->
       <footer class="card foot g12">
         <div class="card-b">
-          <img src="./src/icons/anonimizuj.png" alt="" />
+          <i class="gi" data-i="anonimizuj"></i>
           <span>Kod open source (MIT): <a href="https://github.com/karolpolikarp/anonimizator" target="_blank" rel="noopener noreferrer">github.com/karolpolikarp/anonimizator</a></span>
           <span class="sep">·</span>
           <span>pakiet npm <code>anonimizator</code> i CLI</span>

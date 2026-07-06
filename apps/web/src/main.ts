@@ -5,18 +5,8 @@ import { extractPdfText } from './pdf';
 import { browserNerAvailable, browserNerRedact } from './ner-browser';
 import './style.css';
 
-// Ikony (Vite inline'uje je jako data-URI — single-file bez osobnych plików)
-import icoDaneOsobowe from './icons/dane-osobowe.png';
-import icoPesel from './icons/pesel.png';
-import icoNip from './icons/nip.png';
-import icoDaneId from './icons/dane-id.png';
-import icoNumerDok from './icons/numer-dok.png';
-import icoIban from './icons/iban.png';
-import icoLogin from './icons/login.png';
-import icoTelefon from './icons/telefon.png';
-import icoDom from './icons/dom.png';
-import icoMapaPl from './icons/mapa-pl.png';
-import icoKalendarz from './icons/kalendarz.png';
+// Ikony — inline SVG (jedno źródło prawdy, kolor z currentColor). Zero rastrów.
+import { icon, hydrateIcons } from './icons';
 
 const $ = <T extends HTMLElement>(id: string): T => document.getElementById(id) as T;
 
@@ -112,18 +102,18 @@ interface MaskGroup {
 }
 
 const MASK_GROUPS: MaskGroup[] = [
-  { key: 'pesel', label: 'PESEL', types: ['PESEL'], cat: 'ident', icon: icoPesel, code: '[PESEL]', tip: '11 cyfr + walidacja sumy kontrolnej' },
-  { key: 'nip', label: 'NIP', types: ['NIP'], cat: 'ident', icon: icoNip, code: '[NIP]', tip: '10 cyfr (także z myślnikami) + suma kontrolna' },
-  { key: 'regon', label: 'REGON', types: ['REGON'], cat: 'ident', icon: icoDaneId, code: '[REGON]', tip: '9 lub 14 cyfr + suma kontrolna' },
-  { key: 'dowod', label: 'Nr dowodu osobistego', types: ['DOWOD'], cat: 'ident', icon: icoNumerDok, code: '[NR-DOWODU]', tip: '3 litery + 6 cyfr + suma kontrolna' },
-  { key: 'konto', label: 'IBAN / nr konta', types: ['IBAN', 'NR-KONTA'], cat: 'fin', icon: icoIban, code: '[NR-KONTA]', tip: 'Walidacja mod 97 lub kontekst „konto/rachunek”' },
-  { key: 'email', label: 'E-mail', types: ['EMAIL'], cat: 'contact', icon: icoLogin, code: '[EMAIL]', tip: 'Wzorzec adresu e-mail' },
-  { key: 'telefon', label: 'Telefon', types: ['TELEFON'], cat: 'contact', icon: icoTelefon, code: '[TELEFON]', tip: '9 cyfr, opcjonalnie prefiks +48' },
-  { key: 'adres', label: 'Adres', types: ['ADRES'], cat: 'place', icon: icoDom, code: '[ADRES]', tip: 'ul./al./os./pl. + nazwa + numer' },
-  { key: 'kod', label: 'Kod pocztowy', types: ['KOD-POCZTOWY'], cat: 'place', icon: icoMapaPl, code: '[KOD-POCZTOWY]', tip: 'Wzorzec XX-XXX' },
-  { key: 'miejscowosc', label: 'Miejscowość', types: ['MIEJSCOWOSC'], cat: 'place', icon: icoMapaPl, code: '[MIEJSCOWOŚĆ]', tip: 'Miejscowość po kodzie pocztowym (w adresie)' },
-  { key: 'dataur', label: 'Data urodzenia', types: ['DATA-UR'], cat: 'place', icon: icoKalendarz, code: '[DATA-URODZENIA]', tip: 'Data z kontekstem „ur./urodzony”' },
-  { key: 'imie', label: 'Imię i nazwisko', types: ['IMIE'], cat: 'person', icon: icoDaneOsobowe, code: '[IMIĘ I NAZWISKO] — wykrywanie heurystyczne; odznaczenie wyłącza też NER', tip: 'Słownik ~200 imion i ~230 nazwisk z odmianą + wyzwalacze kontekstu; odznaczenie wyłącza też NER', full: true },
+  { key: 'pesel', label: 'PESEL', types: ['PESEL'], cat: 'ident', icon: 'pesel', code: '[PESEL]', tip: '11 cyfr + walidacja sumy kontrolnej' },
+  { key: 'nip', label: 'NIP', types: ['NIP'], cat: 'ident', icon: 'nip', code: '[NIP]', tip: '10 cyfr (także z myślnikami) + suma kontrolna' },
+  { key: 'regon', label: 'REGON', types: ['REGON'], cat: 'ident', icon: 'dane-id', code: '[REGON]', tip: '9 lub 14 cyfr + suma kontrolna' },
+  { key: 'dowod', label: 'Nr dowodu osobistego', types: ['DOWOD'], cat: 'ident', icon: 'numer-dok', code: '[NR-DOWODU]', tip: '3 litery + 6 cyfr + suma kontrolna' },
+  { key: 'konto', label: 'IBAN / nr konta', types: ['IBAN', 'NR-KONTA'], cat: 'fin', icon: 'iban', code: '[NR-KONTA]', tip: 'Walidacja mod 97 lub kontekst „konto/rachunek”' },
+  { key: 'email', label: 'E-mail', types: ['EMAIL'], cat: 'contact', icon: 'login', code: '[EMAIL]', tip: 'Wzorzec adresu e-mail' },
+  { key: 'telefon', label: 'Telefon', types: ['TELEFON'], cat: 'contact', icon: 'telefon', code: '[TELEFON]', tip: '9 cyfr, opcjonalnie prefiks +48' },
+  { key: 'adres', label: 'Adres', types: ['ADRES'], cat: 'place', icon: 'dom', code: '[ADRES]', tip: 'ul./al./os./pl. + nazwa + numer' },
+  { key: 'kod', label: 'Kod pocztowy', types: ['KOD-POCZTOWY'], cat: 'place', icon: 'mapa-pl', code: '[KOD-POCZTOWY]', tip: 'Wzorzec XX-XXX' },
+  { key: 'miejscowosc', label: 'Miejscowość', types: ['MIEJSCOWOSC'], cat: 'place', icon: 'mapa-pl', code: '[MIEJSCOWOŚĆ]', tip: 'Miejscowość po kodzie pocztowym (w adresie)' },
+  { key: 'dataur', label: 'Data urodzenia', types: ['DATA-UR'], cat: 'place', icon: 'kalendarz', code: '[DATA-URODZENIA]', tip: 'Data z kontekstem „ur./urodzony”' },
+  { key: 'imie', label: 'Imię i nazwisko', types: ['IMIE'], cat: 'person', icon: 'dane-osobowe', code: '[IMIĘ I NAZWISKO] — wykrywanie heurystyczne; odznaczenie wyłącza też NER', tip: 'Słownik ~200 imion i ~230 nazwisk z odmianą + wyzwalacze kontekstu; odznaczenie wyłącza też NER', full: true },
 ];
 
 // W edycji „urzędnik" nie ma NER — usuwamy wzmianki z etykiet/tooltipów tej warstwy.
@@ -148,10 +138,10 @@ for (const g of MASK_GROUPS) {
 
   const ic = document.createElement('span');
   ic.className = `ic ic-s c-${g.cat}`;
-  const img = document.createElement('img');
-  img.src = g.icon;
-  img.alt = '';
-  ic.append(img);
+  const gi = document.createElement('i');
+  gi.className = 'gi';
+  gi.innerHTML = icon(g.icon);
+  ic.append(gi);
 
   const t = document.createElement('span');
   t.className = 'tg-t';
@@ -290,19 +280,19 @@ viewCompareBtn.addEventListener('click', () => setViewMode('compare'));
 /* ── Pasek „Zamaskowano" (chipy z ikonami, licznik, kategorie) ── */
 
 const CHIP_META: Record<string, { label: string; cat: Cat; icon: string }> = {
-  IMIE: { label: 'imię i nazwisko', cat: 'person', icon: icoDaneOsobowe },
-  PESEL: { label: 'PESEL', cat: 'ident', icon: icoPesel },
-  NIP: { label: 'NIP', cat: 'ident', icon: icoNip },
-  REGON: { label: 'REGON', cat: 'ident', icon: icoDaneId },
-  DOWOD: { label: 'nr dowodu', cat: 'ident', icon: icoNumerDok },
-  IBAN: { label: 'nr konta', cat: 'fin', icon: icoIban },
-  'NR-KONTA': { label: 'nr konta', cat: 'fin', icon: icoIban },
-  EMAIL: { label: 'e-mail', cat: 'contact', icon: icoLogin },
-  TELEFON: { label: 'telefon', cat: 'contact', icon: icoTelefon },
-  ADRES: { label: 'adres', cat: 'place', icon: icoDom },
-  'KOD-POCZTOWY': { label: 'kod pocztowy', cat: 'place', icon: icoMapaPl },
-  MIEJSCOWOSC: { label: 'miejscowość', cat: 'place', icon: icoMapaPl },
-  'DATA-UR': { label: 'data urodzenia', cat: 'place', icon: icoKalendarz },
+  IMIE: { label: 'imię i nazwisko', cat: 'person', icon: 'dane-osobowe' },
+  PESEL: { label: 'PESEL', cat: 'ident', icon: 'pesel' },
+  NIP: { label: 'NIP', cat: 'ident', icon: 'nip' },
+  REGON: { label: 'REGON', cat: 'ident', icon: 'dane-id' },
+  DOWOD: { label: 'nr dowodu', cat: 'ident', icon: 'numer-dok' },
+  IBAN: { label: 'nr konta', cat: 'fin', icon: 'iban' },
+  'NR-KONTA': { label: 'nr konta', cat: 'fin', icon: 'iban' },
+  EMAIL: { label: 'e-mail', cat: 'contact', icon: 'login' },
+  TELEFON: { label: 'telefon', cat: 'contact', icon: 'telefon' },
+  ADRES: { label: 'adres', cat: 'place', icon: 'dom' },
+  'KOD-POCZTOWY': { label: 'kod pocztowy', cat: 'place', icon: 'mapa-pl' },
+  MIEJSCOWOSC: { label: 'miejscowość', cat: 'place', icon: 'mapa-pl' },
+  'DATA-UR': { label: 'data urodzenia', cat: 'place', icon: 'kalendarz' },
 };
 
 function renderFindings(found: PiiFinding[]): void {
@@ -310,7 +300,7 @@ function renderFindings(found: PiiFinding[]): void {
   const total = found.reduce((s, f) => s + f.count, 0);
   const byLabel = new Map<string, { count: number; cat: Cat; icon: string }>();
   for (const f of found) {
-    const meta = CHIP_META[f.type] ?? { label: f.type, cat: 'ident' as Cat, icon: icoDaneId };
+    const meta = CHIP_META[f.type] ?? { label: f.type, cat: 'ident' as Cat, icon: 'dane-id' };
     const prev = byLabel.get(meta.label);
     byLabel.set(meta.label, { count: (prev?.count ?? 0) + f.count, cat: meta.cat, icon: meta.icon });
   }
@@ -330,7 +320,7 @@ function renderFindings(found: PiiFinding[]): void {
   findingsChips.innerHTML = [...byLabel.entries()]
     .map(
       ([label, v]) =>
-        `<span class="chip ch-${v.cat}"><img src="${v.icon}" alt="" />${escapeHtml(label)} <span class="x">×${v.count}</span></span>`,
+        `<span class="chip ch-${v.cat}"><i class="gi">${icon(v.icon)}</i>${escapeHtml(label)} <span class="x">×${v.count}</span></span>`,
     )
     .join(' ');
 }
@@ -690,5 +680,8 @@ if (params.has('pdftest')) {
 
 $('app-version').textContent = __APP_VERSION__;
 $('app-version-top').textContent = __APP_VERSION__;
+
+// Podmień wszystkie statyczne <i class="gi" data-i="…"> z index.html na inline SVG.
+hydrateIcons();
 
 update();

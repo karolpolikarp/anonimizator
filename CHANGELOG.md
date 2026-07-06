@@ -1,5 +1,26 @@
 # Changelog
 
+## v0.27.0 — 2026-07-06
+
+- **Nowe ikony — inline SVG zamiast ciemnych rastrów.** Dotychczasowe ikony były ciemnymi
+  kafelkami PNG, które „gryzły się" z jasnym motywem (skarga użytkownika). Cały zestaw
+  (30 ikon) przepisany na inline SVG: ostre w każdym rozmiarze, przezroczyste,
+  **automatycznie w kolorze kategorii** (osoby fiolet, kontakt turkus, identyfikatory złoto,
+  finanse zieleń, adres/czas błękit), znikoma waga, zero zewnętrznych assetów. Jedno źródło
+  prawdy (`icons.ts`), spójne w statycznym HTML i elementach dynamicznych.
+- **Lifting UX/UI (na bazie wieloperspektywicznej krytyki):**
+  - **Rozwarstwienie jasności** tło/pole/karta — koniec „mdłej", płaskiej bieli; karty
+    wyraźniej odcinają się od tła, pola edytorów są jaśniejszym panelem.
+  - **Typografia**: baza 16px (czytelność dla urzędników), mocniejszy tytuł (hero),
+    spójne wagi 600/700, usunięte niespójne rozmiary „.5px".
+  - **Stany**: wyłączony przycisk „Kopiuj" nie wygląda już na aktywny (szary, gdy nie ma
+    czego kopiować).
+  - **Kroki 1–4**: usunięta zdublowana numeracja (kicker „KROK N" wystarcza).
+  - **Kontrast/dostępność**: przyciemnione kolory znaczników kontakt/identyfikatory/finanse
+    do AA na tle pól; cienie i drobne błędy (`var(--txt)`) zestrojone z jasnym motywem.
+  - **Legenda**: pigułki spójne z resztą rodziny (zaokrąglenie 999px), interlinia edytorów
+    zbita 1.9 → 1.6.
+
 ## v0.26.0 — 2026-07-06
 
 - **Miejscowość w adresie już nie wycieka** — dotąd maskowaliśmy ulicę i kod pocztowy,
