@@ -270,6 +270,22 @@ test('„Pani Anna" zachowuje tytuł, maskuje imię', () => {
   expect(r.redacted).toContain('[IMIĘ I NAZWISKO]');
 });
 
+// ── DWA imiona + nazwisko (nazwisko nie może zostać jawne) ──
+test('dwa imiona w odmianie + nazwisko (Moniką Ewą Nojszewską) — jedna maska', () => {
+  const r = redactPII('Moniką Ewą Nojszewską, zwaną dalej');
+  expect(r.redacted).toContain('[IMIĘ I NAZWISKO]');
+  expect(r.redacted.includes('Nojszewską')).toBe(false);
+  expect(r.redacted.includes('Ewą')).toBe(false);
+  expect((r.redacted.match(/\[IMIĘ I NAZWISKO\]/g) ?? []).length).toBe(1);
+});
+test('dwa imiona (mianownik) + nazwisko — nazwisko zamaskowane', () => {
+  expect(redactPII('Jan Maria Rokita').redacted.includes('Rokita')).toBe(false);
+  expect(redactPII('Monika Ewa Nojszewska').redacted.includes('Nojszewska')).toBe(false);
+});
+test('wyraz przed imieniem zostaje, para imię+nazwisko maskowana', () => {
+  expect(redactPII('Wczoraj Jan Kowalski przyszedł').redacted).toBe('Wczoraj [IMIĘ I NAZWISKO] przyszedł');
+});
+
 // ── Samodzielne nazwiska ze słownika (krok 13c) ──
 test('nazwisko solo w odmianie — dopełniacz maskowany', () => {
   const r = redactPII('Sprawę Kowalskiego przekazano do sądu');

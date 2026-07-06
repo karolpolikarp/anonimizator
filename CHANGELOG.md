@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.25.0 — 2026-07-06
+
+- **Dwa imiona + nazwisko — nazwisko już nie wycieka** — „Monika Ewa Nojszewska",
+  „Moniką Ewą Nojszewską", „Jan Maria Rokita" maskowane w całości jedną etykietą.
+  Wcześniej para zjadała same imiona, a prawdziwe nazwisko zostawało jawne. Logika imion
+  przepisana na jedną regułę „imiona (1–2) + nazwisko", kotwiczoną na pierwszym imieniu —
+  wyrazy poprzedzające („Pracownik", „Wczoraj") zostają, encje prawne nietknięte.
+
 ## v0.24.0 — 2026-07-06
 
 - **Nazwiska w kolejności „Nazwisko Imię" (nagłówki e-maili) maskowane** — listy To/Cc/From

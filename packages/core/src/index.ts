@@ -250,15 +250,6 @@ const TITLE_WORDS = new Set<string>(
   'pan pani pana panu panią panie państwo szanowny szanowna dr prof mgr inż'.split(/\s+/),
 );
 
-// Alternatywa „Imię" (z wielkiej litery) ze słownika oraz regex „Imię Nazwisko".
-// Zakotwiczenie na ZNANYM imieniu (a nie na dwóch wyrazach z wielkiej) eliminuje błąd, w którym
-// wyraz poprzedzający imię (np. „Pracownik Tomasz Lewandowski") rozbijał dopasowanie pary.
-const NAMES_ALT = [...POLISH_FIRST_NAMES].map((n) => n.charAt(0).toUpperCase() + n.slice(1)).join('|');
-const DICT_NAME_RE = new RegExp(
-  `\\b(?:${NAMES_ALT})\\s+([${PL_UP}][${PL_LO}]+(?:-[${PL_UP}][${PL_LO}]+)?)`,
-  'g',
-);
-
 // Rdzenie imion (mianownik bez końcowego „a" dla imion żeńskich) — do rozpoznawania
 // form ODMIENIONYCH: „Anną", „Annę", „Janem", „Aleksandrą". Słownik ma tylko mianownik,
 // więc bez tego imię w odmianie wyciekało obok zamaskowanego nazwiska.
@@ -544,21 +535,27 @@ export function redactPII(input: string, options?: RedactOptions): RedactionResu
   // Inaczej wyraz z wielkiej przed imieniem („Pracownik Tomasz Lewandowski") jest zżerany jako para
   // „Pracownik Tomasz", a „Tomasz Lewandowski" nigdy się nie dopasowuje.
   if (on('IMIE')) {
-    text = text.replace(DICT_NAME_RE, (m, surname: string) => {
+    const capWord = `[${PL_UP}][${PL_LO}]+(?:-[${PL_UP}][${PL_LO}]+)?`;
+
+    // (a) IMIĘ/IMIONA + NAZWISKO — jedno lub dwa imiona (mianownik LUB odmiana) + nazwisko:
+    // „Jan Kowalski", „Anną Kowalską", „Monika Ewa Nojszewska", „Prezes Zarządu Jan Kowalski".
+    // Kotwiczymy na PIERWSZYM słowie-imieniu w ciągu wyrazów z wielkiej litery: wyrazy przed nim
+    // („Pracownik", „Wczoraj") zostają, a całe „imiona+nazwisko" maskujemy JEDNĄ etykietą.
+    // To naprawia dwa imiona — wcześniej para zjadała same imiona, a nazwisko zostawało jawne.
+    text = text.replace(new RegExp(`\\b${capWord}(?:\\s+${capWord}){1,3}`, 'g'), (m) => {
+      const words = m.split(/\s+/);
+      let start = 0;
+      while (start < words.length && !isFirstNameLike(words[start])) start++;
+      if (start >= words.length) return m; // brak imienia w ciągu → zostaw (np. „Sąd Najwyższy")
+      let k = start;
+      while (k < words.length && isFirstNameLike(words[k]) && !LEGAL_ENTITY_WORDS.has(words[k].toLowerCase())) k++;
+      if (k >= words.length) return m; // same imiona, brak nazwiska po nich → zostaw
+      const surname = words[k];
       if (LEGAL_ENTITY_WORDS.has(surname.toLowerCase())) return m;
       bump('IMIE');
-      return personMask(surname);
-    });
-
-    // (a2) ODMIENIONE imię + nazwisko: „Anną Kowalską", „Janem Nowakiem", „Annę Wiśniewską".
-    // Wymaga DWÓCH słów z wielkiej litery, gdzie pierwsze wygląda na imię (rdzeń słownikowy
-    // + końcówka fleksyjna). Bez tego imię w odmianie zostawało jawne obok [IMIĘ I NAZWISKO].
-    const capWord = `[${PL_UP}][${PL_LO}]+(?:-[${PL_UP}][${PL_LO}]+)?`;
-    text = text.replace(new RegExp(`\\b(${capWord})\\s+(${capWord})`, 'g'), (m, w1: string, w2: string) => {
-      if (!isFirstNameLike(w1)) return m;
-      if (LEGAL_ENTITY_WORDS.has(w1.toLowerCase()) || LEGAL_ENTITY_WORDS.has(w2.toLowerCase())) return m;
-      bump('IMIE');
-      return personMask(w2); // jedna maska na całą parę (imię+nazwisko)
+      const prefix = words.slice(0, start).join(' ');
+      const rest = words.slice(k + 1).join(' ');
+      return [prefix, personMask(surname), rest].filter(Boolean).join(' ');
     });
 
     // (a3) ODWRÓCONA kolejność „Nazwisko Imię" — częsta w nagłówkach e-maili (To/Cc/From:
