@@ -1,8 +1,8 @@
 # Benchmark anonimizacji — precision / recall
 
 - **Data uruchomienia:** 2026-07-06
-- **Wersja rdzenia (`anonimizator`):** 0.15.0
-- **Zbiór ewaluacyjny:** 159 syntetycznych zdań (deterministyczny, seed `20260704`), 165 elementów do zamaskowania (mustMask), 169 elementów do zachowania (mustKeep)
+- **Wersja rdzenia (`anonimizator`):** 0.16.0
+- **Zbiór ewaluacyjny:** 159 syntetycznych zdań (deterministyczny, seed `20260704`), 164 elementów do zamaskowania (mustMask), 170 elementów do zachowania (mustKeep)
 - **Reprodukcja:** `npm run build -w anonimizator && node scripts/benchmark/run.mjs`
 
 ## Metodologia
@@ -20,7 +20,7 @@ Wszystkie identyfikatory w zbiorze mają **poprawne sumy kontrolne** policzone w
 (PESEL, NIP, REGON, IBAN mod-97, nr dowodu), a negatywy zawierają m.in. ciągi o celowo
 **błędnych** sumach kontrolnych — silnik ma je zostawić w spokoju.
 
-Liczności kategorii: osoby-podstawowe — 23, osoby-odmiana — 32, osoby-rzadkie — 24, strukturalne — 41, negatywy — 39.
+Liczności kategorii: osoby-podstawowe — 23, osoby-odmiana — 32, osoby-rzadkie — 24, strukturalne — 40, negatywy — 40.
 
 ### Warstwy
 
@@ -32,7 +32,7 @@ Liczności kategorii: osoby-podstawowe — 23, osoby-odmiana — 32, osoby-rzadk
 
 | Warstwa | Recall (łącznie) | Precision-proxy (łącznie) | Porażki (przypadki) | Czas | Wynik ≠ core |
 |---|---|---|---|---|---|
-| T0+T1 core | 100.0% (165/165) | 99.4% (168/169) | 1 | 0.0 s | — |
+| T0+T1 core | 100.0% (164/164) | 99.4% (169/170) | 1 | 0.0 s | — |
 
 ### Recall per kategoria
 
@@ -44,7 +44,7 @@ Liczności kategorii: osoby-podstawowe — 23, osoby-odmiana — 32, osoby-rzadk
 
 | Warstwa | osoby-podstawowe | osoby-odmiana | osoby-rzadkie | strukturalne | negatywy |
 |---|---|---|---|---|---|
-| T0+T1 core | 100.0% | 100.0% | 100.0% | 100.0% | 97.6% |
+| T0+T1 core | 100.0% | 100.0% | 100.0% | 100.0% | 97.7% |
 
 („—" = brak elementów danego rodzaju w kategorii, np. negatywy nie mają mustMask.)
 
@@ -57,7 +57,7 @@ Legenda: **przeszło** = element mustMask pozostał w wyniku (wyciek PII);
 
 **Nadmaskowania (zjedzono 1 elem. w 1 przypadkach):**
 
-- `neg-39` (negatywy): zjedzono „Tadeusz" — wynik: _Pan [IMIĘ I NAZWISKO] to najsłynniejsza polska epopeja narodowa._
+- `neg-40` (negatywy): zjedzono „Tadeusz" — wynik: _Pan [IMIĘ I NAZWISKO] to najsłynniejsza polska epopeja narodowa._
 
 ## Uwagi
 

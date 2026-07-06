@@ -620,6 +620,14 @@ table .pii { cursor: default; }
 .foot .card-sp { margin-left: auto; }
 
 /* ============ DOSTĘPNOŚĆ / RUCH / DOTYK ============ */
+/* wizualnie ukryte, ale czytane przez czytniki ekranu (komunikaty aria-live) */
+.vh {
+  position: absolute !important;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
 :is(a, button, summary, select, input, .table-wrap):focus-visible,
 [data-tip][tabindex="0"]:focus-visible {
   outline: 2px solid var(--acc-line);

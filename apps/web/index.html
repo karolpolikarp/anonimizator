@@ -124,6 +124,7 @@
             id="input"
             class="editor editor-ta"
             spellcheck="false"
+            aria-label="Tekst źródłowy do anonimizacji"
             placeholder="Wklej tekst albo upuść plik (.txt, .md, .csv, .log, .docx, .pdf) — anonimizacja dzieje się na bieżąco, podczas pisania.&#10;&#10;Nie wiesz od czego zacząć? Kliknij „Przykład” powyżej."
           ></textarea>
         </div>
@@ -143,8 +144,8 @@
         </div>
         <div class="toolbar">
           <span class="seg" role="group" aria-label="Widok wyniku">
-            <button type="button" id="view-result" class="btn on" data-tip="Pokazuje tylko zanonimizowany tekst"><i class="gi" data-i="maskowanie"></i>Wynik</button>
-            <button type="button" id="view-compare" class="btn" data-tip="Oryginał obok znacznika — jak w recenzji Worda"><i class="gi" data-i="podglad"></i>Porównanie</button>
+            <button type="button" id="view-result" class="btn on" aria-pressed="true" data-tip="Pokazuje tylko zanonimizowany tekst"><i class="gi" data-i="maskowanie"></i>Wynik</button>
+            <button type="button" id="view-compare" class="btn" aria-pressed="false" data-tip="Oryginał obok znacznika — jak w recenzji Worda"><i class="gi" data-i="podglad"></i>Porównanie</button>
           </span>
           <span class="mask-nav" id="mask-nav" role="group" aria-label="Przeglądanie zamaskowanych fragmentów" hidden>
             <button type="button" class="nav-btn" id="mask-prev" data-tip="Poprzedni zamaskowany fragment · ↑" aria-label="Poprzedni zamaskowany fragment">‹</button>
@@ -167,7 +168,9 @@
       <p id="app-error" class="app-error g12" role="alert" hidden></p>
 
       <!-- ══════════ ZAMASKOWANO ══════════ -->
-      <section class="card stats g12" id="findings" aria-live="polite" hidden>
+      <!-- Bez aria-live na całej sekcji (przebudowa przy każdym renderze zalewałaby czytnik).
+           Zwięzły komunikat trafia do ukrytego #findings-status (aria-live) po debounce. -->
+      <section class="card stats g12" id="findings" hidden>
         <div class="card-h">
           <span class="ic"><i class="gi" data-i="suma"></i></span>
           <div class="card-t"><h2>Zamaskowano</h2><p>podsumowanie wykryć w tym tekście</p></div>
@@ -177,6 +180,7 @@
         </div>
         <div class="card-b">
           <div class="stats-chips" id="findings-chips"></div>
+          <span id="findings-status" role="status" aria-live="polite" class="vh"></span>
         </div>
       </section>
 
@@ -252,7 +256,7 @@
       <details class="card g12" id="co-wykrywa">
         <summary class="card-h">
           <span class="ic"><i class="gi" data-i="sprawdz"></i></span>
-          <div class="card-t"><h2>Co wykrywa <span class="tag-opt">szczegóły</span></h2><p>11 typów danych w 5 kategoriach — każdy identyfikator z walidacją sumy kontrolnej</p></div>
+          <div class="card-t"><h2>Co wykrywa <span class="tag-opt">szczegóły</span></h2><p>12 typów danych w 5 kategoriach — każdy identyfikator z walidacją sumy kontrolnej</p></div>
           <span class="card-sp"></span>
           <span class="help" data-tip="Suma kontrolna odróżnia prawdziwy numer od przypadkowego ciągu cyfr — stąd mało fałszywych trafień" data-tip-pos="left" tabindex="0">?</span>
           <span class="chev">▸</span>
@@ -286,6 +290,12 @@
                 <td><span class="catpill cp-ident">identyfikatory</span></td>
                 <td><span class="how">3 litery + 6 cyfr + <strong>suma kontrolna</strong></span></td>
                 <td><mark class="pii pii-ident">[NR-DOWODU]</mark></td>
+              </tr>
+              <tr>
+                <td><span class="td-name"><span class="ic ic-s c-ident"><i class="gi" data-i="numer-dok"></i></span>Nr paszportu</span></td>
+                <td><span class="catpill cp-ident">identyfikatory</span></td>
+                <td><span class="how">kontekst „paszport" + 2 litery + 7 cyfr</span></td>
+                <td><mark class="pii pii-ident">[NR-PASZPORTU]</mark></td>
               </tr>
               <tr>
                 <td><span class="td-name"><span class="ic ic-s c-fin"><i class="gi" data-i="iban"></i></span>IBAN / nr konta</span></td>

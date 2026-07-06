@@ -173,7 +173,15 @@ export const NON_SURNAME_ADJ = new Set<string>((
   // ogólne / instytucjonalne / relacyjne przymiotniki na -ski/-cki/-dzki
   'miejski wiejski wojewódzki morski nadmorski królewski cesarski papieski biskupi diecezjalny ' +
   'boski niebiański ziemski świecki damski męski żeński ludzki dziecięcy ojcowski macierzyński ' +
-  'lekarski adwokacki nauczycielski rybacki górniczy(NIE) rycerski sąsiedzki wiejski ludowy(NIE) ' +
+  'lekarski adwokacki nauczycielski rybacki rycerski sąsiedzki ' +
+  // relacyjne (nazwy komitetów/związków/funduszy): „Komitet Obywatelski", „Hufiec Harcerski"
+  'obywatelski harcerski sołecki chłopski pański szlachecki żołnierski marynarski kupiecki ' +
+  'związkowski robotniczy(NIE) ' +
+  // dalsze regiony / pasma / parki: „Bieszczadzki Park", „Podhalański", „Sądecki"
+  'podhalański bieszczadzki karkonoski sądecki gorczański elbląski nadwiślański nadbużański ' +
+  'kołobrzeski koszaliński słupski legnicki wałbrzyski jeleniogórski nowosądecki ' +
+  // pospolite przymiotniki na -ski/-cki: „Niski poziom", „wąski", „bliski"
+  'niski wąski płaski bliski śliski grząski wszelki(NIE) ' +
   'znicz'
 ).split(/\s+/).filter((w) => w && !w.includes('(')));
 

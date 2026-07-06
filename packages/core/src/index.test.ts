@@ -190,14 +190,27 @@ test('dowód zakupu (nie ID) NIE jest maskowany jako dowód osobisty', () => {
   const r = redactPII('dowód zakupu nr 445566 w załączniku');
   expect(r.redacted.includes('[NR-DOWODU]')).toBe(false);
 });
-test('numer dowodu STANDALONE (3 wielkie litery + 6 cyfr) maskowany bez kontekstu', () => {
-  expect(redactPII('ABC 123456').redacted).toBe('[NR-DOWODU]');
-  expect(redactPII('ABC123456').redacted).toBe('[NR-DOWODU]');
+test('numer dowodu STANDALONE z POPRAWNĄ sumą maskowany bez kontekstu', () => {
+  expect(redactPII('ABA300000').redacted).toBe('[NR-DOWODU]');
+  expect(redactPII('ABA 300000').redacted).toBe('[NR-DOWODU]');
+});
+test('dowód-format bez kontekstu ze ZŁĄ sumą NIE jest maskowany (sygnatury/kody urzędowe)', () => {
+  // „ABC 123456" ma złą sumę kontrolną → jak sygnatura/kod zostaje (precyzja)
+  expect(redactPII('ABC 123456').redacted.includes('[NR-DOWODU]')).toBe(false);
+  expect(redactPII('Sygn. RPO 401234 w aktach').redacted.includes('[NR-DOWODU]')).toBe(false);
 });
 test('dowód osobisty z wtrąconym „nr" maskowany', () => {
   const r = redactPII('dowód osobisty nr ABC123456');
   expect(r.redacted).toContain('[NR-DOWODU]');
   expect(r.redacted.includes('ABC123456')).toBe(false);
+});
+test('numer paszportu z kontekstem maskowany (2 litery + 7 cyfr)', () => {
+  const r = redactPII('Paszport nr ZS 1234567 wydano w 2020 r.');
+  expect(r.redacted).toContain('[NR-PASZPORTU]');
+  expect(r.redacted.includes('ZS 1234567')).toBe(false);
+});
+test('2 litery + 7 cyfr BEZ kontekstu paszportu NIE są maskowane', () => {
+  expect(redactPII('Kod AB1234567 systemu').redacted.includes('[NR-PASZPORTU]')).toBe(false);
 });
 test('kod waluty + kwota NIE jest mylony z dowodem', () => {
   expect(redactPII('PLN 123456').redacted.includes('[NR-DOWODU]')).toBe(false);
@@ -523,6 +536,39 @@ test('rzeczownik przed nazwiskiem w dopełniaczu ZOSTAJE (Zaległości Trzebiato
   const r = redactPII('Zaległości Trzebiatowskiego rosły z miesiąca na miesiąc.');
   expect(r.redacted).toContain('Zaległości'); // rzeczownik pospolity — nie nazwisko
   expect(r.redacted.includes('Trzebiatowskiego')).toBe(false); // nazwisko zamaskowane
+});
+
+// ── Poprawki precyzji z audytu optymalizacyjnego (v0.30) ──
+test('(a3) zwykły wyraz + imię NIE jest maskowany (Wczoraj Anna, Umowa Marii)', () => {
+  expect(redactPII('Wczoraj Anna wróciła z urlopu.').redacted).toBe('Wczoraj Anna wróciła z urlopu.');
+  expect(redactPII('Umowa Marii została podpisana.').redacted).toBe('Umowa Marii została podpisana.');
+});
+test('(a3) „Nazwisko Imię" w nagłówku e-maila nadal maskowane (From: Ejkszto Anna)', () => {
+  const r = redactPII('From: Ejkszto Anna');
+  expect(r.redacted.includes('Ejkszto')).toBe(false);
+});
+test('„Komitet Obywatelski" / „Hufiec Harcerski" NIE są osobą', () => {
+  expect(redactPII('Komitet Obywatelski poparł uchwałę.').redacted).toBe('Komitet Obywatelski poparł uchwałę.');
+});
+test('regionalne i pospolite przymiotniki -ski/-cki nietknięte', () => {
+  expect(redactPII('Bieszczadzki Park Narodowy wprowadził zakaz.').redacted).toContain('Bieszczadzki Park Narodowy');
+  expect(redactPII('Niski poziom wody w rzece.').redacted).toBe('Niski poziom wody w rzece.');
+});
+test('miesiąc „Maja" nie jest imieniem (Pierwszego Maja)', () => {
+  expect(redactPII('Zebranie odbyło się Pierwszego Maja.').redacted).toBe('Zebranie odbyło się Pierwszego Maja.');
+});
+test('„Pani Minister"/„Pan Wojewoda Mazowiecki" — sama rola/tytuł zostaje', () => {
+  expect(redactPII('Pani Minister podpisała rozporządzenie.').redacted).toBe('Pani Minister podpisała rozporządzenie.');
+  expect(redactPII('Pan Wojewoda Mazowiecki wydał decyzję.').redacted).toBe('Pan Wojewoda Mazowiecki wydał decyzję.');
+});
+test('„Pan Dyrektor Kowalski" — rola zostaje, nazwisko maskowane', () => {
+  const r = redactPII('Pan Dyrektor Kowalski podpisał pismo.');
+  expect(r.redacted).toContain('Pan Dyrektor');
+  expect(r.redacted.includes('Kowalski')).toBe(false);
+});
+test('nazwisko słownikowe z myślnikiem (Nowak-Schmidt) maskowane', () => {
+  const r = redactPII('Pozew wniosła Nowak-Schmidt.');
+  expect(r.redacted.includes('Nowak-Schmidt')).toBe(false);
 });
 
 // ── Regresje z benchmarku (docs/BENCHMARK.md, 2026-07-04) ──

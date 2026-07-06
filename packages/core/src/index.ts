@@ -21,7 +21,7 @@
  * (np. dwa niezależne przejścia redakcji) niczego nie psuje.
  */
 
-import { normalizeSurnameKey, surnameBase, looksLikeSurname } from './surnames.js';
+import { normalizeSurnameKey, surnameBase, looksLikeSurname, NON_SURNAME_ADJ } from './surnames.js';
 
 export type PiiType =
   | 'EMAIL'
@@ -32,6 +32,7 @@ export type PiiType =
   | 'REGON'
   | 'TELEFON'
   | 'DOWOD'
+  | 'PASZPORT'
   | 'KOD-POCZTOWY'
   | 'DATA-UR'
   | 'ADRES'
@@ -88,6 +89,7 @@ const MASK: Record<PiiType, string> = {
   REGON: '[REGON]',
   TELEFON: '[TELEFON]',
   DOWOD: '[NR-DOWODU]',
+  PASZPORT: '[NR-PASZPORTU]',
   'KOD-POCZTOWY': '[KOD-POCZTOWY]',
   'DATA-UR': '[DATA-URODZENIA]',
   ADRES: '[ADRES]',
@@ -229,6 +231,10 @@ const POLISH_FIRST_NAMES = new Set<string>(
 const PL_UP = 'A-ZĄĆĘŁŃÓŚŹŻ';
 const PL_LO = 'a-ząćęłńóśźż';
 
+// Hoisted (nie budować w callbacku .replace — inaczej kompilacja regexu per-match).
+// Sprawdza, czy tuż przed dopasowaniem stoi WYRAZ z wielkiej litery + spacja (2. człon złożenia).
+const PRECEDED_BY_CAP = new RegExp(`[${PL_UP}][${PL_LO}]+\\s+$`);
+
 /**
  * Encje prawne/instytucje, których NIE traktujemy jako „imię nazwisko"
  * (np. „Sąd Najwyższy", „Kodeks Cywilny", „Prawo Pracy").
@@ -249,7 +255,9 @@ const LEGAL_ENTITY_WORDS = new Set<string>(
     'uniwersytet uniwersytetu politechnika akademia akademii instytut instytutu bank banku ' +
     'szpital szpitala teatr muzeum klub związek związku kancelaria kancelarii fundacja fundacji ' +
     'stowarzyszenie spółka spółki spółdzielnia spółdzielni samorząd samorządu rada rady zarząd ' +
-    'zarządu gmina gminy powiat powiatu województwo starostwo kuratorium izby prawa'
+    'zarządu gmina gminy powiat powiatu województwo starostwo kuratorium izby prawa ' +
+    'komitet komitetu hufiec zespół zespołu koło zrzeszenie komenda komendy ośrodek ośrodka ' +
+    'fundusz funduszu centrum agencja agencji dyrekcja dyrekcji park parku'
   ).split(/\s+/),
 );
 
@@ -348,7 +356,9 @@ const POLISH_CITIES = new Set<string>([
 const FIRST_NAME_STEMS = new Set<string>(
   [...POLISH_FIRST_NAMES].map((n) => (n.endsWith('a') ? n.slice(0, -1) : n)),
 );
-const NAME_INFLECTIONS = ['', 'a', 'i', 'y', 'ie', 'ę', 'ą', 'o', 'u', 'e', 'em', 'owi'];
+// UWAGA: BEZ pustego sufiksu '' — mianownik pokrywa POLISH_FIRST_NAMES.has(w), a '' uznawałoby
+// rdzeń (np. „maj" z „Maja") za imię → fałszywe trafienia („Pierwszego Maja"). Tylko formy odmienione.
+const NAME_INFLECTIONS = ['a', 'i', 'y', 'ie', 'ę', 'ą', 'o', 'u', 'e', 'em', 'owi'];
 
 /** Czy słowo wygląda na polskie imię (mianownik ZE SŁOWNIKA lub jego forma odmieniona)? */
 function isFirstNameLike(word: string): boolean {
@@ -548,6 +558,9 @@ export function redactPII(input: string, options?: RedactOptions): RedactionResu
     ]);
     text = text.replace(/\b([A-Z]{3})[\s-]?\d{6}\b/g, (m, letters: string) => {
       if (CURRENCY_CODES.has(letters)) return m;
+      // BEZ kontekstu wymagamy poprawnej sumy kontrolnej — inaczej sygnatury/kody urzędowe
+      // (RPO 401234, WSA, FVX 000123) są brane za dowód. Z kontekstem („dowód…") maskuje gałąź (a).
+      if (!isValidDowod(m)) return m;
       bump('DOWOD');
       return M.DOWOD;
     });
@@ -561,6 +574,18 @@ export function redactPII(input: string, options?: RedactOptions): RedactionResu
       }
       return m;
     });
+  }
+
+  // 9b) NR PASZPORTU — 2 litery + 7 cyfr. TYLKO z kontekstem („paszport"/„dokument podróży"),
+  // bo sam układ 2 litery + 7 cyfr jest zbyt pospolity (kody, sygnatury) — kontekst tnie FP.
+  if (on('PASZPORT')) {
+    text = text.replace(
+      /\b((?:paszport\w*|dokument\w*\s+podróży|nr\s+paszportu|numer\s+paszportu)(?:\s+(?:nr\.?|numer|seria|i))*)([\s:.=-]*)([A-Za-z]{2}[\s-]?\d{7})(?!\d)/gi,
+      (_m, ctx: string, sep: string) => {
+        bump('PASZPORT');
+        return `${ctx}${sep}${M.PASZPORT}`;
+      },
+    );
   }
 
   // 10) KOD POCZTOWY — XX-XXX, nie po „art./§" (żeby nie zjeść zakresu „art. 12-345").
@@ -709,7 +734,7 @@ export function redactPII(input: string, options?: RedactOptions): RedactionResu
     // Kotwiczymy na PIERWSZYM słowie-imieniu w ciągu wyrazów z wielkiej litery: wyrazy przed nim
     // („Pracownik", „Wczoraj") zostają, a całe „imiona+nazwisko" maskujemy JEDNĄ etykietą.
     // To naprawia dwa imiona — wcześniej para zjadała same imiona, a nazwisko zostawało jawne.
-    text = text.replace(new RegExp(`\\b${capWord}(?:\\s+${capWord}){1,3}`, 'g'), (m) => {
+    text = text.replace(new RegExp(`(?<![${PL_UP}${PL_LO}-])${capWord}(?:\\s+${capWord}){1,3}`, 'g'), (m) => {
       const words = m.split(/\s+/);
       let start = 0;
       while (start < words.length && !isFirstNameLike(words[start])) start++;
@@ -758,13 +783,24 @@ export function redactPII(input: string, options?: RedactOptions): RedactionResu
     // (a3) ODWRÓCONA kolejność „Nazwisko Imię" — częsta w nagłówkach e-maili (To/Cc/From:
     // „Kowalska Ewa", „Ejkszto Anna"). DRUGIE słowo musi być znanym imieniem, pierwsze —
     // nazwiskiem (nie tytuł „Pan/Pani", nie encja prawna/rzeczownik dokumentowy).
-    text = text.replace(new RegExp(`\\b(${capWord})\\s+(${capWord})`, 'g'), (m, w1: string, w2: string) => {
-      if (!isFirstNameLike(w2)) return m;
-      const w1l = w1.toLowerCase();
-      if (TITLE_WORDS.has(w1l) || LEGAL_ENTITY_WORDS.has(w1l) || LEGAL_ENTITY_WORDS.has(w2.toLowerCase())) return m;
-      bump('IMIE');
-      return personMask(w1); // klucz tożsamości = nazwisko (pierwsze słowo)
-    });
+    text = text.replace(
+      new RegExp(`(?<![${PL_UP}${PL_LO}-])(${capWord})\\s+(${capWord})`, 'g'),
+      (m, w1: string, w2: string, offset: number) => {
+        if (!isFirstNameLike(w2)) return m;
+        const w1l = w1.toLowerCase();
+        if (TITLE_WORDS.has(w1l) || ROLE_WORDS.has(w1l) || LEGAL_ENTITY_WORDS.has(w1l) || LEGAL_ENTITY_WORDS.has(w2.toLowerCase())) return m;
+        // „Nazwisko Imię" maskujemy tylko gdy w1 WYGLĄDA na nazwisko (słownik/morfologia) LUB para
+        // stoi w wierszu nagłówka e-maila (To/Od/Do/From/Cc). Bez tego „Wczoraj Anna", „Umowa Marii",
+        // „Witam Ewa" (zwykły wyraz + imię) byłyby okaleczane — częsty, dotkliwy fałszywy pozytyw.
+        const lineStart = text.lastIndexOf('\n', offset - 1) + 1;
+        const headerCtx = /^\s*(to|do|od|from|cc|dw|odbiorca|nadawca|adresat|wysłano|sent)\s*:/i.test(
+          text.slice(lineStart, offset),
+        );
+        if (!headerCtx && !surnameBase(w1) && !looksLikeSurname(w1)) return m;
+        bump('IMIE');
+        return personMask(w1); // klucz tożsamości = nazwisko (pierwsze słowo)
+      },
+    );
   }
 
   // (b) wyzwalacze kontekstu — łapią nazwiska spoza listy imion.
@@ -776,18 +812,27 @@ export function redactPII(input: string, options?: RedactOptions): RedactionResu
   if (on('IMIE')) {
     // myślnik dozwolony w KAŻDYM członie — „Pan Habdank-Wojewódzki" to jedno nazwisko
     // (bez tego maskowała się połowa, a resztka „-Wojewódzki" zatruwała dalsze warstwy).
+    // odmienione honoryfiki (Panem/Panów…) PRZED krótszym „Pan" (dłuższe alternatywy wcześniej)
     const nameTrigger = new RegExp(
-      `\\b([Nn]azywam się|[Mm]am na imię|[Ii]mię i nazwisko|[Ii]mie i nazwisko|[Nn]azwisko:|[Pp]ana|[Pp]anią|[Pp]anu|[Pp]ani|[Pp]an)` +
+      `\\b([Nn]azywam się|[Mm]am na imię|[Ii]mię i nazwisko|[Ii]mie i nazwisko|[Nn]azwisko:|` +
+        `[Pp]anowie|[Pp]anami|[Pp]anom|[Pp]anów|[Pp]anem|[Pp]ana|[Pp]anią|[Pp]aniom|[Pp]anu|[Pp]ani|[Pp]an)` +
         `([\\s:]+)([${PL_UP}][${PL_LO}]+(?:-[${PL_UP}][${PL_LO}]+)?(?:\\s+[${PL_UP}][${PL_LO}]+(?:-[${PL_UP}][${PL_LO}]+)?)?)`,
       'g',
     );
     text = text.replace(nameTrigger, (m, kw: string, sep: string, name: string) => {
-      // nie maskuj, jeśli „nazwa" to encja prawna („Pani Sąd"… praktycznie nie wystąpi, ale chronimy)
       const words = name.split(/\s+/);
-      if (LEGAL_ENTITY_WORDS.has(words[0].toLowerCase())) return m;
+      // odetnij wiodące role/tytuły po wyzwalaczu — „Pan Dyrektor Kowalski" → zachowaj „Dyrektor",
+      // maskuj dopiero nazwisko; „Pani Minister" / „Pan Wojewoda" (sama rola) → nie maskuj wcale.
+      let s = 0;
+      while (s < words.length && (ROLE_WORDS.has(words[s].toLowerCase()) || TITLE_WORDS.has(words[s].toLowerCase()))) s++;
+      if (s >= words.length) return m;
+      const surname = words[words.length - 1];
+      const sl = surname.toLowerCase();
+      // „Pan Wojewoda Mazowiecki", „Pani Sąd" — przymiotnik geo/encja to nie nazwisko
+      if (LEGAL_ENTITY_WORDS.has(words[s].toLowerCase()) || NON_SURNAME_ADJ.has(sl)) return m;
       bump('IMIE');
-      // klucz tożsamości: ostatnie słowo (nazwisko przy „Imię Nazwisko", samo przy pojedynczym)
-      return `${kw}${sep}${personMask(words[words.length - 1])}`;
+      const kept = words.slice(0, s).join(' ');
+      return `${kw}${sep}${kept ? kept + ' ' : ''}${personMask(surname)}`;
     });
   }
 
@@ -818,9 +863,11 @@ export function redactPII(input: string, options?: RedactOptions): RedactionResu
       (m, offset: number) => {
         if (LEGAL_ENTITY_WORDS.has(m.toLowerCase())) return m;
         const first = m.split('-')[0];
-        if (!looksLikeSurname(m) && !looksLikeSurname(first)) return m;
-        // drugi człon złożenia z wielkiej litery (np. „… Warszawski") → to przymiotnik nazwy
-        if (new RegExp(`[${PL_UP}][${PL_LO}]+\\s+$`).test(text.slice(0, offset))) return m;
+        // morfologia LUB słownik (słownik łapie formę z myślnikiem: „Nowak-Schmidt" — pierwszy człon)
+        if (!looksLikeSurname(m) && !looksLikeSurname(first) && !surnameBase(m) && !surnameBase(first)) return m;
+        // drugi człon złożenia z wielkiej litery (np. „… Warszawski") → to przymiotnik nazwy.
+        // Okno 40 znaków przed dopasowaniem wystarcza (unikamy O(n²) na długim tekście).
+        if (PRECEDED_BY_CAP.test(text.slice(Math.max(0, offset - 40), offset))) return m;
         bump('IMIE');
         return personMask(first);
       },
@@ -846,6 +893,7 @@ const HUMAN_LABEL: Record<PiiType, string> = {
   REGON: 'REGON',
   TELEFON: 'numer telefonu',
   DOWOD: 'numer dowodu',
+  PASZPORT: 'numer paszportu',
   'KOD-POCZTOWY': 'kod pocztowy',
   'DATA-UR': 'datę urodzenia',
   ADRES: 'adres',

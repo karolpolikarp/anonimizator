@@ -14,6 +14,7 @@ const input = $<HTMLTextAreaElement>('input');
 const output = $<HTMLDivElement>('output');
 const findingsCard = $<HTMLElement>('findings');
 const findingsChips = $<HTMLSpanElement>('findings-chips');
+const findingsStatus = $<HTMLSpanElement>('findings-status');
 const statCount = $<HTMLElement>('stat-count');
 const statCats = $<HTMLElement>('stat-cats');
 const srcMeta = $<HTMLSpanElement>('src-meta');
@@ -79,6 +80,7 @@ const MASK_TIP: Record<string, string> = {
   NIP: 'Identyfikatory · 10 cyfr, suma kontrolna poprawna',
   REGON: 'Identyfikatory · suma kontrolna poprawna',
   'NR-DOWODU': 'Identyfikatory · 3 litery + 6 cyfr, suma kontrolna poprawna',
+  'NR-PASZPORTU': 'Identyfikatory · kontekst „paszport" + 2 litery + 7 cyfr',
   'NR-KONTA': 'Finanse · IBAN (mod 97) lub kontekst „konto/rachunek”',
   EMAIL: 'Kontakt · wzorzec adresu e-mail',
   TELEFON: 'Kontakt · 9 cyfr, opcjonalnie +48',
@@ -112,6 +114,7 @@ const MASK_GROUPS: MaskGroup[] = [
   { key: 'nip', label: 'NIP', types: ['NIP'], cat: 'ident', icon: 'nip', code: '[NIP]', tip: '10 cyfr (także z myślnikami) + suma kontrolna' },
   { key: 'regon', label: 'REGON', types: ['REGON'], cat: 'ident', icon: 'dane-id', code: '[REGON]', tip: '9 lub 14 cyfr + suma kontrolna' },
   { key: 'dowod', label: 'Nr dowodu osobistego', types: ['DOWOD'], cat: 'ident', icon: 'numer-dok', code: '[NR-DOWODU]', tip: '3 litery + 6 cyfr + suma kontrolna' },
+  { key: 'paszport', label: 'Nr paszportu', types: ['PASZPORT'], cat: 'ident', icon: 'numer-dok', code: '[NR-PASZPORTU]', tip: 'Kontekst „paszport" + 2 litery + 7 cyfr' },
   { key: 'konto', label: 'IBAN / nr konta', types: ['IBAN', 'NR-KONTA'], cat: 'fin', icon: 'iban', code: '[NR-KONTA]', tip: 'Walidacja mod 97 lub kontekst „konto/rachunek”' },
   { key: 'email', label: 'E-mail', types: ['EMAIL'], cat: 'contact', icon: 'login', code: '[EMAIL]', tip: 'Wzorzec adresu e-mail' },
   { key: 'telefon', label: 'Telefon', types: ['TELEFON'], cat: 'contact', icon: 'telefon', code: '[TELEFON]', tip: '9 cyfr, opcjonalnie prefiks +48' },
@@ -193,11 +196,16 @@ pseudonymsBox.addEventListener('change', () => {
 /* ── Renderowanie wyniku (numerowane linie, kolorowe znaczniki, tooltips) ── */
 
 function escapeHtml(s: string): string {
-  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
 }
 
 const MASK_TOKEN_RE =
-  /\[(PESEL|NIP|REGON|NR-KONTA|NR-DOWODU|EMAIL|TELEFON|KOD-POCZTOWY|DATA-URODZENIA|ADRES|MIEJSCOWOŚĆ|IMIĘ I NAZWISKO|OSOBA-[A-Z]+)\]/g;
+  /\[(PESEL|NIP|REGON|NR-KONTA|NR-DOWODU|NR-PASZPORTU|EMAIL|TELEFON|KOD-POCZTOWY|DATA-URODZENIA|ADRES|MIEJSCOWOŚĆ|IMIĘ I NAZWISKO|OSOBA-[A-Z]+)\]/g;
 
 function maskHtml(name: string): string {
   return `<mark class="pii pii-${maskCategory(name)}" data-tip="${escapeHtml(maskTip(name))}" tabindex="0">[${name}]</mark>`;
@@ -278,6 +286,8 @@ function setViewMode(mode: 'result' | 'compare'): void {
   viewMode = mode;
   viewResultBtn.classList.toggle('on', mode === 'result');
   viewCompareBtn.classList.toggle('on', mode === 'compare');
+  viewResultBtn.setAttribute('aria-pressed', String(mode === 'result'));
+  viewCompareBtn.setAttribute('aria-pressed', String(mode === 'compare'));
   renderOutput();
 }
 
@@ -349,6 +359,7 @@ const CHIP_META: Record<string, { label: string; cat: Cat; icon: string }> = {
   NIP: { label: 'NIP', cat: 'ident', icon: 'nip' },
   REGON: { label: 'REGON', cat: 'ident', icon: 'dane-id' },
   DOWOD: { label: 'nr dowodu', cat: 'ident', icon: 'numer-dok' },
+  PASZPORT: { label: 'nr paszportu', cat: 'ident', icon: 'numer-dok' },
   IBAN: { label: 'nr konta', cat: 'fin', icon: 'iban' },
   'NR-KONTA': { label: 'nr konta', cat: 'fin', icon: 'iban' },
   EMAIL: { label: 'e-mail', cat: 'contact', icon: 'login' },
@@ -361,15 +372,17 @@ const CHIP_META: Record<string, { label: string; cat: Cat; icon: string }> = {
 
 function renderFindings(found: PiiFinding[]): void {
   findingsCard.hidden = false;
-  const total = found.reduce((s, f) => s + f.count, 0);
+  // koercja licznika do liczby — obrona przed nie-liczbowym count z warstwy NER (XSS/NaN)
+  const total = found.reduce((s, f) => s + (Number(f.count) || 0), 0);
   const byLabel = new Map<string, { count: number; cat: Cat; icon: string }>();
   for (const f of found) {
-    const meta = CHIP_META[f.type] ?? { label: f.type, cat: 'ident' as Cat, icon: 'dane-id' };
+    const meta = CHIP_META[f.type] ?? { label: String(f.type), cat: 'ident' as Cat, icon: 'dane-id' };
     const prev = byLabel.get(meta.label);
-    byLabel.set(meta.label, { count: (prev?.count ?? 0) + f.count, cat: meta.cat, icon: meta.icon });
+    byLabel.set(meta.label, { count: (prev?.count ?? 0) + (Number(f.count) || 0), cat: meta.cat, icon: meta.icon });
   }
+  const cats = new Set([...byLabel.values()].map((v) => v.cat)).size;
   statCount.textContent = String(total);
-  statCats.textContent = String(new Set([...byLabel.values()].map((v) => v.cat)).size);
+  statCats.textContent = String(cats);
 
   if (found.length === 0) {
     const clean = disabledGroups.size > 0
@@ -379,8 +392,11 @@ function renderFindings(found: PiiFinding[]): void {
       ? ' <span class="chip chip-hint">💡 rzadkie nazwiska złapie „Dokładniejsze wykrywanie nazwisk” poniżej</span>'
       : '';
     findingsChips.innerHTML = clean + hint;
+    findingsStatus.textContent = disabledGroups.size > 0 ? 'Nic nie zamaskowano.' : 'Nie wykryto danych osobowych.';
     return;
   }
+  // zwięzły komunikat dla czytnika ekranu (jeden, po debounce — nie zalewa)
+  findingsStatus.textContent = `Zamaskowano ${total} ${total === 1 ? 'fragment' : 'fragmentów'} w ${cats} ${cats === 1 ? 'kategorii' : 'kategoriach'}.`;
   findingsChips.innerHTML = [...byLabel.entries()]
     .map(
       ([label, v]) =>
@@ -450,7 +466,14 @@ function update(): void {
   scheduleNer(redacted, found);
 }
 
-input.addEventListener('input', update);
+// Debounce: przy szybkim pisaniu nie odpalaj pełnego pipeline'u (26 przebiegów + przerender)
+// na każdy znak. Licznik znaków/wierszy aktualizujemy NATYCHMIAST (tani), redakcję po ~140 ms.
+let updateTimer: ReturnType<typeof setTimeout> | undefined;
+input.addEventListener('input', () => {
+  updateSrcMeta(input.value);
+  clearTimeout(updateTimer);
+  updateTimer = setTimeout(update, 140);
+});
 
 /* ── NER (usługa lokalna / ONNX w przeglądarce) — fail-safe ── */
 
@@ -765,5 +788,14 @@ $('app-version-top').textContent = __APP_VERSION__;
 
 // Podmień wszystkie statyczne <i class="gi" data-i="…"> z index.html na inline SVG.
 hydrateIcons();
+
+// Dostępność: treść podpowiedzi żyje tylko w CSS ::after (niewidoczna dla czytników ekranu).
+// Nadaj statycznym elementom [data-tip] bez własnej nazwy aria-label = treść podpowiedzi.
+document.querySelectorAll<HTMLElement>('[data-tip]').forEach((el) => {
+  if (!el.getAttribute('aria-label') && !el.getAttribute('aria-labelledby') && el.dataset.tip) {
+    el.setAttribute('aria-label', el.dataset.tip);
+    if (el.classList.contains('help')) el.setAttribute('role', 'note');
+  }
+});
 
 update();

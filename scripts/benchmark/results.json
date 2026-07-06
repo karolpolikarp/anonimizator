@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-07-06T14:39:17.720Z",
+  "generatedAt": "2026-07-06T19:14:17.745Z",
   "seed": 20260704,
-  "coreVersion": "0.15.0",
+  "coreVersion": "0.16.0",
   "casesTotal": 159,
-  "mustMaskTotal": 165,
-  "mustKeepTotal": 169,
+  "mustMaskTotal": 164,
+  "mustKeepTotal": 170,
   "skippedLayers": [
     {
       "name": "core+spacy",
@@ -24,12 +24,12 @@
       "elapsedMs": 8,
       "changedVsCore": null,
       "recall": 1,
-      "precision": 0.9940828402366864,
+      "precision": 0.9941176470588236,
       "agg": {
-        "maskTotal": 165,
-        "maskHit": 165,
-        "keepTotal": 169,
-        "keepHit": 168
+        "maskTotal": 164,
+        "maskHit": 164,
+        "keepTotal": 170,
+        "keepHit": 169
       },
       "perCategory": {
         "osoby-podstawowe": {
@@ -59,23 +59,23 @@
         "strukturalne": {
           "recall": 1,
           "precision": 1,
-          "maskTotal": 50,
-          "maskHit": 50,
+          "maskTotal": 49,
+          "maskHit": 49,
           "keepTotal": 43,
           "keepHit": 43
         },
         "negatywy": {
           "recall": null,
-          "precision": 0.9761904761904762,
+          "precision": 0.9767441860465116,
           "maskTotal": 0,
           "maskHit": 0,
-          "keepTotal": 42,
-          "keepHit": 41
+          "keepTotal": 43,
+          "keepHit": 42
         }
       },
       "failures": [
         {
-          "id": "neg-39",
+          "id": "neg-40",
           "category": "negatywy",
           "text": "Pan Tadeusz to najsłynniejsza polska epopeja narodowa.",
           "leaked": [],
@@ -857,11 +857,6 @@
           "eaten": []
         },
         {
-          "id": "str-41",
-          "leaked": [],
-          "eaten": []
-        },
-        {
           "id": "neg-36",
           "leaked": [],
           "eaten": []
@@ -878,6 +873,11 @@
         },
         {
           "id": "neg-39",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-40",
           "leaked": [],
           "eaten": [
             "Tadeusz"

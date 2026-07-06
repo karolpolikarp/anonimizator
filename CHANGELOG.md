@@ -1,5 +1,32 @@
 # Changelog
 
+## v0.30.0 — 2026-07-06
+
+Zbiorcza optymalizacja z wieloagentowego audytu (9 soczewek → backlog). 17 poprawek,
+benchmark bez regresji (recall 100%, precyzja 99,4%), 137 testów rdzenia + 10 web.
+
+- **Precyzja (mniej nadmaskowania — czołowy priorytet pisma urzędowego):**
+  - „Nazwisko Imię" (reguła odwrócona) nie kasuje już zwykłego wyrazu przed imieniem —
+    „Wczoraj Anna", „Umowa Marii", „Witam Ewa" zostają; nagłówki e-maili („From: Ejkszto Anna")
+    nadal maskowane.
+  - Nazwy komitetów/związków/parków nietknięte: „Komitet Obywatelski", „Hufiec Harcerski",
+    „Bieszczadzki Park Narodowy"; pospolite przymiotniki „Niski poziom", „wąski" itd.
+  - „Pan/Pani + funkcja" zachowuje rolę: „Pani Minister", „Pan Wojewoda Mazowiecki" bez zmian,
+    „Pan Dyrektor Kowalski" → maska tylko nazwiska.
+  - Dowód bez kontekstu wymaga poprawnej sumy kontrolnej — sygnatury/kody („RPO 401234",
+    „ABC 123456") nie są brane za dowód.
+  - Miesiąc „Maja" nie jest już mylony z imieniem („Pierwszego Maja").
+- **Recall (mniej wycieków):** nazwisko słownikowe z myślnikiem („Nowak-Schmidt"), imiona/nazwiska
+  zaczynające się od Ł/Ś/Ż/Ą (naprawiona granica słowa), odmieniony honoryfik („Panem Kowalskim").
+- **Nowy typ: numer paszportu** — `[NR-PASZPORTU]` (kontekst „paszport" + 2 litery + 7 cyfr),
+  osobny przełącznik i chip.
+- **Wydajność:** koniec O(N²) w rozpoznawaniu nazwisk; debounce redakcji (~140 ms) — płynne pole
+  niezależnie od długości tekstu (licznik znaków nadal natychmiastowy).
+- **Dostępność (WCAG):** dostępna nazwa głównego pola, `aria-pressed` na przełączniku widoku,
+  koniec zalewania czytnika przy pisaniu (jeden zwięzły komunikat po debounce), treść podpowiedzi
+  dostępna dla czytników (aria-label z treści tooltipa).
+- **Bezpieczeństwo:** `escapeHtml` obejmuje cudzysłowy, licznik z warstwy NER koercjonowany do liczby.
+
 ## v0.29.0 — 2026-07-06
 
 - **Przeglądanie zamaskowanych fragmentów w wyniku** (prośba użytkownika: „łatwo przeglądać

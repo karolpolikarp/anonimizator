@@ -447,9 +447,9 @@ export function buildDataset() {
   neg('Ciąg 1234563210 to przykładowy identyfikator testowy.', ['1234563210']);
   neg('REGON 123456784 zawiera błąd i został odrzucony.', ['123456784']);
   neg(`Rachunek ${IBAN_BAD} ma błędną sumę kontrolną.`, [IBAN_BAD]);
-  // format dowodu (3 wielkie litery + 6 cyfr) maskujemy nawet bez poprawnej sumy — od v0.20
-  // (numery w pismach bywają testowe/z literówką; bezpieczniej zamaskować układ dowodu)
-  str('Seria ABA300001 nie jest poprawnym numerem dowodu.', ['ABA300001'], []);
+  // dowód BEZ kontekstu wymaga poprawnej sumy kontrolnej (v0.30) — ABA300001 ma złą sumę,
+  // więc (jak sygnatura/kod) pozostaje; realny dowód z kontekstem „dowód…" maskuje gałąź (a)
+  neg('Seria ABA300001 nie jest poprawnym numerem dowodu.', ['ABA300001']);
   neg('Wartość 12345678901 pojawiła się w logu importu.', ['12345678901']);
   // ciągi cyfr osłonięte kontekstem numeracyjnym
   neg('Zamówienie nr 987654321 zostało wysłane kurierem.', ['987654321']);
