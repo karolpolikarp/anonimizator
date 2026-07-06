@@ -137,7 +137,7 @@
       <section class="card g6" aria-label="Wynik — zanonimizowany">
         <div class="card-h">
           <span class="ic"><i class="gi" data-i="podglad"></i></span>
-          <div class="card-t"><h2 id="output-label">Wynik — zanonimizowany</h2><p>najedź na znacznik, by poznać powód wykrycia</p></div>
+          <div class="card-t"><h2 id="output-label">Wynik — zanonimizowany</h2><p>przeglądaj znaczniki strzałkami ‹ › lub klikając; najedź, by poznać powód</p></div>
           <span class="card-sp"></span>
           <span class="help" data-tip="Kolor znacznika wskazuje kategorię danych — legenda powyżej" data-tip-pos="left" tabindex="0">?</span>
         </div>
@@ -145,6 +145,11 @@
           <span class="seg" role="group" aria-label="Widok wyniku">
             <button type="button" id="view-result" class="btn on" data-tip="Pokazuje tylko zanonimizowany tekst"><i class="gi" data-i="maskowanie"></i>Wynik</button>
             <button type="button" id="view-compare" class="btn" data-tip="Oryginał obok znacznika — jak w recenzji Worda"><i class="gi" data-i="podglad"></i>Porównanie</button>
+          </span>
+          <span class="mask-nav" id="mask-nav" role="group" aria-label="Przeglądanie zamaskowanych fragmentów" hidden>
+            <button type="button" class="nav-btn" id="mask-prev" data-tip="Poprzedni zamaskowany fragment · ↑" aria-label="Poprzedni zamaskowany fragment">‹</button>
+            <span class="nav-count" id="mask-count" aria-live="polite" data-tip="Przeglądaj po kolei · klik w znacznik też przenosi">0 / 0</span>
+            <button type="button" class="nav-btn" id="mask-next" data-tip="Następny zamaskowany fragment · ↓" aria-label="Następny zamaskowany fragment">›</button>
           </span>
           <span class="card-sp"></span>
           <button type="button" id="download" class="btn tbtn" data-tip="Zapisuje wynik jako plik tekstowy na dysku"><i class="gi" data-i="plik-txt"></i><span>Pobierz .txt</span></button>

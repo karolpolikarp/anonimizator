@@ -34,10 +34,16 @@ const nerPill = $<HTMLSpanElement>('ner-pill');
 const viewResultBtn = $<HTMLButtonElement>('view-result');
 const viewCompareBtn = $<HTMLButtonElement>('view-compare');
 const appError = $<HTMLParagraphElement>('app-error');
+const maskNav = $<HTMLSpanElement>('mask-nav');
+const maskPrev = $<HTMLButtonElement>('mask-prev');
+const maskNext = $<HTMLButtonElement>('mask-next');
+const maskCount = $<HTMLSpanElement>('mask-count');
 
 let lastRedacted = '';
 let lastInput = '';
 let viewMode: 'result' | 'compare' = 'result';
+let maskEls: HTMLElement[] = []; // znaczniki w wyniku, w kolejności dokumentu
+let maskIdx = -1; // bieżący znacznik w przeglądaniu (-1 = żaden)
 
 // Edycja „urzędnik" (release dla głównej grupy docelowej): build BEZ warstwy AI/NER.
 // Kod NER zostaje w repozytorium — tu tylko usuwamy elementy oznaczone [data-full] z DOM,
@@ -258,13 +264,14 @@ function renderOutput(): void {
   if (lastRedacted.length > HIGHLIGHT_LIMIT) {
     output.classList.add('plain');
     output.textContent = lastRedacted;
-    return;
+  } else {
+    const html =
+      viewMode === 'compare'
+        ? buildCompareHtml(lastInput, lastRedacted)
+        : highlightMasks(escapeHtml(lastRedacted));
+    output.innerHTML = wrapLines(html);
   }
-  const html =
-    viewMode === 'compare'
-      ? buildCompareHtml(lastInput, lastRedacted)
-      : highlightMasks(escapeHtml(lastRedacted));
-  output.innerHTML = wrapLines(html);
+  refreshMaskNav();
 }
 
 function setViewMode(mode: 'result' | 'compare'): void {
@@ -276,6 +283,63 @@ function setViewMode(mode: 'result' | 'compare'): void {
 
 viewResultBtn.addEventListener('click', () => setViewMode('result'));
 viewCompareBtn.addEventListener('click', () => setViewMode('compare'));
+
+/* ── Przeglądanie zamaskowanych fragmentów — strzałki, klik, klawiatura ── */
+
+/** Etykieta pseudonimu ([OSOBA-A]) — pozwala podświetlić WSZYSTKIE wystąpienia tej samej osoby. */
+function personLabel(el: HTMLElement): string | null {
+  return /^\[OSOBA-[A-Z]+\]$/.test(el.textContent ?? '') ? el.textContent : null;
+}
+
+function updateMaskCount(): void {
+  const n = maskEls.length;
+  maskCount.textContent = n ? `${maskIdx + 1} / ${n}` : '0 / 0';
+  maskPrev.disabled = n === 0;
+  maskNext.disabled = n === 0;
+}
+
+function goToMask(i: number, scroll = true): void {
+  const n = maskEls.length;
+  if (!n) return;
+  maskIdx = ((i % n) + n) % n; // zawijanie na końcach
+  for (const el of maskEls) el.classList.remove('pii-active', 'pii-linked');
+  const el = maskEls[maskIdx];
+  el.classList.add('pii-active');
+  const label = personLabel(el); // ta sama osoba → podświetl powiązane wystąpienia
+  if (label) for (const o of maskEls) if (o !== el && o.textContent === label) o.classList.add('pii-linked');
+  if (scroll) {
+    const er = el.getBoundingClientRect();
+    const or = output.getBoundingClientRect();
+    output.scrollTop += er.top - or.top - (output.clientHeight - er.height) / 2;
+  }
+  el.focus({ preventScroll: true }); // pokazuje powód (tooltip) i ogłasza czytnikowi ekranu
+  updateMaskCount();
+}
+
+/** Po każdym renderze wyniku: zbierz znaczniki, wyzeruj przegląd, pokaż/ukryj nawigację. */
+function refreshMaskNav(): void {
+  maskEls = [...output.querySelectorAll<HTMLElement>('mark.pii')];
+  maskIdx = -1;
+  maskNav.hidden = maskEls.length === 0;
+  updateMaskCount();
+}
+
+maskPrev.addEventListener('click', () => goToMask(maskIdx <= 0 ? maskEls.length - 1 : maskIdx - 1));
+maskNext.addEventListener('click', () => goToMask(maskIdx + 1));
+
+// Klik w znacznik → uczyń go bieżącym (bez przewijania — użytkownik już na niego patrzy).
+output.addEventListener('click', (e) => {
+  const el = (e.target as HTMLElement | null)?.closest?.('mark.pii') as HTMLElement | null;
+  const at = el ? maskEls.indexOf(el) : -1;
+  if (at !== -1) goToMask(at, false);
+});
+
+// Klawiatura (fokus na wyniku): ↓/→ następny, ↑/← poprzedni — nadpisuje zwykłe przewijanie.
+output.addEventListener('keydown', (e) => {
+  if (!maskEls.length) return;
+  if (e.key === 'ArrowDown' || e.key === 'ArrowRight') { e.preventDefault(); goToMask(maskIdx + 1); }
+  else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') { e.preventDefault(); goToMask(maskIdx <= 0 ? maskEls.length - 1 : maskIdx - 1); }
+});
 
 /* ── Pasek „Zamaskowano" (chipy z ikonami, licznik, kategorie) ── */
 
@@ -320,10 +384,25 @@ function renderFindings(found: PiiFinding[]): void {
   findingsChips.innerHTML = [...byLabel.entries()]
     .map(
       ([label, v]) =>
-        `<span class="chip ch-${v.cat}"><i class="gi">${icon(v.icon)}</i>${escapeHtml(label)} <span class="x">×${v.count}</span></span>`,
+        `<button type="button" class="chip chip-nav ch-${v.cat}" data-cat="${v.cat}" ` +
+        `data-tip="Przejdź do fragmentów tej kategorii w wyniku"><i class="gi">${icon(v.icon)}</i>` +
+        `${escapeHtml(label)} <span class="x">×${v.count}</span></button>`,
     )
     .join(' ');
 }
+
+// Klik w chip „Zamaskowano" → skok do kolejnego znacznika tej kategorii w wyniku (cyklicznie).
+findingsChips.addEventListener('click', (e) => {
+  const chip = (e.target as HTMLElement | null)?.closest?.('button.chip-nav') as HTMLElement | null;
+  const cat = chip?.dataset.cat;
+  if (!cat || !maskEls.length) return;
+  const cls = `pii-${cat}`;
+  const n = maskEls.length;
+  for (let step = 1; step <= n; step++) {
+    const j = (((maskIdx + step) % n) + n) % n;
+    if (maskEls[j].classList.contains(cls)) { goToMask(j); return; }
+  }
+});
 
 /* ── Główny przepływ ── */
 
@@ -357,6 +436,9 @@ function update(): void {
       `${maskHtml('IMIĘ I NAZWISKO')}, tel. ${maskHtml('TELEFON')}</span>`;
     findingsCard.hidden = true;
     lastRedacted = '';
+    maskEls = [];
+    maskIdx = -1;
+    maskNav.hidden = true; // placeholder zawiera przykładowe znaczniki — nie nawigujemy po nich
     setResultActions(false);
     return;
   }

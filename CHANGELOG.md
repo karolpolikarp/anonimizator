@@ -1,5 +1,18 @@
 # Changelog
 
+## v0.29.0 — 2026-07-06
+
+- **Przeglądanie zamaskowanych fragmentów w wyniku** (prośba użytkownika: „łatwo przeglądać
+  zanonimizowane dane"). W pasku Wyniku pojawia się nawigacja **‹ N / M ›**:
+  - **strzałki + licznik** — poprzedni/następny zamaskowany fragment (cyklicznie); bieżący
+    dostaje wyraźny pierścień i **automatycznie pokazuje powód wykrycia** (podświetlenie + tooltip);
+  - **klik w znacznik** — czyni go bieżącym; dla pseudonimów `[OSOBA-A]` podświetla **wszystkie
+    wystąpienia tej samej osoby**;
+  - **klik w chip „Zamaskowano"** (np. „PESEL ×3") — skacze po fragmentach danej kategorii;
+  - **klawiatura** — ↑/↓ oraz ←/→ przechodzą między maskami, gdy fokus jest na wyniku;
+  - działa w widoku „Wynik" i „Porównanie", uwzględnia `prefers-reduced-motion`, większe cele
+    dotykowe na mobile, a kopiowany tekst pozostaje czysty (nawigacja to wyłącznie warstwa UI).
+
 ## v0.28.0 — 2026-07-06
 
 - **Rzadkie i odmienione nazwiska maskowane BEZ słownika i BEZ AI — rozpoznawanie
