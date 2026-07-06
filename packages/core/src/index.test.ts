@@ -286,6 +286,28 @@ test('wyraz przed imieniem zostaje, para imię+nazwisko maskowana', () => {
   expect(redactPII('Wczoraj Jan Kowalski przyszedł').redacted).toBe('Wczoraj [IMIĘ I NAZWISKO] przyszedł');
 });
 
+// ── Anty-nadmaskowanie: realny tekst urzędowy/nazwy własne NIE mogą być ruszane ──
+// (blokada regresji dla agresywnych reguł imion/dowodów — nadmaskowanie niszczy sens pisma)
+test('instytucje, programy i nazwy własne pozostają nietknięte', () => {
+  const clean = [
+    'Zgodnie z art. 123 ust. 2 ustawy o finansach publicznych.',
+    'Ministerstwo Cyfryzacji oraz Biuro Budżetowo-Finansowe.',
+    'Program Operacyjny Polska Cyfrowa',
+    'Prezydent Rzeczypospolitej Polskiej',
+    'Bank Gospodarstwa Krajowego',
+    'Główny Urząd Statystyczny',
+    'Krajowy Plan Odbudowy',
+    'Sąd Rejonowy dla Warszawy-Śródmieścia',
+    'Narodowy Bank Polski',
+    'Nowy Rok obchodzony jest pierwszego stycznia.',
+    'Faktura VAT numer 445566 z tytułu usług.',
+    'Kwota 250000 PLN zostanie przekazana.',
+    'Polski Ład',
+    'Adam poszedł do sklepu',
+  ];
+  for (const t of clean) expect(redactPII(t).redacted).toBe(t);
+});
+
 // ── Samodzielne nazwiska ze słownika (krok 13c) ──
 test('nazwisko solo w odmianie — dopełniacz maskowany', () => {
   const r = redactPII('Sprawę Kowalskiego przekazano do sądu');
