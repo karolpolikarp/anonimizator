@@ -501,6 +501,25 @@ export function redactPII(input: string, options?: RedactOptions): RedactionResu
         return M.ADRES;
       },
     );
+
+    // 12b) ADRES bez prefiksu „ul." — rozpoznawany po SĄSIEDZTWIE kodu pocztowego.
+    // Kod pocztowy jest już zamaskowany (krok 10 biegnie wcześniej), więc wzorzec
+    // „Nazwa[ Nazwa] Numer, [KOD-POCZTOWY]" pewnie wskazuje ulicę („Królewska 27,
+    // 00-060 Warszawa" → „Aleje Jerozolimskie 100…"). Kotwica na placeholderze daje
+    // wysoką precyzję — „Rozdział 5" czy „Załącznik 2" nie stoją przed kodem pocztowym.
+    const KOD = M['KOD-POCZTOWY'].replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    text = text.replace(
+      new RegExp(
+        `\\b([${PL_UP}][${PL_LO}]+(?:\\s+[${PL_UP}][${PL_LO}]+){0,2})` +
+          `\\s+\\d+[A-Za-z]?(?:\\s*(?:m\\.?|/)\\s*\\d+[A-Za-z]?)?` +
+          `(\\s*,?\\s*)(${KOD})`,
+        'g',
+      ),
+      (_m, _street: string, sep: string, kod: string) => {
+        bump('ADRES');
+        return `${M.ADRES}${sep}${kod}`;
+      },
+    );
   }
 
   // 13) IMIĘ I NAZWISKO — heurystyka:

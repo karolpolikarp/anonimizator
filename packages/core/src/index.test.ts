@@ -231,6 +231,23 @@ test('miasto po przyimku NIE jest maskowane (zamieszkała w Warszawie)', () => {
   expect(redactPII('zamieszkałą w Warszawie przy ulicy').redacted.includes('[IMIĘ I NAZWISKO]')).toBe(false);
 });
 
+// ── Adres bez prefiksu „ul.", rozpoznany po sąsiedztwie kodu pocztowego ──
+test('ulica bez „ul." przed kodem pocztowym maskowana (Królewska 27)', () => {
+  const r = redactPII('Królewska 27, 00-060 Warszawa');
+  expect(r.redacted).toContain('[ADRES]');
+  expect(r.redacted).toContain('[KOD-POCZTOWY]');
+  expect(r.redacted.includes('Królewska 27')).toBe(false);
+});
+test('wielowyrazowa ulica bez prefiksu (Aleje Jerozolimskie 100)', () => {
+  const r = redactPII('Aleje Jerozolimskie 100, 00-807 Warszawa');
+  expect(r.redacted).toContain('[ADRES]');
+  expect(r.redacted.includes('Jerozolimskie')).toBe(false);
+});
+test('„Rozdział 5"/„Załącznik 2" NIE są adresem (brak kodu pocztowego obok)', () => {
+  expect(redactPII('Rozdział 5, zgodnie z ustawą').redacted.includes('[ADRES]')).toBe(false);
+  expect(redactPII('Załącznik 2 do pisma').redacted.includes('[ADRES]')).toBe(false);
+});
+
 // ── Samodzielne nazwiska ze słownika (krok 13c) ──
 test('nazwisko solo w odmianie — dopełniacz maskowany', () => {
   const r = redactPII('Sprawę Kowalskiego przekazano do sądu');

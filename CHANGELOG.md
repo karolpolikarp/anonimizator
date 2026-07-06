@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.23.0 — 2026-07-06
+
+- **Adres bez prefiksu „ul." też maskowany** — ulica rozpoznawana po sąsiedztwie kodu
+  pocztowego: „Królewska 27, 00-060 Warszawa" i „Aleje Jerozolimskie 100, …" → `[ADRES]`.
+  Kotwica na (już zamaskowanym) kodzie pocztowym daje wysoką precyzję — „Rozdział 5",
+  „Załącznik 2" czy „poz. 5" nie są mylone z adresem. Zamyka lukę z realnego pisma
+  urzędowego, gdzie ulica bez „ul." zostawała jawna.
+
 ## v0.22.0 — 2026-07-06
 
 - **Numer wersji w nagłówku + link „sprawdź najnowszą"** — pod tytułem widnieje teraz
