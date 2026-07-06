@@ -6,7 +6,7 @@
     <meta name="color-scheme" content="light" />
     <meta name="theme-color" content="#e6ebf3" />
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%9B%A1%EF%B8%8F%3C/text%3E%3C/svg%3E" />
-    <title>Anonimizator — usuń dane osobowe z tekstu, lokalnie w przeglądarce</title>
+    <title>Anonimizator: usuń dane osobowe z tekstu, lokalnie w przeglądarce</title>
     <meta
       name="description"
       content="Lokalny anonimizator polskich danych osobowych: PESEL, NIP, REGON, numer konta, dowód, e-mail, telefon, adres, imię i nazwisko. Tekst nie opuszcza Twojej przeglądarki."
@@ -18,27 +18,27 @@
       <!-- ══════════ HERO ══════════ -->
       <header class="card hero g12">
         <div class="card-h">
-          <span class="ic ic-xl" data-tip="Anonimizator — wszystko dzieje się lokalnie, w Twojej przeglądarce" tabindex="0">
+          <span class="ic ic-xl" data-tip="Anonimizator, wszystko dzieje się lokalnie, w Twojej przeglądarce" tabindex="0">
             <i class="gi" data-i="anonimizuj"></i>
           </span>
           <div class="card-t">
             <h1>Anonimizator</h1>
-            <p id="hero-sub">Lokalny anonimizator polskich danych osobowych — reguły, sumy kontrolne, opcjonalne lokalne AI</p>
-            <a class="ver-link" id="ver-link" href="https://github.com/karolpolikarp/anonimizator/releases/latest" target="_blank" rel="noopener noreferrer" data-tip="Otwiera stronę wydań — porównaj numer, by sprawdzić, czy masz najnowszą wersję">wersja <span id="app-version-top">—</span> · sprawdź najnowszą ↗</a>
+            <p id="hero-sub">Lokalny anonimizator polskich danych osobowych</p>
+            <a class="ver-link" id="ver-link" href="https://github.com/karolpolikarp/anonimizator/releases/latest" target="_blank" rel="noopener noreferrer" data-tip="Otwiera stronę wydań, porównaj numer, by sprawdzić, czy masz najnowszą wersję">wersja <span id="app-version-top">—</span> · sprawdź najnowszą ↗</a>
           </div>
           <span class="card-sp"></span>
           <ul class="badges" aria-label="Cechy">
-            <li class="badge" data-tip="Działa bez internetu — możesz rozłączyć sieć i sprawdzić" tabindex="0"><i class="gi" data-i="onoff"></i>100% Offline</li>
-            <li class="badge" data-tip="Tekst nie opuszcza przeglądarki — zero wysyłania na serwery" tabindex="0"><i class="gi" data-i="haslo"></i>Bezpieczne</li>
-            <li class="badge" data-tip="Kod otwarty na licencji MIT — możesz go samodzielnie zweryfikować" tabindex="0"><i class="gi" data-i="regula"></i>Open Source · MIT</li>
+            <li class="badge" data-tip="Działa bez internetu, możesz rozłączyć sieć i sprawdzić" tabindex="0"><i class="gi" data-i="onoff"></i>100% Offline</li>
+            <li class="badge" data-tip="Tekst nie opuszcza przeglądarki, zero wysyłania na serwery" tabindex="0"><i class="gi" data-i="haslo"></i>Bezpieczne</li>
+            <li class="badge" data-tip="Kod otwarty na licencji MIT, możesz go samodzielnie zweryfikować" tabindex="0"><i class="gi" data-i="regula"></i>Open Source · MIT</li>
             <li class="badge" id="badge-ai" data-tip="Warstwa reguł i sum kontrolnych + opcjonalny lokalny model NER" tabindex="0"><i class="gi" data-i="ner"></i><span id="badge-ai-txt">Reguły + lokalne AI</span></li>
           </ul>
         </div>
         <div class="card-b hero-b">
-          <p class="hero-lead">Usuń dane osobowe z tekstu — <strong>zanim wkleisz go do czatu, e-maila czy formularza.</strong></p>
-          <div class="privacy" data-tip="Cała analiza odbywa się w Twojej przeglądarce — możesz rozłączyć internet i sprawdzić" tabindex="0">
+          <p class="hero-lead">Usuń dane osobowe z tekstu, <strong>zanim wkleisz go do czatu, e-maila czy formularza.</strong></p>
+          <div class="privacy" data-tip="Cała analiza odbywa się w Twojej przeglądarce, możesz rozłączyć internet i sprawdzić" tabindex="0">
             <i class="gi" data-i="haslo"></i>
-            <span>Tekst nigdzie nie jest wysyłany — wszystko dzieje się w&nbsp;Twojej przeglądarce.</span>
+            <span>Tekst nigdzie nie jest wysyłany, wszystko dzieje się w&nbsp;Twojej przeglądarce.</span>
           </div>
         </div>
       </header>
@@ -79,18 +79,18 @@
       <!-- ══════════ LEGENDA KATEGORII ══════════ -->
       <section class="card legend g12" aria-label="Legenda kategorii danych">
         <div class="card-h">
-          <div class="card-t"><h2>Kolory znaczników</h2><p>każda kategoria danych ma swój kolor — ten sam w wyniku i w tabeli niżej</p></div>
+          <div class="card-t"><h2>Kolory znaczników</h2><p>każda kategoria danych ma swój kolor, ten sam w wyniku i w tabeli niżej</p></div>
           <div class="legend-items">
-            <span class="lg" data-tip="Imię i nazwisko — słownik, wyzwalacze kontekstu, opcjonalne AI" tabindex="0">
+            <span class="lg" data-tip="Imię i nazwisko, słownik, wyzwalacze kontekstu, opcjonalne AI" tabindex="0">
               <span class="dot dot-person"></span><b>Osoby</b><span class="lg-n">1 typ</span>
             </span>
             <span class="lg" data-tip="E-mail i telefon" tabindex="0">
               <span class="dot dot-contact"></span><b>Kontakt</b><span class="lg-n">2 typy</span>
             </span>
-            <span class="lg" data-tip="PESEL, NIP, REGON, numer dowodu — zawsze z walidacją sumy kontrolnej" tabindex="0">
+            <span class="lg" data-tip="PESEL, NIP, REGON, numer dowodu, zawsze z walidacją sumy kontrolnej" tabindex="0">
               <span class="dot dot-ident"></span><b>Identyfikatory</b><span class="lg-n">4 typy</span>
             </span>
-            <span class="lg" data-tip="IBAN / numer konta — walidacja mod 97" tabindex="0">
+            <span class="lg" data-tip="IBAN / numer konta, walidacja mod 97" tabindex="0">
               <span class="dot dot-fin"></span><b>Finanse</b><span class="lg-n">1 typ</span>
             </span>
             <span class="lg" data-tip="Adres, kod pocztowy, data urodzenia" tabindex="0">
@@ -106,10 +106,10 @@
           <span class="ic"><i class="gi" data-i="szablon"></i></span>
           <div class="card-t"><h2>Tekst źródłowy</h2><p>analiza na bieżąco, podczas pisania</p></div>
           <span class="card-sp"></span>
-          <span class="help" data-tip="Tekst analizowany jest lokalnie w czasie pisania — nic nie wychodzi z przeglądarki" data-tip-pos="left" tabindex="0">?</span>
+          <span class="help" data-tip="Tekst analizowany jest lokalnie w czasie pisania, nic nie wychodzi z przeglądarki" data-tip-pos="left" tabindex="0">?</span>
         </div>
         <div class="toolbar">
-          <button type="button" id="example" class="btn tbtn" data-tip="Wstawia przykładowy tekst z danymi — przetestujesz działanie bez wklejania własnych"><i class="gi" data-i="przyklad"></i><span>Przykład</span></button>
+          <button type="button" id="example" class="btn tbtn" data-tip="Wstawia przykładowy tekst z danymi, przetestujesz działanie bez wklejania własnych"><i class="gi" data-i="przyklad"></i><span>Przykład</span></button>
           <button type="button" id="load-file" class="btn tbtn" data-tip="Otwiera plik TXT, MD, CSV, LOG, DOCX lub PDF z dysku"><i class="gi" data-i="plik-txt"></i><span id="load-file-label">Wczytaj plik</span></button>
           <button type="button" id="clear" class="btn tbtn" data-tip="Usuwa cały tekst z obu paneli"><i class="gi" data-i="wyczysc"></i><span>Wyczyść</span></button>
           <input id="file-input" type="file" accept=".txt,.md,.csv,.log,.docx,.pdf" hidden />
@@ -121,27 +121,27 @@
             class="editor editor-ta"
             spellcheck="false"
             aria-label="Tekst źródłowy do anonimizacji"
-            placeholder="Wklej tekst albo upuść plik (.txt, .md, .csv, .log, .docx, .pdf) — anonimizacja dzieje się na bieżąco, podczas pisania.&#10;&#10;Nie wiesz od czego zacząć? Kliknij „Przykład” powyżej."
+            placeholder="Wklej tekst albo upuść plik (.txt, .md, .csv, .log, .docx, .pdf), anonimizacja dzieje się na bieżąco, podczas pisania.&#10;&#10;Nie wiesz od czego zacząć? Kliknij „Przykład” powyżej."
           ></textarea>
         </div>
         <div class="card-f">
           <i class="gi" data-i="plik-txt"></i>
-          <span id="src-meta">0 wierszy · 0 znaków — plik możesz upuścić w dowolnym miejscu strony</span>
+          <span id="src-meta">0 wierszy · 0 znaków, plik możesz upuścić w dowolnym miejscu strony</span>
         </div>
       </section>
 
       <!-- ══════════ WYNIK ══════════ -->
-      <section class="card g6" aria-label="Wynik — zanonimizowany">
+      <section class="card g6" aria-label="Wynik zanonimizowany">
         <div class="card-h">
           <span class="ic"><i class="gi" data-i="podglad"></i></span>
-          <div class="card-t"><h2 id="output-label">Wynik — zanonimizowany</h2><p>przeglądaj znaczniki strzałkami ‹ › lub klikając; najedź, by poznać powód</p></div>
+          <div class="card-t"><h2 id="output-label">Wynik zanonimizowany</h2><p>przeglądaj znaczniki strzałkami ‹ › lub klikając; najedź, by poznać powód</p></div>
           <span class="card-sp"></span>
-          <span class="help" data-tip="Kolor znacznika wskazuje kategorię danych — legenda powyżej" data-tip-pos="left" tabindex="0">?</span>
+          <span class="help" data-tip="Kolor znacznika wskazuje kategorię danych, legenda powyżej" data-tip-pos="left" tabindex="0">?</span>
         </div>
         <div class="toolbar">
           <span class="seg" role="group" aria-label="Widok wyniku">
             <button type="button" id="view-result" class="btn on" aria-pressed="true" data-tip="Pokazuje tylko zanonimizowany tekst"><i class="gi" data-i="maskowanie"></i>Wynik</button>
-            <button type="button" id="view-compare" class="btn" aria-pressed="false" data-tip="Oryginał obok znacznika — jak w recenzji Worda"><i class="gi" data-i="podglad"></i>Porównanie</button>
+            <button type="button" id="view-compare" class="btn" aria-pressed="false" data-tip="Oryginał obok znacznika, jak w recenzji Worda"><i class="gi" data-i="podglad"></i>Porównanie</button>
           </span>
           <span class="mask-nav" id="mask-nav" role="group" aria-label="Przeglądanie zamaskowanych fragmentów" hidden>
             <button type="button" class="nav-btn" id="mask-prev" data-tip="Poprzedni zamaskowany fragment · ↑" aria-label="Poprzedni zamaskowany fragment">‹</button>
@@ -154,10 +154,11 @@
         </div>
         <div class="card-b">
           <div id="output" class="editor" role="region" tabindex="0" aria-labelledby="output-label"></div>
+          <span id="mask-status" role="status" aria-live="polite" class="vh"></span>
         </div>
         <div class="card-f warn-note">
           <i class="gi" data-i="ostrzezenie"></i>
-          <span>Przejrzyj wynik przed udostępnieniem — wykrywanie nazwisk jest heurystyczne. <a href="#ograniczenia">Ograniczenia</a></span>
+          <span>Przejrzyj wynik przed udostępnieniem, wykrywanie nazwisk jest heurystyczne. <a href="#ograniczenia">Ograniczenia</a></span>
         </div>
       </section>
 
@@ -184,14 +185,14 @@
       <details class="card g7" id="co-maskowac" open>
         <summary class="card-h">
           <span class="ic"><i class="gi" data-i="ustawienia"></i></span>
-          <div class="card-t"><h2>Co maskować</h2><p>domyślnie wszystko — odznaczone typy zostaną widoczne w wyniku</p></div>
+          <div class="card-t"><h2>Co maskować</h2><p>domyślnie wszystko, odznaczone typy zostaną widoczne w wyniku</p></div>
           <span class="card-sp"></span>
-          <span class="help" data-tip="Zmiany działają natychmiast — wynik przelicza się na bieżąco" data-tip-pos="left" tabindex="0">?</span>
+          <span class="help" data-tip="Zmiany działają natychmiast, wynik przelicza się na bieżąco" data-tip-pos="left" tabindex="0">?</span>
           <span class="chev">▸</span>
         </summary>
         <div class="card-b">
           <div class="toggles">
-            <label class="tg tg-wide" data-tip="Ta sama osoba zachowuje tę samą etykietę w całym dokumencie — przydatne w umowach i pismach">
+            <label class="tg tg-wide" data-tip="Ta sama osoba zachowuje tę samą etykietę w całym dokumencie, przydatne w umowach i pismach">
               <span class="ic ic-s c-person"><i class="gi" data-i="losowanie"></i></span>
               <span class="tg-t"><b>Rozróżniaj osoby</b><code>[OSOBA-A], [OSOBA-B]…</code></span>
               <input type="checkbox" class="sw" id="pseudonyms" aria-label="Rozróżniaj osoby" />
@@ -201,7 +202,7 @@
         </div>
         <div class="card-f">
           <i class="gi" data-i="kosz"></i>
-          <span>Odznaczone typy <strong>pozostaną widoczne</strong> w wyniku — zaznaczaj świadomie.</span>
+          <span>Odznaczone typy <strong>pozostaną widoczne</strong> w wyniku, zaznaczaj świadomie.</span>
         </div>
       </details>
 
@@ -209,14 +210,14 @@
       <details class="card g5" id="ner-card" data-full>
         <summary class="card-h">
           <span class="ic"><i class="gi" data-i="ner"></i></span>
-          <div class="card-t"><h2>Wykrywanie nazwisk AI <span class="tag-opt">opcjonalne</span></h2><p>rzadkie i odmienione formy — bez Dockera, jedno kliknięcie</p></div>
+          <div class="card-t"><h2>Wykrywanie nazwisk AI <span class="tag-opt">opcjonalne</span></h2><p>rzadkie i odmienione formy, bez Dockera, jedno kliknięcie</p></div>
           <span class="card-sp"></span>
           <span class="pill-off" id="ner-pill">wyłączone</span>
           <span class="chev">▸</span>
         </summary>
         <div class="card-b">
-          <p class="ner-lead">Warstwa reguł, słowników i sum kontrolnych działa <strong>zawsze</strong>. To AI dokłada rzadkie i odmienione nazwiska (np. „sprawa Grzegorzewskiego”). Model działa u Ciebie — tekst nadal nie opuszcza komputera.</p>
-          <label class="ner-row" data-tip="Włącza lokalny model AI — lepsze wykrywanie rzadkich i odmienionych nazwisk">
+          <p class="ner-lead">Warstwa reguł, słowników i sum kontrolnych działa <strong>zawsze</strong>. To AI dokłada rzadkie i odmienione nazwiska (np. „sprawa Grzegorzewskiego”). Model działa u Ciebie, tekst nadal nie opuszcza komputera.</p>
+          <label class="ner-row" data-tip="Włącza lokalny model AI, lepsze wykrywanie rzadkich i odmienionych nazwisk">
             <span class="ic ic-s"><i class="gi" data-i="onoff"></i></span>
             <span class="tg-t"><b>Włącz AI</b><span class="sub ner-status" id="ner-status"></span></span>
             <input type="checkbox" class="sw" id="ner-enabled" aria-label="Włącz lokalne AI (NER)" />
@@ -230,21 +231,21 @@
                 <option value="http">usługa w Dockerze (zaawansowane)</option>
               </select>
             </label>
-            <label class="ner-row" id="ner-url-row" data-tip="Tekst trafia wyłącznie pod wskazany adres lokalny — nadal nic nie wychodzi do internetu">
+            <label class="ner-row" id="ner-url-row" data-tip="Tekst trafia wyłącznie pod wskazany adres lokalny, nadal nic nie wychodzi do internetu">
               <span class="ic ic-s"><i class="gi" data-i="haslo"></i></span>
               <span class="tg-t"><b>Adres usługi</b><span class="sub">tylko adres lokalny</span></span>
               <input id="ner-url" type="text" value="http://127.0.0.1:8090" spellcheck="false" class="field field-inline" aria-label="Adres lokalnej usługi NER" />
             </label>
             <p class="ner-note">
               <strong>Najprościej (bez Dockera):</strong> pobierz paczkę „AI w przeglądarce”, rozpakuj obok
-              aplikacji i kliknij dwukrotnie <code>START-ANONIMIZATOR.bat</code> — model rusza lokalnie.
+              aplikacji i kliknij dwukrotnie <code>START-ANONIMIZATOR.bat</code>, model rusza lokalnie.
               <a href="https://github.com/karolpolikarp/anonimizator/blob/main/docs/AI-BEZ-DOCKERA.md" target="_blank" rel="noopener noreferrer">instrukcja krok po kroku</a>.
             </p>
           </div>
         </div>
         <div class="card-f">
           <i class="gi" data-i="sprawdz"></i>
-          <span>Nie chcesz AI? Nic nie rób — <strong>reguły, słowniki i sumy kontrolne</strong> działają od razu.</span>
+          <span>Nie chcesz AI? Nic nie rób, <strong>reguły, słowniki i sumy kontrolne</strong> działają od razu.</span>
         </div>
       </details>
 
@@ -252,12 +253,12 @@
       <details class="card g12" id="co-wykrywa">
         <summary class="card-h">
           <span class="ic"><i class="gi" data-i="sprawdz"></i></span>
-          <div class="card-t"><h2>Co wykrywa <span class="tag-opt">szczegóły</span></h2><p>12 typów danych w 5 kategoriach — każdy identyfikator z walidacją sumy kontrolnej</p></div>
+          <div class="card-t"><h2>Co wykrywa <span class="tag-opt">szczegóły</span></h2><p>13 typów danych w 5 kategoriach; każdy z walidacją lub kontekstem</p></div>
           <span class="card-sp"></span>
-          <span class="help" data-tip="Suma kontrolna odróżnia prawdziwy numer od przypadkowego ciągu cyfr — stąd mało fałszywych trafień" data-tip-pos="left" tabindex="0">?</span>
+          <span class="help" data-tip="Suma kontrolna odróżnia prawdziwy numer od przypadkowego ciągu cyfr, stąd mało fałszywych trafień" data-tip-pos="left" tabindex="0">?</span>
           <span class="chev">▸</span>
         </summary>
-        <div class="card-b table-wrap" role="region" tabindex="0" aria-label="Co wykrywa — tabela">
+        <div class="card-b table-wrap" role="region" tabindex="0" aria-label="Co wykrywa, tabela">
           <table>
             <thead>
               <tr><th>Dane</th><th>Kategoria</th><th>Jak rozpoznaje</th><th>Znacznik w tekście</th></tr>
@@ -292,6 +293,12 @@
                 <td><span class="catpill cp-ident">identyfikatory</span></td>
                 <td><span class="how">kontekst „paszport" + 2 litery + 7 cyfr</span></td>
                 <td><mark class="pii pii-ident">[NR-PASZPORTU]</mark></td>
+              </tr>
+              <tr>
+                <td><span class="td-name"><span class="ic ic-s c-ident"><i class="gi" data-i="dane-id"></i></span>Numer KRS</span></td>
+                <td><span class="catpill cp-ident">identyfikatory</span></td>
+                <td><span class="how">kontekst „KRS" + 10 cyfr</span></td>
+                <td><mark class="pii pii-ident">[KRS]</mark></td>
               </tr>
               <tr>
                 <td><span class="td-name"><span class="ic ic-s c-fin"><i class="gi" data-i="iban"></i></span>IBAN / nr konta</span></td>
@@ -346,7 +353,7 @@
           <span class="ic"><i class="gi" data-i="suma"></i></span>
           <div class="card-t"><h3>Dlaczego mało fałszywych trafień</h3><p>sumy kontrolne + strażnik kontekstu</p></div>
           <span class="card-sp"></span>
-          <span class="help" data-tip="Suma kontrolna to matematyczna cecha prawdziwych numerów — przypadkowy ciąg cyfr jej nie spełnia" data-tip-pos="left" tabindex="0">?</span>
+          <span class="help" data-tip="Suma kontrolna to matematyczna cecha prawdziwych numerów, przypadkowy ciąg cyfr jej nie spełnia" data-tip-pos="left" tabindex="0">?</span>
         </div>
         <div class="card-b note-b">
           <p>Walidacja sum kontrolnych odróżnia prawdziwy PESEL czy NIP od przypadkowego ciągu cyfr
@@ -358,9 +365,9 @@
       <section class="card g4 caveat" id="ograniczenia" aria-label="Ograniczenia">
         <div class="card-h">
           <span class="ic c-ident"><i class="gi" data-i="ostrzezenie"></i></span>
-          <div class="card-t"><h3>Ograniczenia — przeczytaj</h3><p>narzędzie pomocnicze, nie gwarancja</p></div>
+          <div class="card-t"><h3>Ograniczenia (przeczytaj)</h3><p>narzędzie pomocnicze, nie gwarancja</p></div>
           <span class="card-sp"></span>
-          <span class="help" data-tip="Żaden automat nie daje 100% pewności — ostatnie słowo należy do Ciebie" data-tip-pos="left" tabindex="0">?</span>
+          <span class="help" data-tip="Żaden automat nie daje 100% pewności, ostatnie słowo należy do Ciebie" data-tip-pos="left" tabindex="0">?</span>
         </div>
         <div class="card-b note-b">
           <p>Wykrywanie imion i nazwisk jest <strong>heurystyczne</strong>: rzadkie nazwisko bez imienia
@@ -375,13 +382,13 @@
           <span class="ic"><i class="gi" data-i="przyklad"></i></span>
           <div class="card-t"><h3>Wskazówki</h3><p>drobiazgi, które przyspieszają pracę</p></div>
           <span class="card-sp"></span>
-          <span class="help" data-tip="Pełna lista zachowań — w README repozytorium" data-tip-pos="left" tabindex="0">?</span>
+          <span class="help" data-tip="Pełna lista zachowań, w README repozytorium" data-tip-pos="left" tabindex="0">?</span>
         </div>
         <div class="card-b">
           <ul class="tips">
             <li><span><kbd>Ctrl</kbd>+<kbd>Enter</kbd> kopiuje wynik.</span></li>
             <li><span>Plik możesz upuścić w dowolnym miejscu strony.</span></li>
-            <li><span>Po wczytaniu dokumentu włącza się widok <strong>Porównanie</strong> — oryginał obok znacznika, jak w recenzji Worda.</span></li>
+            <li><span>Po wczytaniu dokumentu włącza się widok <strong>Porównanie</strong>, oryginał obok znacznika, jak w recenzji Worda.</span></li>
             <li data-full><span>Odznaczenie „imię i nazwisko” w „Co maskować” wyłącza też NER.</span></li>
           </ul>
         </div>

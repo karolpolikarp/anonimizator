@@ -219,6 +219,12 @@ test('numer paszportu z kontekstem maskowany (2 litery + 7 cyfr)', () => {
 test('2 litery + 7 cyfr BEZ kontekstu paszportu NIE są maskowane', () => {
   expect(redactPII('Kod AB1234567 systemu').redacted.includes('[NR-PASZPORTU]')).toBe(false);
 });
+test('numer KRS maskowany (kontekst „KRS" + 10 cyfr, zera wiodące)', () => {
+  const r = redactPII('Spółka wpisana pod nr KRS 0000173413 w rejestrze.');
+  expect(r.redacted).toContain('[KRS]');
+  expect(r.redacted.includes('0000173413')).toBe(false);
+  expect(redactPII('KRS: 0000173413').redacted).toContain('[KRS]');
+});
 test('kod waluty + kwota NIE jest mylony z dowodem', () => {
   expect(redactPII('PLN 123456').redacted.includes('[NR-DOWODU]')).toBe(false);
   expect(redactPII('EUR 250000').redacted.includes('[NR-DOWODU]')).toBe(false);

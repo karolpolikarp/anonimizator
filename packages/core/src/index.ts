@@ -33,6 +33,7 @@ export type PiiType =
   | 'TELEFON'
   | 'DOWOD'
   | 'PASZPORT'
+  | 'KRS'
   | 'KOD-POCZTOWY'
   | 'DATA-UR'
   | 'ADRES'
@@ -90,6 +91,7 @@ const MASK: Record<PiiType, string> = {
   TELEFON: '[TELEFON]',
   DOWOD: '[NR-DOWODU]',
   PASZPORT: '[NR-PASZPORTU]',
+  KRS: '[KRS]',
   'KOD-POCZTOWY': '[KOD-POCZTOWY]',
   'DATA-UR': '[DATA-URODZENIA]',
   ADRES: '[ADRES]',
@@ -608,6 +610,15 @@ export function redactPII(input: string, options?: RedactOptions): RedactionResu
     );
   }
 
+  // 9c) NUMER KRS — 10 cyfr (często z zerami wiodącymi: „0000173413"). TYLKO z kontekstem „KRS",
+  // bo KRS nie ma publicznej sumy kontrolnej. Słowo KRS zostaje, maskowany sam numer.
+  if (on('KRS')) {
+    text = text.replace(/\bKRS([\s:.=-]*)(\d{10})(?!\d)/gi, (_m, sep: string, _num: string) => {
+      bump('KRS');
+      return `KRS${sep}${M.KRS}`;
+    });
+  }
+
   // 10) KOD POCZTOWY — XX-XXX, nie po „art./§" (żeby nie zjeść zakresu „art. 12-345").
   if (on('KOD-POCZTOWY')) {
     text = text.replace(/(?<![\d-])\d{2}-\d{3}(?![\d-])/g, (m, offset: number) => {
@@ -908,6 +919,7 @@ const HUMAN_LABEL: Record<PiiType, string> = {
   TELEFON: 'numer telefonu',
   DOWOD: 'numer dowodu',
   PASZPORT: 'numer paszportu',
+  KRS: 'numer KRS',
   'KOD-POCZTOWY': 'kod pocztowy',
   'DATA-UR': 'datę urodzenia',
   ADRES: 'adres',

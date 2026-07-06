@@ -39,6 +39,7 @@ const maskNav = $<HTMLSpanElement>('mask-nav');
 const maskPrev = $<HTMLButtonElement>('mask-prev');
 const maskNext = $<HTMLButtonElement>('mask-next');
 const maskCount = $<HTMLSpanElement>('mask-count');
+const maskStatus = $<HTMLSpanElement>('mask-status');
 
 let lastRedacted = '';
 let lastInput = '';
@@ -54,7 +55,7 @@ if (CLERK_EDITION) {
   for (const el of document.querySelectorAll('[data-full]')) el.remove();
   // Edycja urzędnik nie ma warstwy AI — usuwamy wzmianki o niej z nagłówka (uczciwość).
   const sub = document.getElementById('hero-sub');
-  if (sub) sub.textContent = 'Lokalny anonimizator polskich danych osobowych — reguły i sumy kontrolne';
+  if (sub) sub.textContent = 'Lokalny anonimizator polskich danych osobowych';
   const badge = document.getElementById('badge-ai-txt');
   if (badge) badge.textContent = 'Reguły + sumy kontrolne';
   const step2 = document.getElementById('step2-sub');
@@ -81,6 +82,7 @@ const MASK_TIP: Record<string, string> = {
   REGON: 'Identyfikatory · suma kontrolna poprawna',
   'NR-DOWODU': 'Identyfikatory · 3 litery + 6 cyfr, suma kontrolna poprawna',
   'NR-PASZPORTU': 'Identyfikatory · kontekst „paszport" + 2 litery + 7 cyfr',
+  KRS: 'Identyfikatory · kontekst „KRS" + 10 cyfr',
   'NR-KONTA': 'Finanse · IBAN (mod 97) lub kontekst „konto/rachunek”',
   EMAIL: 'Kontakt · wzorzec adresu e-mail',
   TELEFON: 'Kontakt · 9 cyfr, opcjonalnie +48',
@@ -115,6 +117,7 @@ const MASK_GROUPS: MaskGroup[] = [
   { key: 'regon', label: 'REGON', types: ['REGON'], cat: 'ident', icon: 'dane-id', code: '[REGON]', tip: '9 lub 14 cyfr + suma kontrolna' },
   { key: 'dowod', label: 'Nr dowodu osobistego', types: ['DOWOD'], cat: 'ident', icon: 'numer-dok', code: '[NR-DOWODU]', tip: '3 litery + 6 cyfr + suma kontrolna' },
   { key: 'paszport', label: 'Nr paszportu', types: ['PASZPORT'], cat: 'ident', icon: 'numer-dok', code: '[NR-PASZPORTU]', tip: 'Kontekst „paszport" + 2 litery + 7 cyfr' },
+  { key: 'krs', label: 'Numer KRS', types: ['KRS'], cat: 'ident', icon: 'dane-id', code: '[KRS]', tip: 'Kontekst „KRS" + 10 cyfr' },
   { key: 'konto', label: 'IBAN / nr konta', types: ['IBAN', 'NR-KONTA'], cat: 'fin', icon: 'iban', code: '[NR-KONTA]', tip: 'Walidacja mod 97 lub kontekst „konto/rachunek”' },
   { key: 'email', label: 'E-mail', types: ['EMAIL'], cat: 'contact', icon: 'login', code: '[EMAIL]', tip: 'Wzorzec adresu e-mail' },
   { key: 'telefon', label: 'Telefon', types: ['TELEFON'], cat: 'contact', icon: 'telefon', code: '[TELEFON]', tip: '9 cyfr, opcjonalnie prefiks +48' },
@@ -122,14 +125,14 @@ const MASK_GROUPS: MaskGroup[] = [
   { key: 'kod', label: 'Kod pocztowy', types: ['KOD-POCZTOWY'], cat: 'place', icon: 'mapa-pl', code: '[KOD-POCZTOWY]', tip: 'Wzorzec XX-XXX' },
   { key: 'miejscowosc', label: 'Miejscowość', types: ['MIEJSCOWOSC'], cat: 'place', icon: 'mapa-pl', code: '[MIEJSCOWOŚĆ]', tip: 'Miejscowość po kodzie pocztowym (w adresie)' },
   { key: 'dataur', label: 'Data urodzenia', types: ['DATA-UR'], cat: 'place', icon: 'kalendarz', code: '[DATA-URODZENIA]', tip: 'Data z kontekstem „ur./urodzony”' },
-  { key: 'imie', label: 'Imię i nazwisko', types: ['IMIE'], cat: 'person', icon: 'dane-osobowe', code: '[IMIĘ I NAZWISKO] — wykrywanie heurystyczne; odznaczenie wyłącza też NER', tip: 'Słownik ~200 imion i ~230 nazwisk z odmianą + wyzwalacze kontekstu; odznaczenie wyłącza też NER', full: true },
+  { key: 'imie', label: 'Imię i nazwisko', types: ['IMIE'], cat: 'person', icon: 'dane-osobowe', code: '[IMIĘ I NAZWISKO] · wykrywanie heurystyczne; odznaczenie wyłącza też NER', tip: 'Słownik ~200 imion i ~230 nazwisk z odmianą + wyzwalacze kontekstu; odznaczenie wyłącza też NER', full: true },
 ];
 
 // W edycji „urzędnik" nie ma NER — usuwamy wzmianki z etykiet/tooltipów tej warstwy.
 if (CLERK_EDITION) {
   const imie = MASK_GROUPS.find((g) => g.key === 'imie');
   if (imie) {
-    imie.code = '[IMIĘ I NAZWISKO] — wykrywanie heurystyczne';
+    imie.code = '[IMIĘ I NAZWISKO] · wykrywanie heurystyczne';
     imie.tip = 'Słownik ~200 imion i ~230 nazwisk z odmianą + wyzwalacze kontekstu';
   }
   MASK_TIP['IMIĘ I NAZWISKO'] = 'Osoby · słownik imion/nazwisk lub wyzwalacz kontekstu';
@@ -205,7 +208,7 @@ function escapeHtml(s: string): string {
 }
 
 const MASK_TOKEN_RE =
-  /\[(PESEL|NIP|REGON|NR-KONTA|NR-DOWODU|NR-PASZPORTU|EMAIL|TELEFON|KOD-POCZTOWY|DATA-URODZENIA|ADRES|MIEJSCOWOŚĆ|IMIĘ I NAZWISKO|OSOBA-[A-Z]+)\]/g;
+  /\[(PESEL|NIP|REGON|NR-KONTA|NR-DOWODU|NR-PASZPORTU|KRS|EMAIL|TELEFON|KOD-POCZTOWY|DATA-URODZENIA|ADRES|MIEJSCOWOŚĆ|IMIĘ I NAZWISKO|OSOBA-[A-Z]+)\]/g;
 
 function maskHtml(name: string): string {
   return `<mark class="pii pii-${maskCategory(name)}" data-tip="${escapeHtml(maskTip(name))}" tabindex="0">[${name}]</mark>`;
@@ -322,7 +325,10 @@ function goToMask(i: number, scroll = true): void {
     const or = output.getBoundingClientRect();
     output.scrollTop += er.top - or.top - (output.clientHeight - er.height) / 2;
   }
-  el.focus({ preventScroll: true }); // pokazuje powód (tooltip) i ogłasza czytnikowi ekranu
+  // NIE fokusujemy znacznika — inaczej sam „powód" (tooltip) wyskakiwałby przy każdym przejściu.
+  // Bieżący znacznik wskazuje pierścień; powód pokazuje się po NAJECHANIU. Czytnik ekranu dostaje
+  // zwięzły komunikat przez #mask-status (aria-live).
+  maskStatus.textContent = `Fragment ${maskIdx + 1} z ${n}: ${el.textContent}.`;
   updateMaskCount();
 }
 
@@ -346,9 +352,12 @@ output.addEventListener('click', (e) => {
   if (at !== -1) goToMask(at, false);
 });
 
-// Klawiatura (fokus na wyniku): ↓/→ następny, ↑/← poprzedni — nadpisuje zwykłe przewijanie.
-output.addEventListener('keydown', (e) => {
-  if (!maskEls.length) return;
+// Klawiatura: ↓/→ następny, ↑/← poprzedni — gdy fokus jest w wyniku LUB na strzałkach nawigacji
+// (dzięki temu po kliknięciu ‹/› strzałki nadal działają, mimo że nie fokusujemy znacznika).
+document.addEventListener('keydown', (e) => {
+  if (!maskEls.length || e.ctrlKey || e.metaKey || e.altKey || e.shiftKey) return;
+  const ae = document.activeElement;
+  if (ae !== output && !output.contains(ae) && !maskNav.contains(ae)) return;
   if (e.key === 'ArrowDown' || e.key === 'ArrowRight') { e.preventDefault(); goToMask(maskIdx + 1); }
   else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') { e.preventDefault(); goToPrevMask(); }
 });
@@ -362,6 +371,7 @@ const CHIP_META: Record<string, { label: string; cat: Cat; icon: string }> = {
   REGON: { label: 'REGON', cat: 'ident', icon: 'dane-id' },
   DOWOD: { label: 'nr dowodu', cat: 'ident', icon: 'numer-dok' },
   PASZPORT: { label: 'nr paszportu', cat: 'ident', icon: 'numer-dok' },
+  KRS: { label: 'numer KRS', cat: 'ident', icon: 'dane-id' },
   IBAN: { label: 'nr konta', cat: 'fin', icon: 'iban' },
   'NR-KONTA': { label: 'nr konta', cat: 'fin', icon: 'iban' },
   EMAIL: { label: 'e-mail', cat: 'contact', icon: 'login' },
@@ -388,7 +398,7 @@ function renderFindings(found: PiiFinding[]): void {
 
   if (found.length === 0) {
     const clean = disabledGroups.size > 0
-      ? '<span class="chip chip-hint">nic nie zamaskowano — część typów jest wyłączona w „Co maskować”</span>'
+      ? '<span class="chip chip-hint">nic nie zamaskowano, część typów jest wyłączona w „Co maskować”</span>'
       : '<span class="chip chip-ok">nie wykryto danych osobowych</span>';
     const hint = !CLERK_EDITION && !nerEnabledBox.checked
       ? ' <span class="chip chip-hint">💡 rzadkie nazwiska złapie „Dokładniejsze wykrywanie nazwisk” poniżej</span>'
@@ -431,7 +441,7 @@ function setResultActions(on: boolean): void {
 
 function updateSrcMeta(text: string): void {
   const lines = text ? text.split('\n').length : 0;
-  srcMeta.textContent = `${lines} wierszy · ${text.length} znaków — plik możesz upuścić w dowolnym miejscu strony`;
+  srcMeta.textContent = `${lines} wierszy · ${text.length} znaków · plik możesz upuścić w dowolnym miejscu strony`;
 }
 
 function renderResult(redacted: string, found: PiiFinding[]): void {
@@ -503,7 +513,7 @@ function setNerStatus(ok: boolean | null): void {
     nerPill.textContent = 'aktywny';
     nerPill.className = 'pill-off pill-on';
   } else {
-    nerStatus.textContent = 'niedostępny — działa warstwa reguł i słowników';
+    nerStatus.textContent = 'niedostępny, działa warstwa reguł i słowników';
     nerStatus.className = 'sub ner-status ner-fail';
     nerPill.textContent = 'niedostępny';
     nerPill.className = 'pill-off';
@@ -630,7 +640,7 @@ copyBtn.addEventListener('click', async () => {
     const ok = document.execCommand('copy');
     ta.remove();
     flashCopy(ok ? 'Skopiowano ✓' : 'Kopiuj');
-    if (!ok) showError('Kopiowanie zablokowane przez przeglądarkę — zaznacz wynik i naciśnij Ctrl+C.');
+    if (!ok) showError('Kopiowanie zablokowane przez przeglądarkę: zaznacz wynik i naciśnij Ctrl+C.');
   }
 });
 

@@ -515,10 +515,13 @@ mark.pii.pii-linked { box-shadow: 0 0 0 2px var(--acc-line); }
 .stat-total b { color: var(--text); font-size: 15px; }
 
 /* ============ CO MASKOWAĆ ============ */
-/* kolumny ustawia reguła responsywna niżej (repeat auto-fit); tu tylko szkielet gridu */
-.toggles { display: grid; gap: 10px; }
+/* Flexbox z zawijaniem: przełączniki ROSNĄ, by wypełnić rząd — ostatni (niepełny) rząd nie
+   zostawia „dziury" niezależnie od liczby typów (dziś 13 = liczba pierwsza, żadna siatka nie
+   dzieli równo). Bazowa szerokość ~230px → tyle kolumn, ile mieści szerokość karty. */
+.toggles { display: flex; flex-wrap: wrap; gap: 10px; }
 .mask-toggles-host { display: contents; }
 .tg {
+  flex: 1 1 230px;
   display: flex; align-items: center; gap: 11px;
   padding: 9px 12px 9px 9px;
   background: var(--card-2); border: 1px solid var(--line); border-radius: var(--r-ctl);
@@ -528,8 +531,8 @@ mark.pii.pii-linked { box-shadow: 0 0 0 2px var(--acc-line); }
 .tg .tg-t { min-width: 0; flex: 1; }
 .tg b { display: block; font-size: 13px; font-weight: 600; }
 .tg code { font-size: 11px; color: var(--mut); }
-.tg-wide { grid-column: 1 / -1; border-style: dashed; }
-.tg-full { grid-column: 1 / -1; }
+.tg-wide { flex-basis: 100%; border-style: dashed; }
+.tg-full { flex-basis: 100%; }
 
 /* ============ NER ============ */
 .ner-row {
@@ -560,7 +563,6 @@ html[data-hide-full] [data-full] { display: none !important; }
 /* Bez karty NER (edycja urzędnik) „Co maskować" rozciąga się na całą szerokość —
    inaczej po prawej zostaje dziura po zniknięciu karty NER (g7 + g5). */
 html[data-hide-full] #co-maskowac { grid-column: 1 / -1; }
-.toggles { grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); }
 .ner-lead { font-size: 13px; color: var(--mut); margin: 0 0 12px; line-height: 1.55; }
 .ner-lead strong { color: var(--text); }
 .tag-opt {
@@ -660,7 +662,7 @@ table .pii { cursor: default; }
 }
 @media (max-width: 640px) {
   .g3 { grid-column: span 12; }
-  .toggles { grid-template-columns: 1fr; }
+  .tg { flex-basis: 100%; } /* na wąskich ekranach jeden przełącznik w rzędzie */
   .hero-b { flex-direction: column; align-items: flex-start; }
   .privacy { margin-left: 0; }
   .editor, textarea.editor-ta { min-height: 200px; }

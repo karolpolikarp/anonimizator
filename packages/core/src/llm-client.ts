@@ -59,6 +59,7 @@ const KNOWN_MASKS = [
   '[TELEFON]',
   '[NR-DOWODU]',
   '[NR-PASZPORTU]',
+  '[KRS]',
   '[KOD-POCZTOWY]',
   '[MIEJSCOWOŚĆ]',
   '[DATA-URODZENIA]',

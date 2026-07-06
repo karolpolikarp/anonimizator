@@ -1,5 +1,19 @@
 # Changelog
 
+## v0.34.0 — 2026-07-06
+
+- **Numer KRS jest teraz maskowany** — kontekst „KRS" + 10 cyfr (także z zerami wiodącymi,
+  np. „KRS 0000173413") → `[KRS]`. Nowy typ z osobnym przełącznikiem i chipem. Wcześniej wyciekał.
+- **Przeglądanie wyniku: powód pokazuje się po najechaniu, nie po kliknięciu strzałki.**
+  Przejście ‹ › podświetla bieżący fragment pierścieniem, ale nie wyświetla już automatycznie
+  dymka z powodem (wyskakiwał, bo znacznik był fokusowany). Klawiatura działa też, gdy fokus jest
+  na strzałkach; czytnik ekranu dostaje zwięzły komunikat.
+- **Kopia z „—" (pauza) usunięta z interfejsu** — tytuły, podtytuły, notki i podpowiedzi używają
+  teraz przecinków/dwukropków zamiast pauzy (np. „Wynik zanonimizowany", „Lokalny anonimizator
+  polskich danych osobowych", „Usuń dane osobowe z tekstu, zanim wkleisz…").
+- **„Co maskować" bez dziury** — układ przełączników przełączony na flexbox, który wypełnia
+  ostatni (niepełny) rząd, więc przy dowolnej liczbie typów nie zostaje pusta przestrzeń.
+
 ## v0.33.0 — 2026-07-06
 
 Sprzątanie kodu z wieloagentowego przeglądu (bez zmiany zachowania — 138 testów rdzenia + 10 web,
