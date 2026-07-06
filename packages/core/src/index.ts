@@ -468,10 +468,12 @@ export function redactPII(input: string, options?: RedactOptions): RedactionResu
     });
   }
 
-  // 5) NIP — format z separatorami (XXX-XXX-XX-XX / XXX-XX-XX-XXX) lub 10 cyfr ciągiem, + suma kontrolna.
+  // 5) NIP — separator MYŚLNIK LUB SPACJA (XXX-XXX-XX-XX, XXX XX XX XXX itd.) lub 10 cyfr ciągiem,
+  // + suma kontrolna. Realne faktury/pisma zapisują NIP także spacjami („526 27 35 917") — bez [- ]
+  // wyciekał. isValidNip liczy sumę po samych cyfrach, więc separator jest bez znaczenia dla walidacji.
   if (on('NIP')) {
     text = text.replace(
-      /(?<![\d])(?:\d{3}-\d{3}-\d{2}-\d{2}|\d{3}-\d{2}-\d{2}-\d{3}|\d{10})(?![\d])/g,
+      /(?<![\d])(?:\d{3}[- ]\d{3}[- ]\d{2}[- ]\d{2}|\d{3}[- ]\d{2}[- ]\d{2}[- ]\d{3}|\d{10})(?![\d])/g,
       (m, offset: number) => {
         if (precededByLegalRef(text, offset)) return m;
         if (isValidNip(m)) {

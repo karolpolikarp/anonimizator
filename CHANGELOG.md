@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.32.0 — 2026-07-06
+
+- **NIP zapisany spacjami już maskowany** — „526 27 35 917" (i grupowanie 3-3-2-2:
+  „526 273 59 17") wcześniej wyciekał, bo wzorzec znał tylko myślniki i 10 cyfr ciągiem.
+  Separatorem jest teraz **myślnik LUB spacja**; suma kontrolna liczona po samych cyfrach.
+- **Przywrócono odczyt PDF w edycji „urzędnik"** — cofnięto odchudzenie z v0.31 (odcięcie pdfjs).
+  Obsługa PDF wróciła do obu edycji; plik znów ~1,77 MB. (Odchudzenie okazało się niepotrzebnym
+  kosztem funkcjonalności.)
+
 ## v0.31.0 — 2026-07-06
 
 - **Edycja „urzędnik" ~94% mniejsza: 1,77 MB → 99 kB.** Odcięto bibliotekę pdfjs (dominowała

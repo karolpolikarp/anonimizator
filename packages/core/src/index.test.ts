@@ -69,6 +69,13 @@ test('redactPII — NIP z separatorami maskowany', () => {
   expect(r.redacted).toContain('[NIP]');
   expect(/123-456-32-18/.test(r.redacted)).toBe(false);
 });
+test('redactPII — NIP ze SPACJAMI maskowany (526 27 35 917)', () => {
+  const r = redactPII('NIP: 526 27 35 917');
+  expect(r.redacted).toContain('[NIP]');
+  expect(r.redacted.includes('526 27 35 917')).toBe(false);
+  // ten sam numer w grupowaniu 3-3-2-2 spacjami
+  expect(redactPII('NIP 526 273 59 17').redacted).toContain('[NIP]');
+});
 test('redactPII — e-mail i telefon maskowane', () => {
   const r = redactPII('Pisz na jan.kowalski@example.com lub dzwoń +48 600 700 800');
   expect(r.redacted).toContain('[EMAIL]');
