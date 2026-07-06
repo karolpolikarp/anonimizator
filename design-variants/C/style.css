@@ -1,11 +1,9 @@
 /* ============================================================
-   ANONIMIZATOR — układ „Modularna siatka kart" (zwycięzca turnieju C)
-   + przeszczepy: duże ikono-przyciski (A), inline-diff Porównania (B)
-   Dark-enterprise · siatka 12 kolumn · jednolite nagłówki kart · tooltipy CSS
+   ANONIMIZATOR — Koncepcja C „Modularna siatka kart"
+   Dark-enterprise · siatka 12 kolumn · jednolite nagłówki kart
    ============================================================ */
 
 :root {
-  color-scheme: dark;
   --bg:        #0b0e14;
   --card:      #11151d;
   --card-2:    #0d1119;
@@ -14,32 +12,25 @@
   --line-2:    #313a49;
   --text:      #e8ebf0;
   --mut:       #98a1b3;
-  --mut-2:     #77839a; /* ≥4,5:1 na --well/--card (audyt kontrastu) */
+  --mut-2:     #5f6a7d;
   --acc:       #3663d9;
   --acc-soft:  rgba(54, 99, 217, .16);
   --acc-line:  rgba(54, 99, 217, .55);
 
-  /* kategorie PII — jedna rodzina kolorów w całej aplikacji */
+  /* kategorie PII */
   --person:  #a596e8;
   --contact: #67c8dc;
   --ident:   #d9a949;
   --fin:     #6fc79b;
   --place:   #7ea6e8;
 
-  /* stany — NIEZALEŻNE od kolorów kategorii PII (semantyka kategorii nietykalna) */
-  --ok: #4fc08d;
-  --warn: #e0b566;
-  --err: #e07284;
   --r-card: 14px;
   --r-ctl:  10px;
   --mono: ui-monospace, "Cascadia Mono", Consolas, "JetBrains Mono", monospace;
   --shadow: 0 10px 30px rgba(0, 0, 0, .28);
-  accent-color: var(--acc);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
-
-[hidden] { display: none !important; }
 
 html { scroll-behavior: smooth; }
 
@@ -84,6 +75,7 @@ kbd {
   display: flex; flex-direction: column;
 }
 
+/* --- jednolity nagłówek każdej karty --- */
 .card-h {
   display: flex; align-items: center; gap: 13px;
   padding: 13px 16px;
@@ -92,7 +84,7 @@ kbd {
 }
 .card-t { min-width: 0; }
 .card-t h1, .card-t h2, .card-t h3 { font-size: 15.5px; font-weight: 650; letter-spacing: .01em; }
-.card-t h1 { font-size: 22px; }
+.card-t h1 { font-size: 22px; letter-spacing: .01em; }
 .card-t p  { font-size: 12.5px; color: var(--mut); margin-top: 1px; }
 .card-sp { margin-left: auto; }
 
@@ -104,7 +96,7 @@ kbd {
 }
 .card-f img { width: 20px; height: 20px; }
 
-/* --- kafelek ikony (3 rozmiary) --- */
+/* --- kafelek ikony --- */
 .ic {
   flex: none; display: grid; place-items: center;
   width: 46px; height: 46px; border-radius: 12px;
@@ -118,6 +110,7 @@ kbd {
 .ic-s { width: 34px; height: 34px; border-radius: 9px; }
 .ic-s img { width: 20px; height: 20px; }
 
+/* kafelki barwione kategorią */
 .ic.c-person  { border-color: rgba(165, 150, 232, .40); background: linear-gradient(180deg, rgba(165,150,232,.12), var(--card-2)); }
 .ic.c-contact { border-color: rgba(103, 200, 220, .40); background: linear-gradient(180deg, rgba(103,200,220,.12), var(--card-2)); }
 .ic.c-ident   { border-color: rgba(217, 169, 73,  .40); background: linear-gradient(180deg, rgba(217,169,73,.12),  var(--card-2)); }
@@ -133,7 +126,7 @@ kbd {
 }
 .help:hover, .help:focus-visible { color: var(--text); border-color: var(--acc-line); }
 
-/* --- jeden wzorzec zwijania: details + chevron --- */
+/* --- chevron zwijania (jeden wzorzec dla wszystkich <details>) --- */
 details.card > summary { list-style: none; cursor: pointer; border-radius: var(--r-card) var(--r-card) 0 0; }
 details.card > summary::-webkit-details-marker { display: none; }
 details.card:not([open]) > summary { border-bottom: none; }
@@ -146,15 +139,6 @@ details.card > summary:hover { background: rgba(255, 255, 255, .015); }
   transition: transform .18s ease;
 }
 details[open] > summary .chev { transform: rotate(90deg); }
-
-/* Chromium owija dzieci <details> (poza summary) w ::details-content — bez tego
-   flex karty nie sięga card-b/card-f i stopka wisi w połowie karty (audyt P0). */
-details.card::details-content {
-  display: flex;
-  flex-direction: column;
-  flex: 1 1 auto;
-  min-height: 0;
-}
 
 /* ============ TOOLTIPY — czysty CSS [data-tip] ============ */
 [data-tip] { position: relative; }
@@ -183,35 +167,13 @@ details.card::details-content {
   opacity: 0; visibility: hidden; pointer-events: none;
   transition: opacity .13s ease, transform .13s ease;
 }
-[data-tip]:hover::after,
-[data-tip]:focus-visible::after,
-[data-tip]:focus-within::after,
-[data-tip].tip-open::after {
+[data-tip]:hover::after, [data-tip]:focus-visible::after {
   opacity: 1; visibility: visible; transform: translate(-50%, 0);
 }
-[data-tip]:hover::before,
-[data-tip]:focus-visible::before,
-[data-tip]:focus-within::before,
-[data-tip].tip-open::before {
+[data-tip]:hover::before, [data-tip]:focus-visible::before {
   opacity: 1; visibility: visible; transform: translate(-50%, 0) rotate(45deg);
 }
-
-/* w przewijanych edytorach dymek otwiera się W DÓŁ — overflow nie utnie go u góry */
-.editor [data-tip]::after {
-  bottom: auto; top: calc(100% + 9px);
-}
-.editor [data-tip]::before {
-  bottom: auto; top: calc(100% + 5px);
-  border: none;
-  border-left: 1px solid var(--line-2); border-top: 1px solid var(--line-2);
-}
-/* hero leży przy górze dokumentu — dymki też w dół */
-.hero [data-tip]::after { bottom: auto; top: calc(100% + 9px); }
-.hero [data-tip]::before {
-  bottom: auto; top: calc(100% + 5px);
-  border: none;
-  border-left: 1px solid var(--line-2); border-top: 1px solid var(--line-2);
-}
+/* wariant: dymek dosunięty do prawej (elementy przy krawędzi karty) */
 [data-tip-pos="left"]::after { left: auto; right: -6px; transform: translate(0, 4px); }
 [data-tip-pos="left"]:hover::after, [data-tip-pos="left"]:focus-visible::after { transform: translate(0, 0); }
 
@@ -223,42 +185,23 @@ details.card::details-content {
   border: 1px solid var(--line-2); border-radius: var(--r-ctl);
   font: 600 13px/1 "Segoe UI", system-ui, sans-serif;
   cursor: pointer; white-space: nowrap;
-  transition: background-color .13s ease, border-color .13s ease, color .13s ease;
 }
 .btn img { width: 24px; height: 24px; filter: drop-shadow(0 1px 2px rgba(0,0,0,.4)); }
 .btn:hover { background: #1b2331; border-color: #3d4859; }
-.btn:active:not(:disabled) { transform: translateY(1px); }
-.btn:disabled { opacity: .4; cursor: not-allowed; }
-.btn:disabled:hover { background: #161c27; border-color: var(--line-2); }
+.btn:focus-visible { outline: 2px solid var(--acc-line); outline-offset: 2px; }
 .btn-acc {
   background: linear-gradient(180deg, #3f6de0, #2f57c2);
   border-color: #4a76e8;
 }
 .btn-acc:hover { background: linear-gradient(180deg, #4877e8, #3560ce); border-color: #5c86f0; }
-.btn-acc:disabled:hover { background: linear-gradient(180deg, #3f6de0, #2f57c2); border-color: #4a76e8; }
-
-/* duże pionowe ikono-przyciski toolbara (przeszczep z wariantu A) */
-.tbtn {
-  flex-direction: column; gap: 5px;
-  height: auto; min-width: 86px; padding: 8px 12px 7px;
-}
-.tbtn img { width: 26px; height: 26px; }
-.tbtn span { font-size: 12px; font-weight: 600; }
 
 /* segmentowany przełącznik widoku */
 .seg {
   display: inline-flex; padding: 3px; gap: 3px;
   background: var(--well); border: 1px solid var(--line-2); border-radius: var(--r-ctl);
 }
-/* segment w skali .tbtn — jedna anatomia przycisków w obu toolbarach (audyt symetrii) */
-.seg .btn {
-  height: auto; min-width: 86px; padding: 8px 12px 7px;
-  flex-direction: column; gap: 5px;
-  border: 1px solid transparent; background: transparent; color: var(--mut);
-  font-size: 12px;
-}
-.seg .btn img { width: 26px; height: 26px; }
-.seg .btn:not(.on):hover { background: rgba(255, 255, 255, .04); border-color: transparent; color: var(--text); }
+.seg .btn { height: 30px; border: 1px solid transparent; background: transparent; color: var(--mut); padding: 0 11px; }
+.seg .btn img { width: 20px; height: 20px; }
 .seg .btn.on { background: var(--acc-soft); border-color: var(--acc-line); color: #d3ddf5; }
 
 /* przełącznik suwakowy */
@@ -275,32 +218,31 @@ details.card::details-content {
 }
 .sw:checked { background: var(--acc); border-color: #4a76e8; }
 .sw:checked::after { left: 18px; background: #fff; }
+.sw:focus-visible { outline: 2px solid var(--acc-line); outline-offset: 2px; }
 
-/* pola tekstowe / select */
+/* pola tekstowe */
 .field {
-  height: 38px; padding: 0 11px;
+  width: 100%; height: 38px; padding: 0 11px;
   background: var(--well); color: var(--text);
   border: 1px solid var(--line-2); border-radius: var(--r-ctl);
   font: 500 13px/36px var(--mono);
 }
-.field-inline { width: 230px; flex: none; }
-select.field { font-family: "Segoe UI", system-ui, sans-serif; line-height: normal; cursor: pointer; }
+.fake-select { display: flex; align-items: center; justify-content: space-between; cursor: pointer; }
+.fake-select .car { color: var(--mut); font-size: 11px; }
 
 /* ============ HERO ============ */
 .hero .card-h { min-height: 84px; }
-.badges { display: flex; gap: 8px; flex-wrap: wrap; list-style: none; }
+.badges { display: flex; gap: 8px; flex-wrap: wrap; }
 .badge {
   display: inline-flex; align-items: center; gap: 7px;
   height: 32px; padding: 0 12px; border-radius: 999px;
   font-size: 12.5px; font-weight: 600; cursor: default;
 }
 .badge img { width: 18px; height: 18px; }
-/* badge'e hero NEUTRALNE — kolory 5 kategorii zarezerwowane dla semantyki PII (audyt P0) */
-.b-fin, .b-place, .b-person, .b-ident {
-  color: #b9c4d6;
-  border: 1px solid var(--line-2);
-  background: var(--card-2);
-}
+.b-fin     { color: var(--fin);     border: 1px solid rgba(111,199,155,.35); background: rgba(111,199,155,.08); }
+.b-place   { color: var(--place);   border: 1px solid rgba(126,166,232,.35); background: rgba(126,166,232,.08); }
+.b-person  { color: var(--person);  border: 1px solid rgba(165,150,232,.35); background: rgba(165,150,232,.08); }
+.b-ident   { color: var(--ident);   border: 1px solid rgba(217,169,73,.35);  background: rgba(217,169,73,.08); }
 
 .hero-b { display: flex; align-items: center; gap: 16px; }
 .hero-lead { font-size: 16.5px; color: #c6cdd9; flex: 1; }
@@ -308,7 +250,7 @@ select.field { font-family: "Segoe UI", system-ui, sans-serif; line-height: norm
 .privacy {
   margin-left: auto; display: flex; align-items: center; gap: 10px;
   padding: 11px 14px; border-radius: var(--r-ctl);
-  border: 1px dashed rgba(79, 192, 141, .38); background: rgba(79, 192, 141, .06);
+  border: 1px dashed rgba(111, 199, 155, .38); background: rgba(111, 199, 155, .06);
   color: #b9dcc9; font-size: 13px; max-width: 46ch;
 }
 .privacy img { width: 24px; height: 24px; flex: none; }
@@ -328,7 +270,7 @@ select.field { font-family: "Segoe UI", system-ui, sans-serif; line-height: norm
   color: #b9c9f2; font-size: 12px; font-weight: 700;
 }
 
-/* ============ LEGENDA ============ */
+/* ============ LEGENDA KATEGORII ============ */
 .legend .card-h { border-bottom: none; }
 .legend-items {
   display: flex; align-items: center; gap: 10px;
@@ -342,14 +284,14 @@ select.field { font-family: "Segoe UI", system-ui, sans-serif; line-height: norm
 .lg:hover { border-color: var(--line-2); background: var(--card-2); }
 .lg b { font-size: 13px; font-weight: 650; display: block; }
 .lg span { font-size: 11.5px; color: var(--mut); display: block; }
-.dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+.dot { width: 8px; height: 8px; border-radius: 50%; flex: none; }
 .dot-person  { background: var(--person); }
 .dot-contact { background: var(--contact); }
 .dot-ident   { background: var(--ident); }
 .dot-fin     { background: var(--fin); }
 .dot-place   { background: var(--place); }
 
-/* ============ EDYTORY ============ */
+/* ============ EDYTORY: ŹRÓDŁO / WYNIK ============ */
 .toolbar {
   display: flex; align-items: center; gap: 8px;
   padding: 10px 16px; border-bottom: 1px solid var(--line);
@@ -364,47 +306,24 @@ select.field { font-family: "Segoe UI", system-ui, sans-serif; line-height: norm
   padding: 13px 14px 13px 8px;
   font: 400 13.5px/1.9 var(--mono);
   color: #ccd3e0;
-  min-height: 300px;
-  max-height: 560px;
-  overflow-y: auto;
-  word-wrap: break-word;
+  min-height: 264px;
 }
 .cl { display: grid; grid-template-columns: 30px 1fr; gap: 12px; }
 .cl .no { text-align: right; color: var(--mut-2); user-select: none; font-size: 12px; padding-top: 2px; }
-.cl > span:last-child { white-space: pre-wrap; min-width: 0; }
 
-/* textarea źródła — ta sama anatomia co .editor, ale edytowalna */
-textarea.editor-ta {
-  width: 100%; resize: vertical;
-  padding: 13px 14px;
-  max-height: none;
-  overflow-y: auto;
-}
-textarea.editor-ta:focus {
-  outline: none;
-  border-color: var(--acc-line);
-  box-shadow: 0 0 0 3px var(--acc-soft);
-}
-textarea.editor-ta.dragover {
-  border-color: var(--acc-line);
-  box-shadow: 0 0 0 3px var(--acc-soft);
-  background: rgba(54, 99, 217, .05);
-}
-
-.editor .placeholder { color: var(--mut); font-family: "Segoe UI", system-ui, sans-serif; display: block; padding-left: 8px; }
-
-.editor.plain { white-space: pre-wrap; padding-left: 14px; }
-
-#output:focus-visible { outline: 2px solid var(--acc-line); outline-offset: 2px; }
-
-.editor.ner-updated { animation: ner-flash .8s ease-out; }
-@keyframes ner-flash { from { box-shadow: 0 0 0 3px var(--acc-soft); } }
+/* wykrycia podświetlone w ŹRÓDLE (kolor kategorii) */
+.hit { border-bottom: 2px solid; padding-bottom: 1px; cursor: help; border-radius: 2px 2px 0 0; }
+.hit-person  { border-color: var(--person);  background: rgba(165,150,232,.09); }
+.hit-contact { border-color: var(--contact); background: rgba(103,200,220,.09); }
+.hit-ident   { border-color: var(--ident);   background: rgba(217,169,73,.09); }
+.hit-fin     { border-color: var(--fin);     background: rgba(111,199,155,.09); }
+.hit-place   { border-color: var(--place);   background: rgba(126,166,232,.09); }
 
 /* znaczniki w WYNIKU */
 .pii {
   font-family: var(--mono); font-size: .87em; font-weight: 650;
   padding: 1.5px 7px; border-radius: 6px; border: 1px solid;
-  white-space: nowrap; cursor: help; background: none; color: inherit;
+  white-space: nowrap; cursor: help; background: none;
 }
 .pii-person  { color: var(--person);  border-color: rgba(165,150,232,.5); background: rgba(165,150,232,.10); }
 .pii-contact { color: var(--contact); border-color: rgba(103,200,220,.5); background: rgba(103,200,220,.10); }
@@ -412,43 +331,14 @@ textarea.editor-ta.dragover {
 .pii-fin     { color: var(--fin);     border-color: rgba(111,199,155,.5); background: rgba(111,199,155,.10); }
 .pii-place   { color: var(--place);   border-color: rgba(126,166,232,.5); background: rgba(126,166,232,.10); }
 
-/* Porównanie — oryginał przekreślony (przeszczep z wariantu B) */
-.editor del {
-  color: var(--err);
-  background: rgba(224, 114, 132, .08);
-  text-decoration: line-through;
-  text-decoration-color: rgba(224, 114, 132, .65);
-  text-decoration-thickness: 1.5px;
-  border-radius: 4px;
-  padding: 1px 4px;
-}
+/* strażnik kontekstu — celowo NIEzamaskowane */
+.guard { border-bottom: 1px dotted var(--mut); cursor: help; }
 
 .warn-note { color: #d9bb84; }
 .warn-note a { color: #e7cf9f; text-decoration: underline; }
 
-.app-error {
-  padding: 10px 14px;
-  border: 1px solid rgba(224, 114, 132, .4);
-  border-radius: var(--r-ctl);
-  background: rgba(224, 114, 132, .08);
-  color: var(--err);
-  font-size: 13px;
-}
-
-/* stan ładowania pliku — animowane kropki */
-.btn.busy span::after {
-  content: '';
-  display: inline-block;
-  width: 1.1em;
-  text-align: left;
-  animation: dots 1.2s steps(4, end) infinite;
-}
-@keyframes dots {
-  0% { content: ''; } 25% { content: '.'; } 50% { content: '..'; } 75% { content: '...'; }
-}
-
-/* ============ ZAMASKOWANO ============ */
-.stats .card-b { padding: 16px; }
+/* ============ PASEK „ZAMASKOWANO" ============ */
+.stats .card-b { padding: 13px 16px; }
 .stats-chips { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; }
 .chip {
   display: inline-flex; align-items: center; gap: 8px;
@@ -462,22 +352,21 @@ textarea.editor-ta.dragover {
 .ch-ident   { color: var(--ident);   border-color: rgba(217,169,73,.42);  background: rgba(217,169,73,.08); }
 .ch-fin     { color: var(--fin);     border-color: rgba(111,199,155,.42); background: rgba(111,199,155,.08); }
 .ch-place   { color: var(--place);   border-color: rgba(126,166,232,.42); background: rgba(126,166,232,.08); }
-.chip-ok  { color: var(--ok); border-color: rgba(79,192,141,.42); background: rgba(79,192,141,.08); padding: 0 12px; }
-.chip-hint { color: #b6c8f2; border-color: var(--acc-line); background: var(--acc-soft); padding: 0 12px; font-weight: 500; }
 .stat-total {
-  display: inline-flex; align-items: center; gap: 6px;
-  font-size: 12.5px; color: var(--mut); padding: 0 4px;
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: 12.5px; color: var(--mut);
+  padding: 0 4px;
 }
 .stat-total b { color: var(--text); font-size: 15px; }
 
 /* ============ CO MASKOWAĆ ============ */
-.toggles { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.mask-toggles-host { display: contents; }
+.toggles {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+}
 .tg {
   display: flex; align-items: center; gap: 11px;
   padding: 9px 12px 9px 9px;
   background: var(--card-2); border: 1px solid var(--line); border-radius: var(--r-ctl);
-  cursor: pointer;
 }
 .tg:hover { border-color: var(--line-2); }
 .tg .tg-t { min-width: 0; flex: 1; }
@@ -491,27 +380,23 @@ textarea.editor-ta.dragover {
   display: flex; align-items: center; gap: 11px;
   padding: 10px 12px 10px 9px;
   background: var(--card-2); border: 1px solid var(--line); border-radius: var(--r-ctl);
-  cursor: pointer;
 }
-.ner-row + .ner-row, #ner-details .ner-row:first-child, .ner-note { margin-top: 10px; }
+.ner-row + .ner-row, .ner-note { margin-top: 10px; }
 .ner-row .tg-t { flex: 1; min-width: 0; }
 .ner-row b { display: block; font-size: 13px; font-weight: 600; }
-.ner-row .sub { font-size: 11.5px; color: var(--mut); display: block; }
-.ner-status.ner-ok { color: var(--ok); }
-.ner-status.ner-fail { color: var(--warn); }
+.ner-row span.sub { font-size: 11.5px; color: var(--mut); }
 .pill-off {
   flex: none; font-size: 11px; font-weight: 700; letter-spacing: .08em;
   color: var(--mut); border: 1px solid var(--line-2); border-radius: 999px;
   padding: 4px 10px; text-transform: uppercase; background: var(--well);
 }
-.pill-off.pill-on { color: var(--ok); border-color: rgba(79,192,141,.42); background: rgba(79,192,141,.08); }
 .ner-note {
   font-size: 12.5px; color: var(--mut);
   border-left: 3px solid var(--line-2); padding: 2px 0 2px 12px;
 }
 .ner-note code { color: #b9c4d6; }
 
-/* ============ TABELA ============ */
+/* ============ TABELA „CO WYKRYWA" ============ */
 .table-wrap { overflow: visible; }
 table { width: 100%; border-collapse: collapse; }
 th {
@@ -534,46 +419,26 @@ td .how strong { color: var(--text); }
 .cp-fin     { color: var(--fin);     border-color: rgba(111,199,155,.42); background: rgba(111,199,155,.08); }
 .cp-place   { color: var(--place);   border-color: rgba(126,166,232,.42); background: rgba(126,166,232,.08); }
 
-/* statyczne znaczniki w tabeli nie mają tooltipów — bez mylącego kursora */
-table .pii { cursor: default; }
-
 /* ============ KARTY INFORMACYJNE ============ */
 .note-b p { font-size: 13px; color: #b9c2d2; }
 .note-b p strong { color: var(--text); }
-.caveat { border-color: rgba(224, 181, 102, .38); }
-.caveat .card-h { border-bottom-color: rgba(224, 181, 102, .22); }
+.caveat { border-color: rgba(217, 169, 73, .38); }
+.caveat .card-h { border-bottom-color: rgba(217, 169, 73, .22); }
 .tips { list-style: none; display: grid; gap: 9px; }
-.tips li { display: flex; gap: 9px; font-size: 13px; color: #b9c2d2; align-items: baseline; }
+.tips li {
+  display: flex; gap: 9px; font-size: 13px; color: #b9c2d2;
+  align-items: baseline;
+}
 .tips li::before { content: "▪"; color: var(--acc); font-size: 11px; }
 
 /* ============ STOPKA ============ */
 .foot .card-b {
   display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
-  font-size: 13px; color: var(--mut); padding: 14px 16px;
+  font-size: 13px; color: var(--mut); padding: 14px 18px;
 }
 .foot img { width: 20px; height: 20px; }
 .foot .sep { color: var(--mut-2); }
 .foot .card-sp { margin-left: auto; }
-
-/* ============ DOSTĘPNOŚĆ / RUCH / DOTYK ============ */
-:is(a, button, summary, select, input, .table-wrap):focus-visible,
-[data-tip][tabindex="0"]:focus-visible {
-  outline: 2px solid var(--acc-line);
-  outline-offset: 2px;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    animation-duration: .01ms !important;
-    transition-duration: .01ms !important;
-  }
-}
-
-@media (pointer: coarse) {
-  .btn { min-height: 44px; }
-  input[type='checkbox']:not(.sw) { width: 20px; height: 20px; }
-  .help { width: 34px; height: 34px; font-size: 15px; }
-}
 
 /* ============ RESPONSYWNOŚĆ ============ */
 @media (max-width: 1080px) {
@@ -581,36 +446,10 @@ table .pii { cursor: default; }
   .g4, .g5, .g6, .g7 { grid-column: span 12; }
   .privacy { max-width: none; }
   .table-wrap { overflow-x: auto; }
-  /* iOS auto-zoomuje pola <16px — także w zakresie tabletowym */
-  textarea.editor-ta, .editor { font-size: 16px; }
-  /* legenda pod nagłówkiem, w równych kolumnach zamiast postrzępionego zawijania */
-  .legend .card-h { flex-wrap: wrap; }
-  .legend-items {
-    flex-basis: 100%;
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
-    justify-content: stretch;
-    margin-left: 0;
-  }
 }
 @media (max-width: 640px) {
   .g3 { grid-column: span 12; }
   .toggles { grid-template-columns: 1fr; }
   .hero-b { flex-direction: column; align-items: flex-start; }
   .privacy { margin-left: 0; }
-  .editor, textarea.editor-ta { min-height: 200px; }
-  /* kolumna „Kategoria" duplikuje kolor+ikonę — chowamy, tabela mieści tokeny */
-  th:nth-child(2), td:nth-child(2) { display: none; }
-}
-/* telefony: nagłówki kart zawijają się, badge'e w równym kwartecie 2×2 */
-@media (max-width: 480px) {
-  .card-h { flex-wrap: wrap; min-height: 0; }
-  .grid > .card { min-width: 0; }
-  .badges {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    width: 100%;
-  }
-  .badge { justify-content: center; }
-  .card-sp { display: none; }
 }

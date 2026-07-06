@@ -1,0 +1,462 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="color-scheme" content="dark" />
+  <meta name="theme-color" content="#0b0e14" />
+  <title>Anonimizator — koncepcja C „Modularna siatka kart"</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<div class="grid">
+
+  <!-- ══════════ HERO ══════════ -->
+  <header class="card hero g12">
+    <div class="card-h">
+      <span class="ic ic-xl" data-tip="Anonimizator — wszystko dzieje się lokalnie, w Twojej przeglądarce" tabindex="0">
+        <img src="../icons/anonimizuj.png" alt="" />
+      </span>
+      <div class="card-t">
+        <h1>Anonimizator</h1>
+        <p>Lokalny anonimizator polskich danych osobowych — reguły, sumy kontrolne, opcjonalne lokalne AI</p>
+      </div>
+      <span class="card-sp"></span>
+      <ul class="badges" aria-label="Cechy">
+        <li class="badge b-fin"    data-tip="Działa bez internetu — możesz rozłączyć sieć i sprawdzić" tabindex="0"><img src="../icons/onoff.png" alt="" />100% Offline</li>
+        <li class="badge b-place"  data-tip="Tekst nie opuszcza przeglądarki — zero wysyłania na serwery" tabindex="0"><img src="../icons/haslo.png" alt="" />Bezpieczne</li>
+        <li class="badge b-person" data-tip="Kod otwarty na licencji MIT — możesz go samodzielnie zweryfikować" tabindex="0"><img src="../icons/regula.png" alt="" />Open Source · MIT</li>
+        <li class="badge b-ident"  data-tip="Warstwa reguł i sum kontrolnych + opcjonalny lokalny model NER" tabindex="0"><img src="../icons/ner.png" alt="" />Reguły + lokalne AI</li>
+      </ul>
+      <span class="help" data-tip="Prototyp układu — koncepcja C: modularna siatka kart" data-tip-pos="left" tabindex="0">?</span>
+    </div>
+    <div class="card-b hero-b">
+      <p class="hero-lead">Usuń dane osobowe z tekstu — <strong>zanim wkleisz go do czatu, e-maila czy formularza.</strong></p>
+      <div class="privacy" data-tip="Cała analiza odbywa się w Twojej przeglądarce — możesz rozłączyć internet i sprawdzić" tabindex="0">
+        <img src="../icons/haslo.png" alt="" />
+        <span>Tekst nigdzie nie jest wysyłany — wszystko dzieje się w&nbsp;Twojej przeglądarce.</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- ══════════ KROKI 1–4 ══════════ -->
+  <section class="card step g3" aria-label="Krok 1">
+    <span class="step-no">1</span>
+    <div class="card-h">
+      <span class="ic" data-tip="Obsługiwane formaty: TXT, MD, CSV, LOG, DOCX, PDF" tabindex="0"><img src="../icons/plik-txt.png" alt="" /></span>
+      <div class="card-t"><span class="kick">Krok 1</span><h2>Wklej tekst</h2></div>
+    </div>
+    <div class="card-b"><p>lub upuść plik (TXT, DOCX, PDF) w dowolnym miejscu strony</p></div>
+  </section>
+
+  <section class="card step g3" aria-label="Krok 2">
+    <span class="step-no">2</span>
+    <div class="card-h">
+      <span class="ic" data-tip="Analiza działa na bieżąco, podczas pisania" tabindex="0"><img src="../icons/sprawdz.png" alt="" /></span>
+      <div class="card-t"><span class="kick">Krok 2</span><h2>Analiza</h2></div>
+    </div>
+    <div class="card-b"><p>reguły, sumy kontrolne, opcjonalny lokalny NER</p></div>
+  </section>
+
+  <section class="card step g3" aria-label="Krok 3">
+    <span class="step-no">3</span>
+    <div class="card-h">
+      <span class="ic" data-tip="Każda kategoria danych ma swój kolor znacznika" tabindex="0"><img src="../icons/maskowanie.png" alt="" /></span>
+      <div class="card-t"><span class="kick">Krok 3</span><h2>Maskowanie</h2></div>
+    </div>
+    <div class="card-b"><p>kolorowe znaczniki zamiast danych osobowych</p></div>
+  </section>
+
+  <section class="card step g3" aria-label="Krok 4">
+    <span class="step-no">4</span>
+    <div class="card-h">
+      <span class="ic" data-tip="Skrót Ctrl+Enter kopiuje wynik do schowka" tabindex="0"><img src="../icons/walidacja.png" alt="" /></span>
+      <div class="card-t"><span class="kick">Krok 4</span><h2>Gotowe</h2></div>
+    </div>
+    <div class="card-b"><p>skopiuj bezpieczny tekst lub pobierz plik</p></div>
+  </section>
+
+  <!-- ══════════ LEGENDA KATEGORII PII ══════════ -->
+  <section class="card legend g12" aria-label="Legenda kategorii danych">
+    <div class="card-h">
+      <span class="ic" data-tip="Każdy wykryty typ danych należy do jednej z pięciu kategorii" tabindex="0"><img src="../icons/regula.png" alt="" /></span>
+      <div class="card-t"><h2>Kategorie danych</h2><p>kolor znacznika = kategoria</p></div>
+      <div class="legend-items">
+        <span class="lg" data-tip="Imię i nazwisko — słownik, wyzwalacze kontekstu, opcjonalny NER" tabindex="0">
+          <span class="ic ic-s c-person"><img src="../icons/dane-osobowe.png" alt="" /></span>
+          <span><b><span class="dot dot-person"></span> Osoby</b><span>1 typ danych</span></span>
+        </span>
+        <span class="lg" data-tip="E-mail i telefon" tabindex="0">
+          <span class="ic ic-s c-contact"><img src="../icons/telefon.png" alt="" /></span>
+          <span><b><span class="dot dot-contact"></span> Kontakt</b><span>2 typy danych</span></span>
+        </span>
+        <span class="lg" data-tip="PESEL, NIP, REGON, numer dowodu — zawsze z walidacją sumy kontrolnej" tabindex="0">
+          <span class="ic ic-s c-ident"><img src="../icons/pesel.png" alt="" /></span>
+          <span><b><span class="dot dot-ident"></span> Identyfikatory</b><span>4 typy danych</span></span>
+        </span>
+        <span class="lg" data-tip="IBAN / numer konta — walidacja mod 97" tabindex="0">
+          <span class="ic ic-s c-fin"><img src="../icons/iban.png" alt="" /></span>
+          <span><b><span class="dot dot-fin"></span> Finanse</b><span>1 typ danych</span></span>
+        </span>
+        <span class="lg" data-tip="Adres, kod pocztowy, data urodzenia" tabindex="0">
+          <span class="ic ic-s c-place"><img src="../icons/dom.png" alt="" /></span>
+          <span><b><span class="dot dot-place"></span> Adres i czas</b><span>3 typy danych</span></span>
+        </span>
+      </div>
+      <span class="help" data-tip="Te same kolory znajdziesz w wyniku, w pasku „Zamaskowano” i w tabeli „Co wykrywa”" data-tip-pos="left" tabindex="0">?</span>
+    </div>
+  </section>
+
+  <!-- ══════════ TEKST ŹRÓDŁOWY ══════════ -->
+  <section class="card g6" aria-label="Tekst źródłowy">
+    <div class="card-h">
+      <span class="ic"><img src="../icons/szablon.png" alt="" /></span>
+      <div class="card-t"><h2>Tekst źródłowy</h2><p>analiza na bieżąco, podczas pisania</p></div>
+      <span class="card-sp"></span>
+      <span class="help" data-tip="Wykryte dane są podkreślone kolorem kategorii jeszcze przed maskowaniem — nic nie wychodzi z przeglądarki" data-tip-pos="left" tabindex="0">?</span>
+    </div>
+    <div class="toolbar">
+      <button type="button" class="btn" data-tip="Wstawia przykładowy tekst z danymi — przetestujesz działanie bez wklejania własnych"><img src="../icons/przyklad.png" alt="" />Przykład</button>
+      <button type="button" class="btn" data-tip="Otwiera plik TXT, MD, CSV, LOG, DOCX lub PDF z dysku"><img src="../icons/plik-txt.png" alt="" />Wczytaj plik</button>
+      <button type="button" class="btn" data-tip="Usuwa cały tekst z obu paneli"><img src="../icons/wyczysc.png" alt="" />Wyczyść</button>
+      <span class="hint">TXT · DOCX · PDF</span>
+    </div>
+    <div class="card-b">
+      <div class="editor" aria-label="Tekst źródłowy — przykład">
+        <div class="cl"><span class="no">1</span><span>Dzień dobry, nazywam się <span class="hit hit-person" data-tip="Wykryto: imię i nazwisko — imię ze słownika + wyzwalacz „nazywam się”" tabindex="0">Anna Kowalska</span> (PESEL <span class="hit hit-ident" data-tip="Wykryto: PESEL — 11 cyfr, suma kontrolna poprawna" tabindex="0">44051401359</span>).</span></div>
+        <div class="cl"><span class="no">2</span><span>Mieszkam przy <span class="hit hit-place" data-tip="Wykryto: adres — wzorzec ul. + nazwa + numer" tabindex="0">ul. Polnej 12/3</span>, <span class="hit hit-place" data-tip="Wykryto: kod pocztowy — wzorzec XX-XXX" tabindex="0">00-950</span> Warszawa.</span></div>
+        <div class="cl"><span class="no">3</span><span>Proszę o kontakt: <span class="hit hit-contact" data-tip="Wykryto: e-mail — wzorzec adresu" tabindex="0">anna.kowalska@example.com</span> lub tel. <span class="hit hit-contact" data-tip="Wykryto: telefon — 9 cyfr po wyzwalaczu „tel.”" tabindex="0">600 700 800</span>.</span></div>
+        <div class="cl"><span class="no">4</span><span>Nr konta do zwrotu: <span class="hit hit-fin" data-tip="Wykryto: IBAN — walidacja mod 97 poprawna" tabindex="0">PL61 1090 1014 0000 0712 1981 2874</span>.</span></div>
+        <div class="cl"><span class="no">5</span><span>Sprawę prowadzi pan <span class="hit hit-person" data-tip="Wykryto: nazwisko — wyzwalacz „pan” + odmiana nazwiska" tabindex="0">Bąkiewicz</span> zgodnie z art. 123 456 789 KC.</span></div>
+      </div>
+    </div>
+    <div class="card-f">
+      <img src="../icons/plik-txt.png" alt="" />
+      <span>5 wierszy · 263 znaki — plik możesz upuścić w dowolnym miejscu strony</span>
+    </div>
+  </section>
+
+  <!-- ══════════ WYNIK ══════════ -->
+  <section class="card g6" aria-label="Wynik — zanonimizowany">
+    <div class="card-h">
+      <span class="ic"><img src="../icons/podglad.png" alt="" /></span>
+      <div class="card-t"><h2>Wynik — zanonimizowany</h2><p>najedź na znacznik, by poznać powód wykrycia</p></div>
+      <span class="card-sp"></span>
+      <span class="help" data-tip="Kolor znacznika wskazuje kategorię danych — legenda powyżej" data-tip-pos="left" tabindex="0">?</span>
+    </div>
+    <div class="toolbar">
+      <span class="seg" role="group" aria-label="Widok wyniku">
+        <button type="button" class="btn on" data-tip="Pokazuje tylko zanonimizowany tekst"><img src="../icons/maskowanie.png" alt="" />Wynik</button>
+        <button type="button" class="btn" data-tip="Oryginał obok znacznika — jak w recenzji Worda"><img src="../icons/losowanie.png" alt="" />Porównanie</button>
+      </span>
+      <span class="card-sp"></span>
+      <button type="button" class="btn" data-tip="Zapisuje wynik jako plik tekstowy na dysku"><img src="../icons/plik-txt.png" alt="" />Pobierz .txt</button>
+      <button type="button" class="btn btn-acc" data-tip="Kopiuje zanonimizowany tekst do schowka · skrót Ctrl+Enter" data-tip-pos="left"><img src="../icons/kopiuj.png" alt="" />Kopiuj</button>
+    </div>
+    <div class="card-b">
+      <div class="editor" aria-label="Wynik — przykład">
+        <div class="cl"><span class="no">1</span><span>Dzień dobry, nazywam się <mark class="pii pii-person" data-tip="Osoby · imię ze słownika + wyzwalacz „nazywam się” — ta sama osoba może dostać etykietę [OSOBA-A]" tabindex="0">[IMIĘ I NAZWISKO]</mark> (PESEL <mark class="pii pii-ident" data-tip="Identyfikatory · 11 cyfr, suma kontrolna poprawna" tabindex="0">[PESEL]</mark>).</span></div>
+        <div class="cl"><span class="no">2</span><span>Mieszkam przy <mark class="pii pii-place" data-tip="Adres i czas · wzorzec ul. + nazwa + numer" tabindex="0">[ADRES]</mark>, <mark class="pii pii-place" data-tip="Adres i czas · wzorzec XX-XXX" tabindex="0">[KOD-POCZTOWY]</mark> Warszawa.</span></div>
+        <div class="cl"><span class="no">3</span><span>Proszę o kontakt: <mark class="pii pii-contact" data-tip="Kontakt · wzorzec adresu e-mail" tabindex="0">[EMAIL]</mark> lub tel. <mark class="pii pii-contact" data-tip="Kontakt · 9 cyfr po wyzwalaczu „tel.”" tabindex="0">[TELEFON]</mark>.</span></div>
+        <div class="cl"><span class="no">4</span><span>Nr konta do zwrotu: <mark class="pii pii-fin" data-tip="Finanse · IBAN, walidacja mod 97 poprawna" tabindex="0">[NR-KONTA]</mark>.</span></div>
+        <div class="cl"><span class="no">5</span><span>Sprawę prowadzi pan <mark class="pii pii-person" data-tip="Osoby · wyzwalacz „pan” + odmiana nazwiska" tabindex="0">[IMIĘ I NAZWISKO]</mark> zgodnie z <span class="guard" data-tip="Strażnik kontekstu: „art. 123 456 789” to numer przepisu, nie telefon — celowo pozostaje widoczny" tabindex="0">art. 123 456 789 KC</span>.</span></div>
+      </div>
+    </div>
+    <div class="card-f warn-note">
+      <img src="../icons/ostrzezenie.png" alt="" />
+      <span>Przejrzyj wynik przed udostępnieniem — wykrywanie nazwisk jest heurystyczne. <a href="#ograniczenia">Ograniczenia</a></span>
+    </div>
+  </section>
+
+  <!-- ══════════ PASEK „ZAMASKOWANO" ══════════ -->
+  <section class="card stats g12" aria-label="Zamaskowano">
+    <div class="card-h">
+      <span class="ic"><img src="../icons/suma.png" alt="" /></span>
+      <div class="card-t"><h2>Zamaskowano</h2><p>podsumowanie wykryć w tym tekście</p></div>
+      <span class="card-sp"></span>
+      <span class="stat-total" data-tip="Łączna liczba zamaskowanych fragmentów w 5 kategoriach" tabindex="0"><b>8</b> wykryć · <b>5</b> kategorii</span>
+      <span class="help" data-tip="Kliknięcie chipa w aplikacji podświetla odpowiednie znaczniki w wyniku" data-tip-pos="left" tabindex="0">?</span>
+    </div>
+    <div class="card-b">
+      <div class="stats-chips">
+        <span class="chip ch-person"  data-tip="2 wykrycia w kategorii Osoby: „Anna Kowalska” i „Bąkiewicz”" tabindex="0"><img src="../icons/dane-osobowe.png" alt="" />imię i nazwisko <span class="x">×2</span></span>
+        <span class="chip ch-ident"   data-tip="PESEL 440514… — suma kontrolna poprawna" tabindex="0"><img src="../icons/pesel.png" alt="" />PESEL <span class="x">×1</span></span>
+        <span class="chip ch-contact" data-tip="Adres e-mail anna.kowalska@…" tabindex="0"><img src="../icons/login.png" alt="" />e-mail <span class="x">×1</span></span>
+        <span class="chip ch-contact" data-tip="Numer 600 700 800 po wyzwalaczu „tel.”" tabindex="0"><img src="../icons/telefon.png" alt="" />telefon <span class="x">×1</span></span>
+        <span class="chip ch-fin"     data-tip="IBAN PL61 1090… — walidacja mod 97" tabindex="0"><img src="../icons/iban.png" alt="" />nr konta <span class="x">×1</span></span>
+        <span class="chip ch-place"   data-tip="ul. Polna 12/3" tabindex="0"><img src="../icons/dom.png" alt="" />adres <span class="x">×1</span></span>
+        <span class="chip ch-place"   data-tip="00-950 Warszawa" tabindex="0"><img src="../icons/mapa-pl.png" alt="" />kod pocztowy <span class="x">×1</span></span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ CO MASKOWAĆ ══════════ -->
+  <details class="card g7" open>
+    <summary class="card-h">
+      <span class="ic"><img src="../icons/ustawienia.png" alt="" /></span>
+      <div class="card-t"><h2>Co maskować</h2><p>domyślnie wszystko — odznaczone typy zostaną widoczne w wyniku</p></div>
+      <span class="card-sp"></span>
+      <span class="help" data-tip="Zmiany działają natychmiast — wynik przelicza się na bieżąco" data-tip-pos="left" tabindex="0">?</span>
+      <span class="chev" data-tip="Zwiń / rozwiń sekcję" data-tip-pos="left" tabindex="0">▸</span>
+    </summary>
+    <div class="card-b">
+      <div class="toggles">
+        <label class="tg tg-wide" data-tip="Ta sama osoba zachowuje tę samą etykietę w całym dokumencie — przydatne w umowach i pismach">
+          <span class="ic ic-s c-person"><img src="../icons/losowanie.png" alt="" /></span>
+          <span class="tg-t"><b>Rozróżniaj osoby</b><code>[OSOBA-A], [OSOBA-B]…</code></span>
+          <input type="checkbox" class="sw" aria-label="Rozróżniaj osoby" />
+        </label>
+
+        <label class="tg" data-tip="11 cyfr + walidacja sumy kontrolnej">
+          <span class="ic ic-s c-ident"><img src="../icons/pesel.png" alt="" /></span>
+          <span class="tg-t"><b>PESEL</b><code>[PESEL]</code></span>
+          <input type="checkbox" class="sw" checked aria-label="Maskuj PESEL" />
+        </label>
+        <label class="tg" data-tip="10 cyfr (także z myślnikami) + suma kontrolna">
+          <span class="ic ic-s c-ident"><img src="../icons/nip.png" alt="" /></span>
+          <span class="tg-t"><b>NIP</b><code>[NIP]</code></span>
+          <input type="checkbox" class="sw" checked aria-label="Maskuj NIP" />
+        </label>
+        <label class="tg" data-tip="9 lub 14 cyfr + suma kontrolna">
+          <span class="ic ic-s c-ident"><img src="../icons/dane-id.png" alt="" /></span>
+          <span class="tg-t"><b>REGON</b><code>[REGON]</code></span>
+          <input type="checkbox" class="sw" checked aria-label="Maskuj REGON" />
+        </label>
+        <label class="tg" data-tip="3 litery + 6 cyfr + suma kontrolna">
+          <span class="ic ic-s c-ident"><img src="../icons/numer-dok.png" alt="" /></span>
+          <span class="tg-t"><b>Nr dowodu osobistego</b><code>[NR-DOWODU]</code></span>
+          <input type="checkbox" class="sw" checked aria-label="Maskuj numer dowodu" />
+        </label>
+        <label class="tg" data-tip="Walidacja mod 97 lub kontekst „konto/rachunek”">
+          <span class="ic ic-s c-fin"><img src="../icons/iban.png" alt="" /></span>
+          <span class="tg-t"><b>IBAN / nr konta</b><code>[NR-KONTA]</code></span>
+          <input type="checkbox" class="sw" checked aria-label="Maskuj IBAN" />
+        </label>
+        <label class="tg" data-tip="Wzorzec adresu e-mail">
+          <span class="ic ic-s c-contact"><img src="../icons/login.png" alt="" /></span>
+          <span class="tg-t"><b>E-mail</b><code>[EMAIL]</code></span>
+          <input type="checkbox" class="sw" checked aria-label="Maskuj e-mail" />
+        </label>
+        <label class="tg" data-tip="9 cyfr, opcjonalnie prefiks +48">
+          <span class="ic ic-s c-contact"><img src="../icons/telefon.png" alt="" /></span>
+          <span class="tg-t"><b>Telefon</b><code>[TELEFON]</code></span>
+          <input type="checkbox" class="sw" checked aria-label="Maskuj telefon" />
+        </label>
+        <label class="tg" data-tip="ul./al./os./pl. + nazwa + numer">
+          <span class="ic ic-s c-place"><img src="../icons/dom.png" alt="" /></span>
+          <span class="tg-t"><b>Adres</b><code>[ADRES]</code></span>
+          <input type="checkbox" class="sw" checked aria-label="Maskuj adres" />
+        </label>
+        <label class="tg" data-tip="Wzorzec XX-XXX">
+          <span class="ic ic-s c-place"><img src="../icons/mapa-pl.png" alt="" /></span>
+          <span class="tg-t"><b>Kod pocztowy</b><code>[KOD-POCZTOWY]</code></span>
+          <input type="checkbox" class="sw" checked aria-label="Maskuj kod pocztowy" />
+        </label>
+        <label class="tg" data-tip="Data z kontekstem „ur./urodzony”">
+          <span class="ic ic-s c-place"><img src="../icons/kalendarz.png" alt="" /></span>
+          <span class="tg-t"><b>Data urodzenia</b><code>[DATA-URODZENIA]</code></span>
+          <input type="checkbox" class="sw" checked aria-label="Maskuj datę urodzenia" />
+        </label>
+        <label class="tg tg-full" data-tip="Słownik ~200 imion i ~230 nazwisk z odmianą + wyzwalacze kontekstu; odznaczenie wyłącza też NER">
+          <span class="ic ic-s c-person"><img src="../icons/dane-osobowe.png" alt="" /></span>
+          <span class="tg-t"><b>Imię i nazwisko</b><code>[IMIĘ I NAZWISKO] — wykrywanie heurystyczne; odznaczenie wyłącza też NER</code></span>
+          <input type="checkbox" class="sw" checked aria-label="Maskuj imię i nazwisko" />
+        </label>
+      </div>
+    </div>
+    <div class="card-f">
+      <img src="../icons/kosz.png" alt="" />
+      <span>Odznaczone typy <strong>pozostaną widoczne</strong> w wyniku — zaznaczaj świadomie.</span>
+    </div>
+  </details>
+
+  <!-- ══════════ NER ══════════ -->
+  <details class="card g5" open>
+    <summary class="card-h">
+      <span class="ic"><img src="../icons/ner.png" alt="" /></span>
+      <div class="card-t"><h2>Dokładniejsze wykrywanie nazwisk</h2><p>lokalny NER — rzadkie i odmienione formy</p></div>
+      <span class="card-sp"></span>
+      <span class="help" data-tip="NER to model rozpoznawania nazw własnych. Uzupełnia słownik o rzadkie i odmienione nazwiska. Wymaga jednorazowego uruchomienia" data-tip-pos="left" tabindex="0">?</span>
+      <span class="chev" data-tip="Zwiń / rozwiń sekcję" data-tip-pos="left" tabindex="0">▸</span>
+    </summary>
+    <div class="card-b">
+      <label class="ner-row" data-tip="Włącza lokalny model NER — lepsze wykrywanie rzadkich i odmienionych nazwisk">
+        <span class="ic ic-s"><img src="../icons/onoff.png" alt="" /></span>
+        <span class="tg-t"><b>Włącz lokalny NER</b><span class="sub">wymaga jednorazowego uruchomienia usługi</span></span>
+        <span class="pill-off">wyłączony</span>
+        <input type="checkbox" class="sw" aria-label="Włącz lokalny NER" />
+      </label>
+      <label class="ner-row" data-tip="Źródło modelu: usługa w Dockerze albo model ONNX wprost w przeglądarce">
+        <span class="ic ic-s"><img src="../icons/ustawienia.png" alt="" /></span>
+        <span class="tg-t"><b>Źródło NER</b><span class="sub">usługa lokalna (Docker) / w przeglądarce (ONNX)</span></span>
+        <span class="field fake-select" style="width:230px; flex:none;">usługa lokalna (Docker) <span class="car">▾</span></span>
+      </label>
+      <label class="ner-row" data-tip="Tekst trafia wyłącznie pod wskazany adres lokalny — nadal nic nie wychodzi do internetu">
+        <span class="ic ic-s"><img src="../icons/haslo.png" alt="" /></span>
+        <span class="tg-t"><b>Adres usługi</b><span class="sub">tylko adres lokalny</span></span>
+        <span class="field" style="width:230px; flex:none;">http://127.0.0.1:8090</span>
+      </label>
+      <p class="ner-note">
+        Opcjonalna usługa uruchamiana <strong>na Twoim komputerze</strong> — folder <code>services/ner</code>
+        w repozytorium, start jedną komendą: <code>docker compose up -d</code>.
+        Gdy usługa nie działa, anonimizacja opiera się na warstwie regex + sumy kontrolne.
+      </p>
+    </div>
+    <div class="card-f">
+      <img src="../icons/sprawdz.png" alt="" />
+      <span>Bez NER nadal działają: <strong>reguły, słownik imion i sumy kontrolne</strong> — nic nie wychodzi do internetu.</span>
+    </div>
+  </details>
+
+  <!-- ══════════ CO WYKRYWA ══════════ -->
+  <details class="card g12" open id="co-wykrywa">
+    <summary class="card-h">
+      <span class="ic"><img src="../icons/sprawdz.png" alt="" /></span>
+      <div class="card-t"><h2>Co wykrywa</h2><p>11 typów danych w 5 kategoriach — każdy identyfikator z walidacją sumy kontrolnej</p></div>
+      <span class="card-sp"></span>
+      <span class="help" data-tip="Suma kontrolna odróżnia prawdziwy numer od przypadkowego ciągu cyfr — stąd mało fałszywych trafień" data-tip-pos="left" tabindex="0">?</span>
+      <span class="chev" data-tip="Zwiń / rozwiń sekcję" data-tip-pos="left" tabindex="0">▸</span>
+    </summary>
+    <div class="card-b table-wrap" role="region" aria-label="Co wykrywa — tabela">
+      <table>
+        <thead>
+          <tr><th>Dane</th><th>Kategoria</th><th>Jak rozpoznaje</th><th>Znacznik w tekście</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="td-name"><span class="ic ic-s c-ident"><img src="../icons/pesel.png" alt="" /></span>PESEL</span></td>
+            <td><span class="catpill cp-ident">identyfikatory</span></td>
+            <td><span class="how">11 cyfr + <strong>walidacja sumy kontrolnej</strong></span></td>
+            <td><mark class="pii pii-ident" data-tip="Tak wygląda znacznik w wyniku" tabindex="0">[PESEL]</mark></td>
+          </tr>
+          <tr>
+            <td><span class="td-name"><span class="ic ic-s c-ident"><img src="../icons/nip.png" alt="" /></span>NIP</span></td>
+            <td><span class="catpill cp-ident">identyfikatory</span></td>
+            <td><span class="how">10 cyfr (także z myślnikami) + <strong>suma kontrolna</strong></span></td>
+            <td><mark class="pii pii-ident" data-tip="Tak wygląda znacznik w wyniku" tabindex="0">[NIP]</mark></td>
+          </tr>
+          <tr>
+            <td><span class="td-name"><span class="ic ic-s c-ident"><img src="../icons/dane-id.png" alt="" /></span>REGON</span></td>
+            <td><span class="catpill cp-ident">identyfikatory</span></td>
+            <td><span class="how">9/14 cyfr + <strong>suma kontrolna</strong></span></td>
+            <td><mark class="pii pii-ident" data-tip="Tak wygląda znacznik w wyniku" tabindex="0">[REGON]</mark></td>
+          </tr>
+          <tr>
+            <td><span class="td-name"><span class="ic ic-s c-ident"><img src="../icons/numer-dok.png" alt="" /></span>Nr dowodu osobistego</span></td>
+            <td><span class="catpill cp-ident">identyfikatory</span></td>
+            <td><span class="how">3 litery + 6 cyfr + <strong>suma kontrolna</strong></span></td>
+            <td><mark class="pii pii-ident" data-tip="Tak wygląda znacznik w wyniku" tabindex="0">[NR-DOWODU]</mark></td>
+          </tr>
+          <tr>
+            <td><span class="td-name"><span class="ic ic-s c-fin"><img src="../icons/iban.png" alt="" /></span>IBAN / nr konta</span></td>
+            <td><span class="catpill cp-fin">finanse</span></td>
+            <td><span class="how">walidacja <strong>mod 97</strong> lub kontekst „konto/rachunek”</span></td>
+            <td><mark class="pii pii-fin" data-tip="Tak wygląda znacznik w wyniku" tabindex="0">[NR-KONTA]</mark></td>
+          </tr>
+          <tr>
+            <td><span class="td-name"><span class="ic ic-s c-contact"><img src="../icons/login.png" alt="" /></span>E-mail</span></td>
+            <td><span class="catpill cp-contact">kontakt</span></td>
+            <td><span class="how">wzorzec adresu</span></td>
+            <td><mark class="pii pii-contact" data-tip="Tak wygląda znacznik w wyniku" tabindex="0">[EMAIL]</mark></td>
+          </tr>
+          <tr>
+            <td><span class="td-name"><span class="ic ic-s c-contact"><img src="../icons/telefon.png" alt="" /></span>Telefon</span></td>
+            <td><span class="catpill cp-contact">kontakt</span></td>
+            <td><span class="how">9 cyfr, opcjonalnie +48</span></td>
+            <td><mark class="pii pii-contact" data-tip="Tak wygląda znacznik w wyniku" tabindex="0">[TELEFON]</mark></td>
+          </tr>
+          <tr>
+            <td><span class="td-name"><span class="ic ic-s c-place"><img src="../icons/dom.png" alt="" /></span>Adres</span></td>
+            <td><span class="catpill cp-place">adres i czas</span></td>
+            <td><span class="how">ul./al./os./pl. + nazwa + numer</span></td>
+            <td><mark class="pii pii-place" data-tip="Tak wygląda znacznik w wyniku" tabindex="0">[ADRES]</mark></td>
+          </tr>
+          <tr>
+            <td><span class="td-name"><span class="ic ic-s c-place"><img src="../icons/mapa-pl.png" alt="" /></span>Kod pocztowy</span></td>
+            <td><span class="catpill cp-place">adres i czas</span></td>
+            <td><span class="how">XX-XXX</span></td>
+            <td><mark class="pii pii-place" data-tip="Tak wygląda znacznik w wyniku" tabindex="0">[KOD-POCZTOWY]</mark></td>
+          </tr>
+          <tr>
+            <td><span class="td-name"><span class="ic ic-s c-place"><img src="../icons/kalendarz.png" alt="" /></span>Data urodzenia</span></td>
+            <td><span class="catpill cp-place">adres i czas</span></td>
+            <td><span class="how">data z kontekstem „ur./urodzony”</span></td>
+            <td><mark class="pii pii-place" data-tip="Tak wygląda znacznik w wyniku" tabindex="0">[DATA-URODZENIA]</mark></td>
+          </tr>
+          <tr>
+            <td><span class="td-name"><span class="ic ic-s c-person"><img src="../icons/dane-osobowe.png" alt="" /></span>Imię i nazwisko</span></td>
+            <td><span class="catpill cp-person">osoby</span></td>
+            <td><span class="how">słownik ~200 imion i ~230 nazwisk (z odmianą) + wyzwalacze („nazywam się”, „Pan/Pani”); opcjonalnie <strong>lokalny NER</strong></span></td>
+            <td><mark class="pii pii-person" data-tip="Tak wygląda znacznik w wyniku" tabindex="0">[IMIĘ I NAZWISKO]</mark></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </details>
+
+  <!-- ══════════ KARTY INFORMACYJNE 3× ══════════ -->
+  <section class="card g4" aria-label="Dlaczego mało fałszywych trafień">
+    <div class="card-h">
+      <span class="ic"><img src="../icons/suma.png" alt="" /></span>
+      <div class="card-t"><h3>Dlaczego mało fałszywych trafień</h3><p>sumy kontrolne + strażnik kontekstu</p></div>
+      <span class="card-sp"></span>
+      <span class="help" data-tip="Suma kontrolna to matematyczna cecha prawdziwych numerów — przypadkowy ciąg cyfr jej nie spełnia" data-tip-pos="left" tabindex="0">?</span>
+    </div>
+    <div class="card-b note-b">
+      <p>Walidacja sum kontrolnych odróżnia prawdziwy PESEL czy NIP od przypadkowego ciągu cyfr
+      (sygnatury akt, numery przepisów). Strażnik kontekstu pilnuje, żeby
+      „art.&nbsp;123&nbsp;456&nbsp;789” nie został uznany za telefon.</p>
+    </div>
+  </section>
+
+  <section class="card g4 caveat" id="ograniczenia" aria-label="Ograniczenia">
+    <div class="card-h">
+      <span class="ic c-ident"><img src="../icons/ostrzezenie.png" alt="" /></span>
+      <div class="card-t"><h3>Ograniczenia — przeczytaj</h3><p>narzędzie pomocnicze, nie gwarancja</p></div>
+      <span class="card-sp"></span>
+      <span class="help" data-tip="Żaden automat nie daje 100% pewności — ostatnie słowo należy do Ciebie" data-tip-pos="left" tabindex="0">?</span>
+    </div>
+    <div class="card-b note-b">
+      <p>Wykrywanie imion i nazwisk jest <strong>heurystyczne</strong>: rzadkie nazwisko bez imienia
+      ze słownika i bez wyzwalacza kontekstu może nie zostać zamaskowane. Numery w nietypowych
+      formatach też mogą się prześlizgnąć. <strong>Zawsze przejrzyj wynik, zanim go
+      udostępnisz.</strong></p>
+    </div>
+  </section>
+
+  <section class="card g4" aria-label="Wskazówki">
+    <div class="card-h">
+      <span class="ic"><img src="../icons/przyklad.png" alt="" /></span>
+      <div class="card-t"><h3>Wskazówki</h3><p>drobiazgi, które przyspieszają pracę</p></div>
+      <span class="card-sp"></span>
+      <span class="help" data-tip="Pełna lista skrótów i zachowań — w dokumentacji repozytorium" data-tip-pos="left" tabindex="0">?</span>
+    </div>
+    <div class="card-b">
+      <ul class="tips">
+        <li><span><kbd>Ctrl</kbd>+<kbd>Enter</kbd> kopiuje wynik.</span></li>
+        <li><span>Plik możesz upuścić w dowolnym miejscu strony.</span></li>
+        <li><span>Po wczytaniu dokumentu włącza się widok <strong>Porównanie</strong> — oryginał obok znacznika, jak w recenzji Worda.</span></li>
+        <li><span>Odznaczenie „imię i nazwisko” w „Co maskować” wyłącza też NER.</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ══════════ STOPKA ══════════ -->
+  <footer class="card foot g12">
+    <div class="card-b">
+      <img src="../icons/anonimizuj.png" alt="" />
+      <span>Kod open source (MIT): <a href="https://github.com/karolpolikarp/anonimizator" target="_blank" rel="noopener noreferrer">github.com/karolpolikarp/anonimizator</a></span>
+      <span class="sep">·</span>
+      <span>pakiet npm <code>anonimizator</code> i CLI</span>
+      <span class="sep">·</span>
+      <a href="https://github.com/karolpolikarp/anonimizator/issues">zgłoś nietrafione wykrycie</a>
+      <span class="card-sp"></span>
+      <span>wersja 0.15.0</span>
+    </div>
+  </footer>
+
+</div>
+
+</body>
+</html>
