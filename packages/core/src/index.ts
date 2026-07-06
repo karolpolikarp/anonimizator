@@ -213,7 +213,14 @@ const POLISH_FIRST_NAMES = new Set<string>(
     'paulina paweł piotr przemysław rafał radosław renata robert roman ryszard sandra sebastian ' +
     'sławomir stanisław stanisława stefan stefania sylwester sylwia szymon tadeusz teresa tomasz ' +
     'urszula wacław waldemar weronika wiesław wiktor wiktoria wincenty witold władysław włodzimierz ' +
-    'wojciech zbigniew zdzisław zofia zuzanna'
+    'wojciech zbigniew zdzisław zofia zuzanna ' +
+    // uzupełnienie częstych imion (luka pokrycia wykryta na nagłówkach e-maili urzędowych)
+    'edyta aneta iga izabella jagoda klara liliana lucyna łucja marzena nina olga otylia sabina wanda ' +
+    'żaneta róża blanka cecylia dagmara diana eliza elwira felicja kalina laura ludmiła malwina michalina ' +
+    'oktawia paula rozalia sara wioletta wiola bogna bożena elwira ewelina emilia lena maja pola nadzieja ' +
+    'alan borys cyprian damian dionizy erwin ernest fabian gustaw ignacy kajetan kornel ksawery leon lech ' +
+    'marceli maurycy maksymilian olaf remigiusz rudolf seweryn teodor tobiasz walenty wit zenon jeremi jędrzej ' +
+    'krystian leonard iwo alojzy bruno feliks gerard konstanty maksym miron przemek roch salomon tymon tymoteusz'
   ).split(/\s+/),
 );
 
@@ -231,8 +238,16 @@ const LEGAL_ENTITY_WORDS = new Set<string>(
     'policja prokuratura rzecznik cywilny cywilnego karny karnego pracy handlowy administracyjny ' +
     'postępowania wykonawczy skarbowy rzeczpospolita polska polski unia europejska najwyższy ' +
     'apelacyjny okręgowy rejonowy konstytucyjny państwowa narodowy narodowa fundusz zakład ' +
-    'krajowy krajowa główny główna społecznych'
+    'krajowy krajowa główny główna społecznych ' +
+    // częste rzeczowniki „dokumentowe" — nie mylić z nazwiskiem w parze „Słowo Imię"
+    'umowa umowie załącznik rozdział artykuł ustęp punkt pozycja faktura pismo wniosek decyzja ' +
+    'departament biuro wydział referat oddział sekcja nowy nowa'
   ).split(/\s+/),
+);
+
+/** Tytuły/grzecznościowe — NIE są nazwiskiem w parze „Tytuł Imię" (trigger obsługuje je osobno). */
+const TITLE_WORDS = new Set<string>(
+  'pan pani pana panu panią panie państwo szanowny szanowna dr prof mgr inż'.split(/\s+/),
 );
 
 // Alternatywa „Imię" (z wielkiej litery) ze słownika oraz regex „Imię Nazwisko".
@@ -544,6 +559,17 @@ export function redactPII(input: string, options?: RedactOptions): RedactionResu
       if (LEGAL_ENTITY_WORDS.has(w1.toLowerCase()) || LEGAL_ENTITY_WORDS.has(w2.toLowerCase())) return m;
       bump('IMIE');
       return personMask(w2); // jedna maska na całą parę (imię+nazwisko)
+    });
+
+    // (a3) ODWRÓCONA kolejność „Nazwisko Imię" — częsta w nagłówkach e-maili (To/Cc/From:
+    // „Kowalska Ewa", „Ejkszto Anna"). DRUGIE słowo musi być znanym imieniem, pierwsze —
+    // nazwiskiem (nie tytuł „Pan/Pani", nie encja prawna/rzeczownik dokumentowy).
+    text = text.replace(new RegExp(`\\b(${capWord})\\s+(${capWord})`, 'g'), (m, w1: string, w2: string) => {
+      if (!isFirstNameLike(w2)) return m;
+      const w1l = w1.toLowerCase();
+      if (TITLE_WORDS.has(w1l) || LEGAL_ENTITY_WORDS.has(w1l) || LEGAL_ENTITY_WORDS.has(w2.toLowerCase())) return m;
+      bump('IMIE');
+      return personMask(w1); // klucz tożsamości = nazwisko (pierwsze słowo)
     });
   }
 

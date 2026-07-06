@@ -248,6 +248,28 @@ test('„Rozdział 5"/„Załącznik 2" NIE są adresem (brak kodu pocztowego ob
   expect(redactPII('Załącznik 2 do pisma').redacted.includes('[ADRES]')).toBe(false);
 });
 
+// ── Odwrócona kolejność „Nazwisko Imię" (nagłówki e-maili Outlook) ──
+test('„Nazwisko Imię" (Kowalska Ewa) maskowane w całości', () => {
+  const r = redactPII('Kowalska Ewa');
+  expect(r.redacted).toBe('[IMIĘ I NAZWISKO]');
+});
+test('nieznane nazwisko + znane imię (Ejkszto Anna) maskowane', () => {
+  const r = redactPII('From: Ejkszto Anna');
+  expect(r.redacted).toContain('[IMIĘ I NAZWISKO]');
+  expect(r.redacted.includes('Ejkszto')).toBe(false);
+  expect(r.redacted.includes('Anna')).toBe(false);
+});
+test('encje prawne w kolejności odwróconej NIE są maskowane', () => {
+  for (const t of ['Sąd Najwyższy', 'Kodeks Cywilny', 'Ministerstwo Cyfryzacji', 'Umowa najmu']) {
+    expect(redactPII(t).redacted.includes('[IMIĘ I NAZWISKO]')).toBe(false);
+  }
+});
+test('„Pani Anna" zachowuje tytuł, maskuje imię', () => {
+  const r = redactPII('Pani Anna');
+  expect(r.redacted).toContain('Pani');
+  expect(r.redacted).toContain('[IMIĘ I NAZWISKO]');
+});
+
 // ── Samodzielne nazwiska ze słownika (krok 13c) ──
 test('nazwisko solo w odmianie — dopełniacz maskowany', () => {
   const r = redactPII('Sprawę Kowalskiego przekazano do sądu');

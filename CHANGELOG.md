@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.24.0 — 2026-07-06
+
+- **Nazwiska w kolejności „Nazwisko Imię" (nagłówki e-maili) maskowane** — listy To/Cc/From
+  z Outlooka („Kowalska Ewa", „Ejkszto Anna", „Bryzek-Muszyńska Edyta") są teraz maskowane
+  w całości. Wcześniej imię lub całość wyciekało. Reguła wymaga znanego imienia jako drugiego
+  słowa i chroni tytuły („Pani Anna" → zostaje „Pani") oraz encje prawne/dokumentowe.
+- **+~90 częstych imion w słowniku** (Edyta, Aneta, Iga, Olga, Leon, Fabian, Ksawery…) —
+  luka pokrycia wykryta na realnych nagłówkach.
+
 ## v0.23.0 — 2026-07-06
 
 - **Adres bez prefiksu „ul." też maskowany** — ulica rozpoznawana po sąsiedztwie kodu
