@@ -225,6 +225,11 @@ test('numer KRS maskowany (kontekst „KRS" + 10 cyfr, zera wiodące)', () => {
   expect(r.redacted.includes('0000173413')).toBe(false);
   expect(redactPII('KRS: 0000173413').redacted).toContain('[KRS]');
 });
+test('data urodzenia słowna („ur. 5 maja 1985") maskowana; bez kontekstu nie', () => {
+  expect(redactPII('ur. 5 maja 1985 r.').redacted).toContain('[DATA-URODZENIA]');
+  expect(redactPII('urodzony 12 grudnia 1970').redacted).toContain('[DATA-URODZENIA]');
+  expect(redactPII('W maju 1985 odbyło się spotkanie.').redacted).toBe('W maju 1985 odbyło się spotkanie.');
+});
 test('kod waluty + kwota NIE jest mylony z dowodem', () => {
   expect(redactPII('PLN 123456').redacted.includes('[NR-DOWODU]')).toBe(false);
   expect(redactPII('EUR 250000').redacted.includes('[NR-DOWODU]')).toBe(false);

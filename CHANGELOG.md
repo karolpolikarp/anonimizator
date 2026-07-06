@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.35.0 — 2026-07-06
+
+- **Data urodzenia zapisana słownie jest teraz maskowana** — „ur. 5 maja 1985 r.",
+  „urodzony 12 grudnia 1970", „data urodzenia: 1 stycznia 2000" → `[DATA-URODZENIA]`.
+  Wcześniej detektor znał tylko formaty cyfrowe (DD.MM.RRRR / RRRR-MM-DD). Precyzja zachowana:
+  „W maju 1985" bez kontekstu urodzenia pozostaje jawne.
+
 ## v0.34.0 — 2026-07-06
 
 - **Numer KRS jest teraz maskowany** — kontekst „KRS" + 10 cyfr (także z zerami wiodącymi,

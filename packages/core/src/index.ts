@@ -633,7 +633,8 @@ export function redactPII(input: string, options?: RedactOptions): RedactionResu
   // więc wariant „ur. " nigdy się nie dopasowywał (bug z benchmarku). Separator ogranicza sam.
   if (on('DATA-UR')) {
     text = text.replace(
-      /\b(ur\.|urodzony|urodzona|urodzeni[ae]|data urodzenia)([\s:.,-]*)(\d{1,2}[.\-/]\d{1,2}[.\-/]\d{2,4}|\d{4}-\d{2}-\d{2})/gi,
+      // data: cyfrowa (DD.MM.RRRR / RRRR-MM-DD) albo słowna („5 maja 1985", miesiąc po polsku)
+      /\b(ur\.|urodzony|urodzona|urodzeni[ae]|data urodzenia)([\s:.,-]*)(\d{1,2}[.\-/]\d{1,2}[.\-/]\d{2,4}|\d{4}-\d{2}-\d{2}|\d{1,2}\s+(?:stycznia|lutego|marca|kwietnia|maja|czerwca|lipca|sierpnia|września|października|listopada|grudnia)\s+\d{4})/gi,
       (_m, kw, sep) => {
         bump('DATA-UR');
         return `${kw}${sep}${M['DATA-UR']}`;
