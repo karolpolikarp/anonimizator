@@ -14,15 +14,19 @@ lokalnie, w Twojej przeglądarce. Możesz rozłączyć internet i sprawdzić.
 
 ![Aplikacja Anonimizator — tekst źródłowy po lewej, zredagowany wynik z podświetlonymi maskami po prawej](docs/screenshot.png)
 
-## Pobierz i używaj (bez instalacji)
+## Pobierz i używaj (jeden plik, bez instalacji)
 
-1. Wejdź w [**Releases**](https://github.com/karolpolikarp/anonimizator/releases) i pobierz
-   `anonimizator-offline.zip`.
-2. Rozpakuj i otwórz `index.html` **podwójnym kliknięciem** — aplikacja działa prosto z dysku,
+1. Wejdź w [**najnowsze wydanie (Releases)**](https://github.com/karolpolikarp/anonimizator/releases/latest)
+   i pobierz **`Anonimizator.html`** (jeden plik — nic nie trzeba rozpakowywać).
+2. Otwórz go **podwójnym kliknięciem** — uruchomi się w przeglądarce, prosto z dysku:
    bez serwera, bez instalacji, bez internetu.
 3. Wklej tekst albo upuść plik (`.txt`, `.docx`, `.pdf`) — po prawej dostajesz wersję
    zredagowaną do skopiowania. Pliki Word i PDF są czytane w całości lokalnie, jak wszystko tutaj.
 
+> W nagłówku aplikacji widnieje numer wersji z linkiem „sprawdź najnowszą" — jeśli
+> kiedyś coś nie działa, najpierw porównaj numer i pobierz świeży plik.
+
+Obok znajdziesz też `JAK-UZYC.txt` z tą samą instrukcją do wydrukowania lub rozesłania.
 Alternatywnie sklonuj repo i odpal z kodu (sekcja „Dla programistów" niżej).
 
 ## Formy użycia — jeden silnik
@@ -249,8 +253,8 @@ gdzie maskuje dane osobowe w pytaniach użytkowników, zanim trafią do modelu j
 IBAN and national ID numbers are validated against their checksums (very few false positives);
 e-mails, phones, addresses and person names are matched heuristically, with an optional
 self-hosted spaCy NER service for rare surnames. Ships as a zero-dependency npm library +
-CLI (`anonimizator`), and a single-file offline web app (grab `anonimizator-offline.zip`
-from Releases and just open `index.html` — nothing ever leaves your machine). MIT licensed.
+CLI (`anonimizator`), and a single-file offline web app (grab `Anonimizator.html`
+from Releases and just double-click it — nothing ever leaves your machine). MIT licensed.
 
 ## Licencja
 
