@@ -208,6 +208,29 @@ test('małe litery + 6 cyfr bez sumy kontrolnej NIE są maskowane', () => {
   expect(redactPII('kod abc123456 systemu').redacted.includes('[NR-DOWODU]')).toBe(false);
 });
 
+// ── Imiona w ODMIANIE (nie tylko mianownik) ──
+test('imię w narzędniku + nazwisko (Anną Kowalską) maskowane w całości', () => {
+  const r = redactPII('Anną Kowalską, zwaną dalej');
+  expect(r.redacted).toContain('[IMIĘ I NAZWISKO]');
+  expect(r.redacted.includes('Anną')).toBe(false);
+});
+test('imię męskie w narzędniku (Janem Kowalskim) maskowane', () => {
+  expect(redactPII('podpisano z Janem Nowakiem').redacted.includes('Janem')).toBe(false);
+});
+test('imię w bierniku (Annę Wiśniewską) maskowane', () => {
+  const r = redactPII('reprezentowaną przez Annę Wiśniewską');
+  expect(r.redacted).toContain('[IMIĘ I NAZWISKO]');
+  expect(r.redacted.includes('Annę')).toBe(false);
+});
+test('encje prawne z dwóch słów NIE są maskowane jako imię w odmianie', () => {
+  for (const t of ['Sąd Najwyższy', 'Kodeks Cywilny', 'Ministerstwo Cyfryzacji', 'Nowy Rok']) {
+    expect(redactPII(t).redacted.includes('[IMIĘ I NAZWISKO]')).toBe(false);
+  }
+});
+test('miasto po przyimku NIE jest maskowane (zamieszkała w Warszawie)', () => {
+  expect(redactPII('zamieszkałą w Warszawie przy ulicy').redacted.includes('[IMIĘ I NAZWISKO]')).toBe(false);
+});
+
 // ── Samodzielne nazwiska ze słownika (krok 13c) ──
 test('nazwisko solo w odmianie — dopełniacz maskowany', () => {
   const r = redactPII('Sprawę Kowalskiego przekazano do sądu');

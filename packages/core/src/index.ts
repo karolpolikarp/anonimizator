@@ -244,6 +244,25 @@ const DICT_NAME_RE = new RegExp(
   'g',
 );
 
+// Rdzenie imion (mianownik bez końcowego „a" dla imion żeńskich) — do rozpoznawania
+// form ODMIENIONYCH: „Anną", „Annę", „Janem", „Aleksandrą". Słownik ma tylko mianownik,
+// więc bez tego imię w odmianie wyciekało obok zamaskowanego nazwiska.
+const FIRST_NAME_STEMS = new Set<string>(
+  [...POLISH_FIRST_NAMES].map((n) => (n.endsWith('a') ? n.slice(0, -1) : n)),
+);
+const NAME_INFLECTIONS = ['', 'a', 'i', 'y', 'ie', 'ę', 'ą', 'o', 'u', 'e', 'em', 'owi'];
+
+/** Czy słowo wygląda na polskie imię (mianownik ZE SŁOWNIKA lub jego forma odmieniona)? */
+function isFirstNameLike(word: string): boolean {
+  const w = word.toLowerCase();
+  if (POLISH_FIRST_NAMES.has(w)) return true;
+  for (const suf of NAME_INFLECTIONS) {
+    const stem = suf ? w.slice(0, -suf.length) : w;
+    if (stem.length >= 2 && w.endsWith(suf) && FIRST_NAME_STEMS.has(stem)) return true;
+  }
+  return false;
+}
+
 // ============================================================================
 // Główna funkcja redakcji
 // ============================================================================
@@ -495,6 +514,17 @@ export function redactPII(input: string, options?: RedactOptions): RedactionResu
       if (LEGAL_ENTITY_WORDS.has(surname.toLowerCase())) return m;
       bump('IMIE');
       return personMask(surname);
+    });
+
+    // (a2) ODMIENIONE imię + nazwisko: „Anną Kowalską", „Janem Nowakiem", „Annę Wiśniewską".
+    // Wymaga DWÓCH słów z wielkiej litery, gdzie pierwsze wygląda na imię (rdzeń słownikowy
+    // + końcówka fleksyjna). Bez tego imię w odmianie zostawało jawne obok [IMIĘ I NAZWISKO].
+    const capWord = `[${PL_UP}][${PL_LO}]+(?:-[${PL_UP}][${PL_LO}]+)?`;
+    text = text.replace(new RegExp(`\\b(${capWord})\\s+(${capWord})`, 'g'), (m, w1: string, w2: string) => {
+      if (!isFirstNameLike(w1)) return m;
+      if (LEGAL_ENTITY_WORDS.has(w1.toLowerCase()) || LEGAL_ENTITY_WORDS.has(w2.toLowerCase())) return m;
+      bump('IMIE');
+      return personMask(w2); // jedna maska na całą parę (imię+nazwisko)
     });
   }
 

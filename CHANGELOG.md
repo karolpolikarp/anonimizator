@@ -1,5 +1,16 @@
 # Changelog
 
+## v0.21.0 — 2026-07-06
+
+- **Imiona w ODMIANIE nie wyciekają już obok nazwiska** — „Anną Kowalską", „Janem
+  Nowakiem", „Annę Wiśniewską" maskowane w całości. Wcześniej słownik znał tylko mianownik,
+  więc nazwisko znikało, a imię („Anną") zostawało jawne. Teraz imię rozpoznajemy po rdzeniu
+  słownikowym + końcówce fleksyjnej (para „imię-jak + nazwisko" → jedna maska). Encje prawne
+  („Sąd Najwyższy", „Kodeks Cywilny") i miasta („w Warszawie") pozostają nietknięte.
+
+  Uwaga dla użytkowników: to poprawka w kodzie — pobierz świeży `Anonimizator.html`
+  z tego wydania (stary, wcześniej zapisany plik nie ma tych zmian).
+
 ## v0.20.0 — 2026-07-06
 
 - **Jasny, przyjazny motyw** (feedback: „zrób bardziej przyjazną kolorystykę") — cała
