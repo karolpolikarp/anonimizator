@@ -49,6 +49,14 @@ let lastRedacted = '';
 let lastInput = '';
 let viewMode: 'result' | 'compare' = 'result';
 
+// Edycja „urzędnik" (release dla głównej grupy docelowej): build BEZ warstwy AI/NER.
+// Kod NER zostaje w repozytorium — tu tylko usuwamy elementy oznaczone [data-full] z DOM,
+// żeby interfejs był maksymalnie prosty. Flagę podstawia Vite przy buildzie (VITE_EDITION).
+const CLERK_EDITION = import.meta.env.VITE_EDITION === 'urzednik';
+if (CLERK_EDITION) {
+  for (const el of document.querySelectorAll('[data-full]')) el.remove();
+}
+
 /* ── Kategorie i metadane typów PII (jedna rodzina kolorów w całej aplikacji) ── */
 
 type Cat = 'person' | 'contact' | 'ident' | 'fin' | 'place';
@@ -108,6 +116,16 @@ const MASK_GROUPS: MaskGroup[] = [
   { key: 'dataur', label: 'Data urodzenia', types: ['DATA-UR'], cat: 'place', icon: icoKalendarz, code: '[DATA-URODZENIA]', tip: 'Data z kontekstem „ur./urodzony”' },
   { key: 'imie', label: 'Imię i nazwisko', types: ['IMIE'], cat: 'person', icon: icoDaneOsobowe, code: '[IMIĘ I NAZWISKO] — wykrywanie heurystyczne; odznaczenie wyłącza też NER', tip: 'Słownik ~200 imion i ~230 nazwisk z odmianą + wyzwalacze kontekstu; odznaczenie wyłącza też NER', full: true },
 ];
+
+// W edycji „urzędnik" nie ma NER — usuwamy wzmianki z etykiet/tooltipów tej warstwy.
+if (CLERK_EDITION) {
+  const imie = MASK_GROUPS.find((g) => g.key === 'imie');
+  if (imie) {
+    imie.code = '[IMIĘ I NAZWISKO] — wykrywanie heurystyczne';
+    imie.tip = 'Słownik ~200 imion i ~230 nazwisk z odmianą + wyzwalacze kontekstu';
+  }
+  MASK_TIP['IMIĘ I NAZWISKO'] = 'Osoby · słownik imion/nazwisk lub wyzwalacz kontekstu';
+}
 
 const maskTogglesEl = $<HTMLSpanElement>('mask-toggles');
 const disabledGroups = new Set<string>(
@@ -293,7 +311,7 @@ function renderFindings(found: PiiFinding[]): void {
     const clean = disabledGroups.size > 0
       ? '<span class="chip chip-hint">nic nie zamaskowano — część typów jest wyłączona w „Co maskować”</span>'
       : '<span class="chip chip-ok">nie wykryto danych osobowych</span>';
-    const hint = !nerEnabledBox.checked
+    const hint = !CLERK_EDITION && !nerEnabledBox.checked
       ? ' <span class="chip chip-hint">💡 rzadkie nazwiska złapie „Dokładniejsze wykrywanie nazwisk” poniżej</span>'
       : '';
     findingsChips.innerHTML = clean + hint;

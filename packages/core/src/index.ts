@@ -367,10 +367,38 @@ export function redactPII(input: string, options?: RedactOptions): RedactionResu
     );
   }
 
-  // 8) TELEFON — opcjonalny +48, 9 cyfr (grupowane spacją/myślnikiem lub ciągiem). Nie po „art./poz.".
+  // 8) TELEFON — polskie numery 9-cyfrowe. Trzy tryby, od najpewniejszego:
+  //   (a) prefiks międzynarodowy (+48 / 0048) → DOWOLNE grupowanie 9 cyfr. To łapie numery
+  //       stacjonarne „+48 22 245 59 22" (podział 2-3-2-2), których sztywny wzorzec 3-3-3
+  //       NIE ujmował (realny bug z pism urzędowych — instytucjonalny telefon zostawał jawny);
+  //   (b) słowo kontekstowe (tel./telefon/kom./fax/faks) + 9 cyfr w dowolnym grupowaniu;
+  //   (c) bez kontekstu → tylko klasyczne 3-3-3 lub 9 cyfr ciągiem (mniej fałszywych trafień).
   if (on('TELEFON')) {
+    const hasNineDigits = (s: string) => s.replace(/\D/g, '').length === 9;
+
+    // (a) prefiks +48/0048 — maskujemy RAZEM z prefiksem.
     text = text.replace(
-      /(?<![\d])(?:\+?\s?48[\s-]?)?\d{3}[\s-]?\d{3}[\s-]?\d{3}(?![\d])/g,
+      /(?<![\d])(?:\+|00)\s?48[\s-]?(?:\d[\s-]?){8}\d(?![\d])/g,
+      (m, offset: number) => {
+        if (precededByLegalRef(text, offset)) return m;
+        bump('TELEFON');
+        return M.TELEFON;
+      },
+    );
+
+    // (b) słowo kontekstowe + 9 cyfr (zachowujemy słowo, maskujemy numer).
+    text = text.replace(
+      /\b(tel\.?|telefon(?:u|em)?|kom\.?|komórk[aiwy]|fax|faks|nr tel\.?)([\s:.-]*)((?:\d[\s-]?){8}\d)(?![\d])/gi,
+      (m, kw: string, sep: string, num: string) => {
+        if (!hasNineDigits(num)) return m;
+        bump('TELEFON');
+        return `${kw}${sep}${M.TELEFON}`;
+      },
+    );
+
+    // (c) fallback bez kontekstu — klasyczne 3-3-3 lub 9 cyfr ciągiem. Nie po „art./poz.".
+    text = text.replace(
+      /(?<![\d])\d{3}[\s-]?\d{3}[\s-]?\d{3}(?![\d])/g,
       (m, offset: number) => {
         if (precededByLegalRef(text, offset)) return m;
         bump('TELEFON');
@@ -379,8 +407,22 @@ export function redactPII(input: string, options?: RedactOptions): RedactionResu
     );
   }
 
-  // 9) NR DOWODU — 3 litery + 6 cyfr + suma kontrolna (np. „ABA300000", „ABC 123456").
+  // 9) NR DOWODU osobistego — 3 litery + 6 cyfr. Dwa tryby:
   if (on('DOWOD')) {
+    // (a) Z KONTEKSTEM („dowód"/„dowodu"/„seria i numer"/„nr dowodu") — maskujemy nawet BEZ
+    //     poprawnej sumy kontrolnej. Kontekst to mocny sygnał, a w pismach numer bywa fikcyjny
+    //     lub z literówką; zachowujemy słowo kontekstowe, maskujemy sam numer.
+    // „dow[oó]d…" akceptuje pisownię z diakrytykiem i bez (urzędnicy piszą różnie).
+    text = text.replace(
+      /\b((?:dow[oó]d\w*|dow\.|seria i numer|nr dowodu)(?:\s+osobist\w+)?[\s:.=-]*)([A-Za-z]{3}[\s-]?\d{6})(?!\d)/gi,
+      (_m, ctx: string, _num: string) => {
+        bump('DOWOD');
+        return `${ctx}${M.DOWOD}`;
+      },
+    );
+
+    // (b) BEZ kontekstu — 3 litery + 6 cyfr, ale TYLKO gdy suma kontrolna się zgadza
+    //     (bez tego „ABC 123456" w treści dawałoby zbyt wiele fałszywych trafień).
     text = text.replace(/\b[A-Za-z]{3}[\s-]?\d{6}\b/g, (m) => {
       if (isValidDowod(m)) {
         bump('DOWOD');

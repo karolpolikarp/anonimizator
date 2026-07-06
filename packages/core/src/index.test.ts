@@ -148,6 +148,49 @@ test('hasPII — wykrywa i nie myli się na czystym tekście', () => {
   expect(hasPII('jakie są zasady rozwodu?')).toBe(false);
 });
 
+// ── Telefon: numery stacjonarne z prefiksem +48 (bug z pism urzędowych) ──
+test('telefon stacjonarny +48 22 245 59 22 (podział 2-3-2-2) maskowany', () => {
+  const r = redactPII('telefon: +48 22 245 59 22');
+  expect(r.redacted).toContain('[TELEFON]');
+  expect(r.redacted.includes('245 59 22')).toBe(false);
+});
+test('telefon stacjonarny +48 bez dwukropka maskowany', () => {
+  const r = redactPII('telefon +48 22 245 59 22 w godzinach pracy');
+  expect(r.redacted).toContain('[TELEFON]');
+  expect(r.redacted.includes('22 245 59 22')).toBe(false);
+});
+test('telefon ze słowem kontekstowym bez +48 (tel. 22 245 59 22)', () => {
+  const r = redactPII('tel. 22 245 59 22');
+  expect(r.redacted).toContain('[TELEFON]');
+  expect(r.redacted).toContain('tel.');
+  expect(r.redacted.includes('245 59 22')).toBe(false);
+});
+test('telefon komórkowy +48 600 700 800 nadal maskowany (regresja)', () => {
+  const r = redactPII('dzwoń +48 600 700 800');
+  expect(r.redacted).toContain('[TELEFON]');
+  expect(r.redacted.includes('600 700 800')).toBe(false);
+});
+test('numer artykułu z +48 w pobliżu NIE psuje strażnika przepisów', () => {
+  const r = redactPII('zgodnie z art. 123 456 789 kodeksu');
+  expect(r.redacted.includes('[TELEFON]')).toBe(false);
+});
+
+// ── Nr dowodu osobistego: wykrywanie kontekstowe ──
+test('dowód osobisty z kontekstem maskowany nawet bez sumy kontrolnej', () => {
+  const r = redactPII('Dowód osobisty ABC 123456 wydany w 2020');
+  expect(r.redacted).toContain('[NR-DOWODU]');
+  expect(r.redacted.includes('ABC 123456')).toBe(false);
+  expect(r.redacted).toContain('Dowód osobisty');
+});
+test('seria i numer dowodu maskowane', () => {
+  const r = redactPII('seria i numer: AGH987654');
+  expect(r.redacted).toContain('[NR-DOWODU]');
+});
+test('dowód zakupu (nie ID) NIE jest maskowany jako dowód osobisty', () => {
+  const r = redactPII('dowód zakupu nr 445566 w załączniku');
+  expect(r.redacted.includes('[NR-DOWODU]')).toBe(false);
+});
+
 // ── Samodzielne nazwiska ze słownika (krok 13c) ──
 test('nazwisko solo w odmianie — dopełniacz maskowany', () => {
   const r = redactPII('Sprawę Kowalskiego przekazano do sądu');

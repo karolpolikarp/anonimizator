@@ -6,7 +6,19 @@ export default defineConfig({
   // JEDEN samowystarczalny index.html (JS+CSS inline). Kluczowe dla użycia z dysku:
   // Chromium blokuje <script type="module"> i <link crossorigin> na file:// (CORS,
   // origin null), więc rozbite assety NIE działają po podwójnym kliknięciu.
-  plugins: [viteSingleFile()],
+  plugins: [
+    viteSingleFile(),
+    {
+      // Edycja „urzędnik": oznacz <html>, by CSS ukrył elementy [data-full] (warstwa AI/NER)
+      // JUŻ przy pierwszym malowaniu — bez mignięcia zanim JS zdąży je usunąć z DOM.
+      name: 'edition-attr',
+      transformIndexHtml(html: string) {
+        return process.env.VITE_EDITION === 'urzednik'
+          ? html.replace('<html lang="pl">', '<html lang="pl" data-hide-full>')
+          : html;
+      },
+    },
+  ],
   base: './',
   define: {
     __APP_VERSION__: JSON.stringify(process.env.npm_package_version ?? 'dev'),

@@ -511,6 +511,8 @@ textarea.editor-ta.dragover {
   border-left: 3px solid var(--line-2); padding: 2px 0 2px 12px;
 }
 .ner-note code { color: #b9c4d6; }
+/* Edycja „urzędnik": ukryj warstwę AI/NER od pierwszego malowania (bez mignięcia). */
+html[data-hide-full] [data-full] { display: none !important; }
 .ner-lead { font-size: 13px; color: var(--mut); margin: 0 0 12px; line-height: 1.55; }
 .ner-lead strong { color: var(--txt); }
 .tag-opt {

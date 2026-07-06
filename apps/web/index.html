@@ -200,7 +200,7 @@
       </details>
 
       <!-- ══════════ NER ══════════ -->
-      <details class="card g5" id="ner-card">
+      <details class="card g5" id="ner-card" data-full>
         <summary class="card-h">
           <span class="ic"><img src="./src/icons/ner.png" alt="" /></span>
           <div class="card-t"><h2>Wykrywanie nazwisk AI <span class="tag-opt">opcjonalne</span></h2><p>rzadkie i odmienione formy — bez Dockera, jedno kliknięcie</p></div>
@@ -320,7 +320,7 @@
               <tr>
                 <td><span class="td-name"><span class="ic ic-s c-person"><img src="./src/icons/dane-osobowe.png" alt="" /></span>Imię i nazwisko</span></td>
                 <td><span class="catpill cp-person">osoby</span></td>
-                <td><span class="how">słownik ~200 imion i ~230 nazwisk (z odmianą) + wyzwalacze („nazywam się”, „Pan/Pani”); opcjonalnie <strong>lokalny NER</strong></span></td>
+                <td><span class="how">słownik ~200 imion i ~230 nazwisk (z odmianą) + wyzwalacze („nazywam się”, „Pan/Pani”)<span data-full>; opcjonalnie <strong>lokalny NER</strong></span></span></td>
                 <td><mark class="pii pii-person">[IMIĘ I NAZWISKO]</mark></td>
               </tr>
             </tbody>
@@ -370,7 +370,7 @@
             <li><span><kbd>Ctrl</kbd>+<kbd>Enter</kbd> kopiuje wynik.</span></li>
             <li><span>Plik możesz upuścić w dowolnym miejscu strony.</span></li>
             <li><span>Po wczytaniu dokumentu włącza się widok <strong>Porównanie</strong> — oryginał obok znacznika, jak w recenzji Worda.</span></li>
-            <li><span>Odznaczenie „imię i nazwisko” w „Co maskować” wyłącza też NER.</span></li>
+            <li data-full><span>Odznaczenie „imię i nazwisko” w „Co maskować” wyłącza też NER.</span></li>
           </ul>
         </div>
       </section>

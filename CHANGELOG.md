@@ -1,5 +1,24 @@
 # Changelog
 
+## v0.19.0 — 2026-07-06
+
+Wydanie skrojone pod główną grupę docelową — **urzędników** (feedback z testów na realnych
+pismach). Wersja dla prawników/zaawansowanych przyjdzie osobno.
+
+- **Release = jeden plik + instrukcja.** Zasób wydania to teraz `Anonimizator.html`
+  (samowystarczalny, podwójny klik) i `JAK-UZYC.txt` — koniec z ZIP-em, launcherem i AI
+  w paczce. **Cała wiedza (NER, launcher, ONNX, LLM) zostaje w repozytorium** — znika
+  wyłącznie z wydania. Build „urzędnik" (`VITE_EDITION=urzednik`) ukrywa warstwę AI/NER
+  (elementy `[data-full]`) już od pierwszego malowania, bez mignięcia.
+- **Telefony stacjonarne z +48** — naprawiony realny błąd z pism: numer
+  `+48 22 245 59 22` (podział 2-3-2-2) zostawał jawny, bo detektor zakładał tylko układ
+  3-3-3. Teraz prefiks `+48/0048` dopuszcza dowolne grupowanie 9 cyfr, a słowa
+  kontekstowe (`tel.`, `telefon`, `kom.`, `fax`) też wyzwalają maskowanie stacjonarnych.
+- **Nr dowodu osobistego z kontekstem** — słowa `dowód/dowodu/seria i numer/nr dowodu`
+  (z diakrytykiem i bez) maskują numer `ABC 123456` nawet bez poprawnej sumy kontrolnej;
+  bez kontekstu nadal wymagana suma (mało fałszywych trafień). „dowód zakupu" nie jest
+  mylony z dowodem osobistym.
+
 ## v0.18.0 — 2026-07-06
 
 - **AI jednym kliknięciem, bez Dockera** — launcher `START-ANONIMIZATOR.bat` +

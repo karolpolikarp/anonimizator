@@ -21,42 +21,39 @@ jobs:
       - run: npm ci
       - run: npm run build -w anonimizator
       - run: npm run test -w anonimizator
-      - run: npm run build -w anonimizator-web
-      - name: Dołącz launcher (mini-serwer na localhost, bez instalacji)
-        run: cp launcher/START-ANONIMIZATOR.bat launcher/serve.ps1 apps/web/dist/
-      - name: Dodaj instrukcję do paczki
+      - name: Zbuduj aplikację (edycja „urzędnik" — bez warstwy AI/NER)
+        run: npm run build -w anonimizator-web
+        env:
+          VITE_EDITION: urzednik
+      - name: Przygotuj pliki release'u (sam HTML + instrukcja)
         run: |
-          cat > apps/web/dist/JAK-UZYC.txt <<'EOF'
+          cp apps/web/dist/index.html Anonimizator.html
+          cat > JAK-UZYC.txt <<'EOF'
           ANONIMIZATOR — jak zacząć (30 sekund)
 
-          NAJPROŚCIEJ
-          1. Otwórz plik index.html podwójnym kliknięciem (uruchomi się w przeglądarce).
+          1. Otwórz plik Anonimizator.html podwójnym kliknięciem (uruchomi się w przeglądarce).
           2. Wklej tekst albo upuść plik (.txt, .docx lub .pdf) na lewe pole.
           3. Po prawej masz wersję z zamaskowanymi danymi — kliknij „Kopiuj".
 
           Wszystko dzieje się na Twoim komputerze. Aplikacja nie łączy się
           z internetem — możesz wyłączyć Wi-Fi i sprawdzić.
 
-          DOKŁADNIEJSZE WYKRYWANIE NAZWISK (opcjonalne AI, bez Dockera)
-          1. Pobierz paczkę „anonimizator-onnx-pack.zip" z sekcji Releases i rozpakuj
-             jej zawartość TUTAJ, obok pliku index.html.
-          2. Zamiast index.html uruchom START-ANONIMIZATOR.bat (podwójny klik).
-          3. W sekcji „Wykrywanie nazwisk AI" włącz AI — model rusza lokalnie.
-          (Mini-serwer nasłuchuje tylko na 127.0.0.1 — nic nie wychodzi do sieci.)
+          Uwaga: automat bywa niepełny (zwłaszcza rzadkie nazwiska) — zawsze przejrzyj
+          wynik, zanim go komuś wyślesz.
 
-          Uwaga: wykrywanie nazwisk bywa niepełne — zawsze przejrzyj wynik,
-          zanim go komuś wyślesz.
-
-          Kod źródłowy i dokumentacja:
+          Kod źródłowy:
           https://github.com/karolpolikarp/anonimizator
           EOF
-      - name: Spakuj aplikację offline
-        run: cd apps/web/dist && zip -r ../../../anonimizator-offline.zip .
       - uses: softprops/action-gh-release@v3
         with:
-          files: anonimizator-offline.zip
+          files: |
+            Anonimizator.html
+            JAK-UZYC.txt
           body: |
-            **anonimizator-offline.zip** — aplikacja do użycia lokalnie, bez internetu:
-            1. Pobierz i rozpakuj ZIP.
-            2. Otwórz `index.html` w przeglądarce (podwójny klik).
-            3. Wklej tekst — anonimizacja odbywa się w całości na Twoim komputerze.
+            **Anonimizator — jeden plik, bez instalacji.**
+            1. Pobierz `Anonimizator.html`.
+            2. Otwórz go podwójnym kliknięciem (uruchomi się w przeglądarce).
+            3. Wklej tekst — anonimizacja odbywa się w całości na Twoim komputerze,
+               bez połączenia z internetem.
+
+            `JAK-UZYC.txt` zawiera tę samą instrukcję do wydrukowania/rozesłania.
