@@ -1,5 +1,18 @@
 # Changelog
 
+## v0.37.0 — 2026-07-07
+
+**Miejscowość w kontekście adresu i zamieszkania jest teraz maskowana** (zgłoszony wyciek miast).
+
+- Miasto maskowane, gdy: stoi zaraz po zamaskowanym adresie („ul. Kwiatowa 5, **Warszawa**"),
+  po markerze zamieszkania („**zamieszkały w Krakowie**", „**mieszka w Sopocie**", „**zam. w Rzeszowie**",
+  „**miejsce zamieszkania: Białystok**", „miejsce urodzenia: Kraków"), po kodzie pocztowym lub przed
+  adresem. Obsługa miast wielowyrazowych („Nowy Sącz", „Zielona Góra") i form odmienionych.
+- **Precyzja utrzymana** (weryfikacja wieloagentowym audytem adwersarialnym): miasta w prozie
+  („spotkanie w Łodzi"), w nazwach instytucji („Sąd Okręgowy w Katowicach"), kraje („w Polsce")
+  i placówki/ulice po markerze („mieszka w Sądzie", „zam. Plac Wolności 2") **NIE są ruszane** —
+  maskowanie zamieszkania jest bramkowane słownikiem znanych miast.
+
 ## v0.36.0 — 2026-07-07
 
 **Formularze urzędowe (etykieta → wartość) + twarde utwardzenie precyzji.**

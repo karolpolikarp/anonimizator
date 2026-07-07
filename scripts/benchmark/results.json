@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-07-07T19:35:16.826Z",
+  "generatedAt": "2026-07-07T20:17:21.048Z",
   "seed": 20260704,
-  "coreVersion": "0.22.0",
+  "coreVersion": "0.23.0",
   "casesTotal": 159,
-  "mustMaskTotal": 164,
-  "mustKeepTotal": 170,
+  "mustMaskTotal": 165,
+  "mustKeepTotal": 169,
   "skippedLayers": [
     {
       "name": "core+spacy",
@@ -21,15 +21,15 @@
     {
       "name": "T0+T1 core",
       "desc": "redactPII() — regex + sumy kontrolne + słownik (in-process, offline)",
-      "elapsedMs": 10,
+      "elapsedMs": 13,
       "changedVsCore": null,
       "recall": 1,
-      "precision": 0.9941176470588236,
+      "precision": 0.9940828402366864,
       "agg": {
-        "maskTotal": 164,
-        "maskHit": 164,
-        "keepTotal": 170,
-        "keepHit": 169
+        "maskTotal": 165,
+        "maskHit": 165,
+        "keepTotal": 169,
+        "keepHit": 168
       },
       "perCategory": {
         "osoby-podstawowe": {
@@ -59,10 +59,10 @@
         "strukturalne": {
           "recall": 1,
           "precision": 1,
-          "maskTotal": 49,
-          "maskHit": 49,
-          "keepTotal": 43,
-          "keepHit": 43
+          "maskTotal": 50,
+          "maskHit": 50,
+          "keepTotal": 42,
+          "keepHit": 42
         },
         "negatywy": {
           "recall": null,

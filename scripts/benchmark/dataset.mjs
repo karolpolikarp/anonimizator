@@ -380,7 +380,8 @@ export function buildDataset() {
   str('Mieszkam na ulicy Krakowskie Przedmieście 26/28.', ['Krakowskie Przedmieście 26/28'], ['Mieszkam']);
   str('ul. Marszałkowska 140 m. 7 to adres korespondencyjny.', ['ul. Marszałkowska 140'], ['korespondencyjny']);
   // daty urodzenia (z jawnym kontekstem)
-  str('Wnioskodawca, ur. 12.05.1985, zamieszkały w Łodzi.', ['12.05.1985'], ['Wnioskodawca', 'Łodzi']);
+  // miasto zamieszkania to dana osobowa (decyzja produktowa): marker „zamieszkały w" → maskuj miasto
+  str('Wnioskodawca, ur. 12.05.1985, zamieszkały w Łodzi.', ['12.05.1985', 'Łodzi'], ['Wnioskodawca']);
   str('Urodzona 3.04.1992 w Poznaniu.', ['3.04.1992'], ['Poznaniu']);
   str('Data urodzenia: 1990-01-01 (wg aktu).', ['1990-01-01'], ['wg aktu']);
   str('urodzony 07/11/1978 w Gdańsku', ['07/11/1978'], ['Gdańsku']);

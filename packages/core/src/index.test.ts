@@ -433,10 +433,35 @@ test('drugi wyraz spoza słownika NIE jest doklejany (Warszawa Zarząd)', () => 
   expect(r.redacted).toContain('[MIEJSCOWOŚĆ]');
   expect(r.redacted).toContain('Zarząd Dróg Miejskich');
 });
-test('miasto w TEKŚCIE (bez kodu) NIE jest maskowane', () => {
-  const r = redactPII('Powód mieszka w Warszawie i pracuje w Krakowie');
-  expect(r.redacted.includes('[MIEJSCOWOŚĆ]')).toBe(false);
-  expect(r.redacted).toBe('Powód mieszka w Warszawie i pracuje w Krakowie');
+test('miasto: marker zamieszkania maskuje, zwykły czasownik/proza nie', () => {
+  // „mieszka w" to marker zamieszkania → miasto maskowane; „pracuje w" to nie marker → zostaje
+  expect(redactPII('Powód mieszka w Warszawie i pracuje w Krakowie').redacted).toBe(
+    'Powód mieszka w [MIEJSCOWOŚĆ] i pracuje w Krakowie',
+  );
+  // czysta proza / instytucja → NIE maskujemy (precyzja)
+  expect(redactPII('Spotkanie odbędzie się w Łodzi.').redacted).toBe('Spotkanie odbędzie się w Łodzi.');
+  expect(redactPII('Sąd Okręgowy w Katowicach').redacted).toBe('Sąd Okręgowy w Katowicach');
+});
+test('miasto w kontekście adresu/zamieszkania jest maskowane', () => {
+  // po zamaskowanym adresie bez kodu: „[ADRES], Warszawa"
+  expect(redactPII('ul. Kwiatowa 5, Warszawa').redacted).toBe('[ADRES], [MIEJSCOWOŚĆ]');
+  // markery zamieszkania
+  expect(redactPII('zamieszkały w Krakowie przy ul. Długiej').redacted).toContain('[MIEJSCOWOŚĆ]');
+  expect(redactPII('mieszka w Sopocie od 2010 roku').redacted).toBe('mieszka w [MIEJSCOWOŚĆ] od 2010 roku');
+  expect(redactPII('zam. w Rzeszowie').redacted).toBe('zam. w [MIEJSCOWOŚĆ]');
+  expect(redactPII('miejsce zamieszkania: Białystok').redacted).toBe('miejsce zamieszkania: [MIEJSCOWOŚĆ]');
+  // kraj/region i lokal NIE są miastem po markerze
+  expect(redactPII('zamieszkały w Polsce').redacted).toBe('zamieszkały w Polsce');
+});
+test('marker zamieszkania NIE maskuje instytucji ani ulicy (bramka słownikowa)', () => {
+  // słowo po markerze, które NIE jest znanym miastem → zostaje (instytucja/placówka/ulica)
+  expect(redactPII('Interesant mieszka w Sądzie Rejonowym').redacted).toBe('Interesant mieszka w Sądzie Rejonowym');
+  expect(redactPII('zamieszkały w Areszcie Śledczym').redacted).toBe('zamieszkały w Areszcie Śledczym');
+  expect(redactPII('zamieszkały w Zakładzie Karnym').redacted).toBe('zamieszkały w Zakładzie Karnym');
+  // ulica po markerze — nie miasto; adres zdejmie krok ADRES, tu bez korupcji „[MIEJSCOWOŚĆ]c"
+  expect(redactPII('Zameldowany: Plac Wolności 2').redacted.includes('[MIEJSCOWOŚĆ]')).toBe(false);
+  // miasto wielowyrazowe po markerze
+  expect(redactPII('zamieszkały w Zielonej Górze').redacted).toContain('[MIEJSCOWOŚĆ]');
 });
 test('nazwa sądu z miastem NIE jest ruszana (Warszawy-Śródmieścia)', () => {
   const t = 'Sąd Rejonowy dla Warszawy-Śródmieścia rozpatrzył sprawę';

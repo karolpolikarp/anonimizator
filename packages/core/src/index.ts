@@ -269,6 +269,22 @@ const NON_PERSON_CONTEXT = new Set<string>(
     'mostu mostem osiedle osiedla osiedlu dzielnica dzielnicy dzielnicę park parku skwer bulwar'
   ).split(/\s+/),
 );
+/**
+ * Kraje/regiony i lokale mieszkalne — po markerze zamieszkania („zamieszkały w …") NIE są
+ * miejscowością-PII: „w Polsce" (za szeroko), „w Domu Opieki" (instytucja, nie miasto).
+ */
+const NON_CITY_AFTER_RESIDENCE = new Set<string>(
+  (
+    // kraje / regiony (mianownik + miejscownik)
+    'polska polsce polski niemcy niemczech francja francji anglia anglii wielkiej brytanii ' +
+    'ukraina ukrainie białoruś białorusi litwa litwie czechy czechach słowacja słowacji ' +
+    'unii unia europie europa ' +
+    // lokale / placówki (gdy z wielkiej litery jako nazwa własna)
+    'dom domu mieszkanie mieszkaniu ośrodek ośrodku zakład zakładzie areszt areszcie ' +
+    'więzienie więzieniu szpital szpitalu hotel hotelu hostel hostelu akademik akademiku ' +
+    'internat internacie bursa bursie schronisko schronisku'
+  ).split(/\s+/),
+);
 /** Ostatni wyraz (małą literą) tuż przed pozycją — do sprawdzenia kontekstu nie-osobowego. */
 const prevLowerWord = (text: string, offset: number): string | undefined =>
   text
@@ -300,6 +316,7 @@ const FORM_FIELDS: FormField[] = [
   { re: /^data\s+urodzenia$/i, type: 'DATA-UR', kind: 'date', mask: '[DATA-URODZENIA]' },
   { re: /^miejsce\s+urodzenia$/i, type: 'MIEJSCOWOSC', kind: 'place', mask: '[MIEJSCOWOŚĆ]' },
   { re: /^miejscowość$/i, type: 'MIEJSCOWOSC', kind: 'place', mask: '[MIEJSCOWOŚĆ]' },
+  { re: /^(?:miejsce|adres)\s+(?:zamieszkania|zameldowania|pobytu)$/i, type: 'MIEJSCOWOSC', kind: 'place', mask: '[MIEJSCOWOŚĆ]' },
   { re: /^ulica$/i, type: 'ADRES', kind: 'addr', mask: '[ADRES]' },
   { re: /^(?:nr|numer)\s+(?:domu|lokalu|mieszkania)$/i, type: 'ADRES', kind: 'addr', mask: '[ADRES]' },
 ];
@@ -476,7 +493,14 @@ const POLISH_CITIES = new Set<string>([
     'warszawie|warszawy|krakowie|krakowa|łodzi|wrocławiu|wrocławia|poznaniu|poznania|gdańsku|gdańska|' +
     'szczecinie|bydgoszczy|lublinie|lublina|katowicach|gdyni|częstochowie|radomiu|radomia|sosnowcu|' +
     'toruniu|torunia|kielcach|rzeszowie|olsztynie|opolu|płocku|tarnowie|koszalinie|kaliszu|legnicy|' +
-    'słupsku|zamościu|chełmie|elblągu|gliwicach|bytomiu|rybniku'
+    'słupsku|zamościu|chełmie|elblągu|gliwicach|bytomiu|rybniku|' +
+    // miejscownik częstych średnich miast (pozycja „zamieszkały/mieszka w <mieście>")
+    'sopocie|gnieźnie|inowrocławiu|koninie|głogowie|lesznie|ełku|mielcu|tczewie|będzinie|zgierzu|' +
+    'raciborzu|zawierciu|wejherowie|świnoujściu|puławach|kutnie|nysie|ciechanowie|sieradzu|kołobrzegu|' +
+    'otwocku|oświęcimiu|krośnie|sanoku|cieszynie|jarosławiu|zakopanem|żywcu|wieliczce|wadowicach|' +
+    'pszczynie|mikołowie|jaworznie|dąbrowie|chorzowie|zabrzu|jastrzębiu|tychach|wałbrzychu|włocławku|' +
+    'grudziądzu|jeleniej górze|zielonej górze|nowym sączu|nowym targu|nowym dworze|gorzowie|' +
+    'stargardzie|świdnicy|piotrkowie|ostrowie|suwałkach|starachowicach|skierniewicach|tarnobrzegu'
   ).split('|'),
 ]);
 
@@ -882,6 +906,52 @@ export function redactPII(input: string, options?: RedactOptions): RedactionResu
           }
         }
         return m;
+      },
+    );
+
+    // 12e) MIEJSCOWOŚĆ tuż PO zamaskowanym adresie bez kodu: „[ADRES], Warszawa". Adres to mocna
+    // kotwica; miasto po przecinku maskujemy TYLKO gdy jest znaną miejscowością (słownik) — chroni
+    // przed pożarciem kolejnego wyrazu, a „mieszka w Warszawie" (bez adresu obok) zostaje nietknięte.
+    text = text.replace(
+      new RegExp(`(${ADR})([ \\t]*,[ \\t]*)((?:${CAP_CITY}[ \\t]+){0,2}${CAP_CITY})`, 'g'),
+      (m, adr: string, sep: string, run: string) => {
+        const words = run.split(/[ \t]+/);
+        for (let n = Math.min(3, words.length); n >= 1; n--) {
+          if (POLISH_CITIES.has(words.slice(0, n).join(' ').toLowerCase())) {
+            bump('MIEJSCOWOSC');
+            const leftover = words.slice(n).join(' ');
+            return `${adr}${sep}${M.MIEJSCOWOSC}${leftover ? ' ' + leftover : ''}`;
+          }
+        }
+        return m;
+      },
+    );
+
+    // 12f) MIEJSCOWOŚĆ w kontekście ZAMIESZKANIA/urodzenia osoby: „zamieszkały w Krakowie",
+    // „zam. w Rzeszowie", „miejsce zamieszkania: Białystok", „mieszka w Sopocie". Marker to kotwica
+    // OSOBOWA — inaczej niż proza („spotkanie w Łodzi") czy instytucja („Sąd w Katowicach").
+    // BRAMKA SŁOWNIKOWA: maskujemy tylko ZNANE miasto (POLISH_CITIES, z formami odmienionymi dużych
+    // miast) — dzięki temu „mieszka w Sądzie/Areszcie", „zam. Plac Wolności 2" (instytucja/ulica) NIE
+    // są ruszane (ulicę zdejmuje krok ADRES). BEZ flagi `i` (case-sensitive miasto); prawa granica
+    // (?=[…]) blokuje cofanie regexu do połowy wyrazu.
+    text = text.replace(
+      new RegExp(
+        `\\b((?:[Zz]am\\.|(?:[Zz]a)?[Mm]ieszka[łl]?\\w*|[Zz]ameldowan\\w*|` +
+          `(?:[Mm]iejsce|[Aa]dres)[ \\t]+(?:zamieszkania|zameldowania|pobytu|urodzenia))` +
+          `[ \\t]*(?::[ \\t]*|[Ww]e?[ \\t]+))` +
+          `((?:${CAP_CITY}[ \\t]+){0,2}${CAP_CITY})(?=[ \\t.,;:?!)]|$)`,
+        'g',
+      ),
+      (m, marker: string, run: string) => {
+        const words = run.split(/[ \t]+/);
+        for (let n = Math.min(3, words.length); n >= 1; n--) {
+          if (POLISH_CITIES.has(words.slice(0, n).join(' ').toLowerCase())) {
+            bump('MIEJSCOWOSC');
+            const leftover = words.slice(n).join(' ');
+            return `${marker}${M.MIEJSCOWOSC}${leftover ? ' ' + leftover : ''}`;
+          }
+        }
+        return m; // nieznane miasto po markerze (instytucja/ulica) → nie ruszaj
       },
     );
   }
