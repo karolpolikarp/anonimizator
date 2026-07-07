@@ -1,5 +1,26 @@
 # Changelog
 
+## v0.36.0 — 2026-07-07
+
+**Formularze urzędowe (etykieta → wartość) + twarde utwardzenie precyzji.**
+
+- **Nowość: detekcja pól formularza.** Eksporty urzędowe mają układ „Etykieta\nWARTOŚĆ"
+  (wartość w osobnej linii, często WERSALIKAMI) — reguły tego nie łapały. Teraz pola
+  „Nazwisko", „Imię/Imiona", „Data urodzenia", „Miejsce urodzenia", „Ulica", „Nr domu/lokalu",
+  „Miejscowość" (w tej samej linii po „:" lub w następnej) są maskowane. Pola administracyjne
+  (Kraj, Województwo, Powiat, Gmina) celowo zostają — za szerokie na PII.
+- **Precyzja utwardzona po wieloagentowym audycie adwersarialnym** (5 agentów × realistyczne
+  pisma sądowe/wnioski/karty medyczne/HR/proza). Naprawione klasy nadmaskowania:
+  - separatory nazwisk `\s+` → `[ \t]+` — nazwisko na końcu wiersza nie skleja się z następną
+    linią (nie zjada etykiet/wyrazów; dotyczy też miejscowości po kodzie pocztowym);
+  - para „rzeczownik + nazwisko" („Pracownik Kowalski", „Zakład Usługowy Nowak") — rzeczownik
+    zostaje, maskowane jest samo nazwisko;
+  - eponimy medyczne i nazwy ulic z sufiksem -ski/-cki („choroba Leśniowskiego", „ulica Puławska")
+    oraz przymiotniki instytucji („Ogólnopolski Związek", „Uniwersytet Jagielloński") — nie osoby;
+  - puste pole formularza nie przejmuje następnej etykiety; proza/instrukcje z „Ulica"/„Imię
+    i nazwisko" nie są brane za etykiety; wartości proceduralne („nie dotyczy", „do ustalenia") pomijane.
+- **Nowość: numer KRS** i **data urodzenia słownie** — z poprzednich wydań, potwierdzone testami.
+
 ## v0.35.0 — 2026-07-06
 
 - **Data urodzenia zapisana słownie jest teraz maskowana** — „ur. 5 maja 1985 r.",

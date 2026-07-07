@@ -177,6 +177,9 @@ export const NON_SURNAME_ADJ = new Set<string>((
   // relacyjne (nazwy komitetów/związków/funduszy): „Komitet Obywatelski", „Hufiec Harcerski"
   'obywatelski harcerski sołecki chłopski pański szlachecki żołnierski marynarski kupiecki ' +
   'związkowski ' +
+  // ogólnokrajowe / uczelniane (nazwy instytucji): „Ogólnopolski Związek", „Uniwersytet Jagielloński"
+  'ogólnopolski wszechpolski ogólnokrajowy jagielloński akademicki uniwersytecki ' +
+  'studencki pracowniczy związkowy ' +
   // dalsze regiony / pasma / parki: „Bieszczadzki Park", „Podhalański", „Sądecki"
   'podhalański bieszczadzki karkonoski sądecki gorczański elbląski nadwiślański nadbużański ' +
   'kołobrzeski koszaliński słupski legnicki wałbrzyski jeleniogórski nowosądecki ' +

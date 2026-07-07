@@ -230,6 +230,95 @@ test('data urodzenia słowna („ur. 5 maja 1985") maskowana; bez kontekstu nie'
   expect(redactPII('urodzony 12 grudnia 1970').redacted).toContain('[DATA-URODZENIA]');
   expect(redactPII('W maju 1985 odbyło się spotkanie.').redacted).toBe('W maju 1985 odbyło się spotkanie.');
 });
+
+test('pola formularza (etykieta → wartość w następnej linii, WERSALIKI) są maskowane', () => {
+  const form =
+    '11. Nazwisko\nWILCZYŃSKI\n12. Pierwsze imię\nKAROL\n' +
+    '13. Data urodzenia (dzień – miesiąc – rok)\n1994-07-08\n' +
+    '18. Ulica\nBŁĘKITNA\n19. Nr domu\n53.0\n21. Miejscowość\nWARSZAWA';
+  const out = redactPII(form).redacted;
+  expect(out.includes('WILCZYŃSKI')).toBe(false);
+  expect(out.includes('KAROL')).toBe(false);
+  expect(out.includes('1994-07-08')).toBe(false);
+  expect(out.includes('BŁĘKITNA')).toBe(false);
+  expect(out.includes('53.0')).toBe(false);
+  expect(out).toContain('[IMIĘ I NAZWISKO]');
+  expect(out).toContain('[DATA-URODZENIA]');
+  expect(out).toContain('[ADRES]');
+});
+
+test('pola formularza: administracyjne (kraj/województwo/powiat/gmina) NIE są maskowane', () => {
+  const out = redactPII('14. Kraj\nPOLSKA\n15. Województwo\nMAZOWIECKIE\n16. Powiat\nWARSZAWA').redacted;
+  expect(out).toContain('POLSKA');
+  expect(out).toContain('MAZOWIECKIE');
+});
+
+test('pola formularza: same-line z dwukropkiem i puste pole', () => {
+  expect(redactPII('Nazwisko: Kowalski').redacted).toContain('[IMIĘ I NAZWISKO]');
+  // pole puste („Nr lokalu") — następna linia to kolejna etykieta, nie maskujemy jej
+  const out = redactPII('20. Nr lokalu\n21. Miejscowość\nWARSZAWA').redacted;
+  expect(out).toContain('21. Miejscowość');
+  expect(out.includes('WARSZAWA')).toBe(false);
+});
+
+test('precyzja pól formularza: proza z „Ulica"/„Nazwisko" NIE jest nadmaskowana', () => {
+  expect(redactPII('Ulica była zamknięta z powodu remontu.').redacted).toBe(
+    'Ulica była zamknięta z powodu remontu.',
+  );
+  // adnotacja przy dacie zachowana
+  expect(redactPII('Data urodzenia: 1990-01-01 (wg aktu).').redacted).toBe(
+    'Data urodzenia: [DATA-URODZENIA] (wg aktu).',
+  );
+});
+
+// ── Precyzja po audycie wieloagentowym (nadmaskowanie prozy/układu) ──
+test('nagłówek pola nad prozą NIE zjada zdania', () => {
+  expect(redactPII('Ulica\nDroga publiczna wraz z chodnikami.').redacted).toBe(
+    'Ulica\nDroga publiczna wraz z chodnikami.',
+  );
+  expect(redactPII('Imię i nazwisko wnioskodawcy wpisujemy w polu 1.\nDane niżej.').redacted).toBe(
+    'Imię i nazwisko wnioskodawcy wpisujemy w polu 1.\nDane niżej.',
+  );
+});
+
+test('puste pole formularza NIE przejmuje następnej etykiety/nagłówka', () => {
+  expect(redactPII('Nazwisko:\nRozpoznanie\nastma').redacted).toBe('Nazwisko:\nRozpoznanie\nastma');
+  expect(redactPII('Miejsce urodzenia:\nOddział Kardiologiczny').redacted).toBe(
+    'Miejsce urodzenia:\nOddział Kardiologiczny',
+  );
+});
+
+test('nazwisko na końcu wiersza NIE skleja się z następną linią', () => {
+  expect(redactPII('dr Anna Nowak\nOddział: kardiologia').redacted).toBe(
+    'dr [IMIĘ I NAZWISKO]\nOddział: kardiologia',
+  );
+});
+
+test('para „rzeczownik/rola + nazwisko" zostawia rzeczownik, maskuje nazwisko', () => {
+  expect(redactPII('Pracownik Kowalski otrzymał premię.').redacted).toBe(
+    'Pracownik [IMIĘ I NAZWISKO] otrzymał premię.',
+  );
+  expect(redactPII('Zakład Usługowy Kowalski').redacted).toBe('Zakład Usługowy [IMIĘ I NAZWISKO]');
+  // rzadkie imię + nazwisko nadal maskowane w całości (recall zachowany)
+  expect(redactPII('Świętomira Gzowska').redacted).toBe('[IMIĘ I NAZWISKO]');
+});
+
+test('eponimy medyczne i nazwy ulic (sufiks -ski) NIE są maskowane jako osoby', () => {
+  expect(redactPII('Zdiagnozowano chorobę Leśniowskiego-Crohna.').redacted).toBe(
+    'Zdiagnozowano chorobę Leśniowskiego-Crohna.',
+  );
+  expect(redactPII('Dodatni objaw Babińskiego.').redacted).toBe('Dodatni objaw Babińskiego.');
+  expect(redactPII('Mieszka przy ulica Puławska.').redacted).toBe('Mieszka przy ulica Puławska.');
+  // kontrola: prawdziwe nazwisko w odmianie nadal łapane
+  expect(redactPII('sprawę Gzowskiego przekazano').redacted).toContain('[IMIĘ I NAZWISKO]');
+});
+
+test('instytucjonalne przymiotniki (-ski) NIE są maskowane', () => {
+  expect(redactPII('Zleceniodawca: Ogólnopolski Związek Pracodawców').redacted).toContain(
+    'Ogólnopolski Związek',
+  );
+  expect(redactPII('ukończył Uniwersytet Jagielloński').redacted).toBe('ukończył Uniwersytet Jagielloński');
+});
 test('kod waluty + kwota NIE jest mylony z dowodem', () => {
   expect(redactPII('PLN 123456').redacted.includes('[NR-DOWODU]')).toBe(false);
   expect(redactPII('EUR 250000').redacted.includes('[NR-DOWODU]')).toBe(false);

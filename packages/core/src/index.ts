@@ -241,9 +241,11 @@ const PRECEDED_BY_CAP = new RegExp(`[${PL_UP}][${PL_LO}]+\\s+$`);
 // Kotwica PL-aware zamiast ASCII \b (działa przed Ł/Ś/Ż/Ą). Bezstanowe użycie przez .replace
 // (String.replace zeruje lastIndex), więc współdzielenie RE_PAIR między krokami (a2)/(a3) jest bezpieczne.
 const CAP_WORD = `[${PL_UP}][${PL_LO}]+(?:-[${PL_UP}][${PL_LO}]+)?`;
-const RE_SPOUSES = new RegExp(`(?<![${PL_UP}${PL_LO}-])(${CAP_WORD})\\s+(?:i|oraz)\\s+(${CAP_WORD})\\s+(${CAP_WORD})`, 'g');
-const RE_NAME_SEQ = new RegExp(`(?<![${PL_UP}${PL_LO}-])${CAP_WORD}(?:\\s+${CAP_WORD}){1,3}`, 'g');
-const RE_PAIR = new RegExp(`(?<![${PL_UP}${PL_LO}-])(${CAP_WORD})\\s+(${CAP_WORD})`, 'g');
+// Separatory między członami nazwy to [ \t]+ (BEZ \n) — nazwisko na końcu wiersza NIE może
+// skleić się z pierwszym wyrazem następnej linii (psuło układ i wciągało etykiety formularzy).
+const RE_SPOUSES = new RegExp(`(?<![${PL_UP}${PL_LO}-])(${CAP_WORD})[ \\t]+(?:i|oraz)[ \\t]+(${CAP_WORD})[ \\t]+(${CAP_WORD})`, 'g');
+const RE_NAME_SEQ = new RegExp(`(?<![${PL_UP}${PL_LO}-])${CAP_WORD}(?:[ \\t]+${CAP_WORD}){1,3}`, 'g');
+const RE_PAIR = new RegExp(`(?<![${PL_UP}${PL_LO}-])(${CAP_WORD})[ \\t]+(${CAP_WORD})`, 'g');
 const RE_SOLO_DICT = new RegExp(`(?<![${PL_UP}${PL_LO}-])[${PL_UP}][${PL_LO}]+(?![${PL_LO}-])`, 'g');
 const RE_SOLO_MORPH = new RegExp(`(?<![${PL_UP}${PL_LO}-])${CAP_WORD}`, 'g');
 const RE_SURNAME_OBLIQUE =
@@ -253,10 +255,107 @@ const RE_SURNAME_OBLIQUE =
 const CAP_CITY = `[${PL_UP}][${PL_LO}]+(?:-[${PL_UP}][${PL_LO}]+)*`;
 /** Escapuje metaznaki regexu w literale (do budowy wzorca z placeholdera maski). */
 const escapeRe = (s: string): string => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+/**
+ * Wyrazy (małą literą) po których słowo z sufiksem -ski/-cki/-icz to NIE osoba, lecz eponim
+ * medyczny („choroba Leśniowskiego"), nazwa ulicy/miejsca („ulica Puławska") lub termin.
+ * Wstrzymują samodzielny detektor morfologiczny/słownikowy nazwiska (kroki 13c/13c2).
+ */
+const NON_PERSON_CONTEXT = new Set<string>(
+  (
+    'choroba chorobę choroby chorobą chorobie objaw objawu objawy objawie zespół zespołu zespole ' +
+    'syndrom syndromu próba próbę próby odczyn odczynu test testu testem skala skali skalę metoda ' +
+    'metodę metody metodą prawo prawa twierdzenie zasada zasadę reguła reakcja klasyfikacja punkt ' +
+    'ulica ulicy ulicę ulicą ulic aleja alei aleję aleją plac placu placem placa rondo ronda most ' +
+    'mostu mostem osiedle osiedla osiedlu dzielnica dzielnicy dzielnicę park parku skwer bulwar'
+  ).split(/\s+/),
+);
+/** Ostatni wyraz (małą literą) tuż przed pozycją — do sprawdzenia kontekstu nie-osobowego. */
+const prevLowerWord = (text: string, offset: number): string | undefined =>
+  text
+    .slice(Math.max(0, offset - 40), offset)
+    .match(/([\p{Ll}]+)\s*$/u)?.[1]
+    ?.toLowerCase();
 /** Kody walut — „PLN 123456" to kwota, nie dowód (wyjątek w kroku DOWÓD bez kontekstu). */
 const CURRENCY_CODES = new Set([
   'PLN', 'EUR', 'USD', 'GBP', 'CHF', 'CZK', 'SEK', 'NOK', 'DKK', 'JPY', 'UAH', 'RUB',
 ]);
+
+// ── Pola formularza (etykieta → wartość) ──────────────────────────────────────
+// Eksporty urzędowe często mają układ „Etykieta\nWARTOŚĆ" (wartość w OSOBNEJ linii,
+// nierzadko WERSALIKAMI). Reguły tekstowe tego nie łapią (oczekują „etykieta: wartość"
+// w jednej linii i nazwisk pisanych normalnie). Etykieta pola to MOCNA kotwica strukturalna,
+// więc precyzja jest wysoka. Maskujemy tylko pola jednoznacznie osobowe — pola administracyjne
+// (kraj, województwo, powiat, gmina) zostawiamy: są za szerokie, by same w sobie były PII.
+type FormKind = 'name' | 'date' | 'place' | 'addr';
+interface FormField {
+  re: RegExp; // dopasowuje etykietę (bez numeracji „12. ") do „:" lub końca linii
+  type: PiiType;
+  mask: string;
+  kind: FormKind;
+}
+const FORM_FIELDS: FormField[] = [
+  { re: /^imię\s+i\s+nazwisko$|^nazwisko\s+i\s+imię$/i, type: 'IMIE', kind: 'name', mask: '[IMIĘ I NAZWISKO]' },
+  { re: /^nazwisk[ao](?:\s+(?:rodowe|panieńskie|poprzednie))?(?:\s+(?:matki|ojca))?$/i, type: 'IMIE', kind: 'name', mask: '[IMIĘ I NAZWISKO]' },
+  { re: /^(?:pierwsze\s+|drugie\s+|kolejne\s+)?imi(?:ę|ona)(?:\s+(?:ojca|matki))?$/i, type: 'IMIE', kind: 'name', mask: '[IMIĘ I NAZWISKO]' },
+  { re: /^data\s+urodzenia$/i, type: 'DATA-UR', kind: 'date', mask: '[DATA-URODZENIA]' },
+  { re: /^miejsce\s+urodzenia$/i, type: 'MIEJSCOWOSC', kind: 'place', mask: '[MIEJSCOWOŚĆ]' },
+  { re: /^miejscowość$/i, type: 'MIEJSCOWOSC', kind: 'place', mask: '[MIEJSCOWOŚĆ]' },
+  { re: /^ulica$/i, type: 'ADRES', kind: 'addr', mask: '[ADRES]' },
+  { re: /^(?:nr|numer)\s+(?:domu|lokalu|mieszkania)$/i, type: 'ADRES', kind: 'addr', mask: '[ADRES]' },
+];
+/** Wartości „puste" pola — nie maskujemy (nie są danymi). */
+const FORM_EMPTY_VALUES = new Set(['brak', 'niedotyczy', 'nd', 'n/d', 'bd', 'x', 'bez', '.', '-', '–', '—', '']);
+/**
+ * Pierwsze słowa TYPOWYCH etykiet/nagłówków formularza (lowercase). Służy TYLKO do rozpoznania,
+ * że „wartość" pustego pola PII to w istocie kolejna etykieta/nagłówek sekcji (a nie dana) —
+ * chroni przed maskowaniem np. „Rozpoznanie", „Oddział" po pustym „Nazwisko:".
+ */
+const FORM_LABEL_WORDS = new Set<string>(
+  (
+    'nazwisko nazwiska imię imiona imie data miejsce miejscowość ulica nr numer kraj województwo ' +
+    'powiat gmina kod pesel nip regon krs telefon tel email e-mail adres rozpoznanie oddział ' +
+    'jednostka wydział dział stanowisko zawód wykształcenie obywatelstwo seria dokument płeć stan ' +
+    'dane rozdział załącznik punkt pozycja poz specjalność tytuł nazwa firma'
+  ).split(' '),
+);
+/** Wzorzec daty (cyfrowa lub słowna) — do maskowania SAMEJ daty w wartości pola „Data urodzenia". */
+const RE_DATE_VALUE =
+  /\d{1,2}[.\-/]\d{1,2}[.\-/]\d{2,4}|\d{4}-\d{2}-\d{2}|\d{1,2}\s+(?:stycznia|lutego|marca|kwietnia|maja|czerwca|lipca|sierpnia|września|października|listopada|grudnia)\s+\d{4}/i;
+/** Zdejmuje numerację („12. ", „3) ") i białe znaki z brzegów — zostaje sama treść etykiety/wartości. */
+const stripFormPrefix = (s: string): string => s.replace(/^[ \t]*\d+[.)][ \t]*/, '').trim();
+/** Czy wiersz to etykieta/nagłówek (nie wartość sąsiedniego pola) — chroni pola PUSTE. */
+const isFormLabelLine = (line: string): boolean => {
+  const t = stripFormPrefix(line);
+  const base = t.replace(/\s*:\s*$/, ''); // zdejmij końcowy dwukropek („Imię:")
+  if (FORM_FIELDS.some((f) => f.re.test(base))) return true; // znana etykieta pola
+  if (/:\s*$/.test(line)) return true; // wiersz kończy się „:" → etykieta, nie wartość
+  if (/^\d+[.)]\s+\S/.test(line.trim())) return true; // numerowana etykieta („14. Kraj")
+  // krótka fraza zaczynająca się typowym słowem etykiety/nagłówka („Rozpoznanie", „Oddział…")
+  const words = base.split(/\s+/);
+  return words.length <= 3 && FORM_LABEL_WORDS.has(words[0]?.toLowerCase() ?? '');
+};
+/** Czy `value` to sensowna wartość danego rodzaju pola (chroni przed prozą, etykietami, „nie dotyczy"). */
+const isValidFormValue = (value: string, kind: FormKind): boolean => {
+  const t = value.trim();
+  if (!t || t.length > 70) return false;
+  if (FORM_EMPTY_VALUES.has(t.toLowerCase().replace(/\s+/g, '').replace(/\.$/, ''))) return false;
+  if (/^\d+[.)]\s/.test(t)) return false; // kolejna etykieta numerowana
+  if (/^(nie\b|do ustalenia|brak\b|b\/d)/i.test(t)) return false; // frazy proceduralne
+  if (kind === 'name' || kind === 'place') {
+    // 1–4 wyrazy, KAŻDY z wielkiej litery lub WERSALIKAMI (nazwa własna) — proza ma małe litery/spójniki
+    return /^\p{Lu}[\p{L}'’.‑-]*(?:[ \t]+\p{Lu}[\p{L}'’.‑-]*){0,3}$/u.test(t);
+  }
+  if (kind === 'date') return /\d{4}|\d{1,2}[-.\/]\d{1,2}/.test(t);
+  // addr: ulica (nazwa własna) lub nr domu (cyfry). Odrzuć zdanie: KAŻDY wyraz musi być nazwą
+  // własną (wielka litera / WERSALIKI), tokenem z cyfrą, albo krótką cząstką adresową (m, lok, ul…).
+  const toks = t.split(/\s+/);
+  if (toks.length > 5) return false;
+  const ADDR_PARTICLE = /^(m|lok|ul|al|os|pl|nr|im|św|gen|ks)\.?$/i;
+  return (
+    /^[\p{Lu}\d]/u.test(t) &&
+    toks.every((w) => /^\p{Lu}/u.test(w) || /\d/.test(w) || ADDR_PARTICLE.test(w))
+  );
+};
 
 /**
  * Encje prawne/instytucje, których NIE traktujemy jako „imię nazwisko"
@@ -302,7 +401,15 @@ const ROLE_WORDS = new Set<string>(
     'notariusz notariusza komornik komornika kierownik kierownika naczelnik naczelnika inspektor ' +
     'inspektora kurator kuratora rektor rektora dziekan dziekana profesor profesora doktor doktora ' +
     'mecenas mecenasa kanclerz przewodniczący przewodnicząca sekretarz skarbnik pełnomocnik biegły ' +
-    'świadek powód pozwany oskarżony wnioskodawca'
+    'świadek powód pozwany oskarżony wnioskodawca ' +
+    // strony/uczestnicy oraz rzeczowniki pospolite stojące przed nazwiskiem (nie osierocaj ich)
+    'pracownik pracownica klient klientka pacjent pacjentka najemca wynajmujący właściciel właścicielka ' +
+    'dłużnik wierzyciel kupujący sprzedający zleceniodawca zleceniobiorca wykonawca zamawiający konsument ' +
+    'ubezpieczony poszkodowany uczestnik członek przedstawiciel abonent użytkownik nabywca darczyńca ' +
+    // podmioty gospodarcze i człony ich nazw (finding: „Piekarnia Nowak", „Zakład Usługowy Kowalski")
+    'piekarnia tartak gospodarstwo warsztat hurtownia sklep apteka przychodnia restauracja pracownia ' +
+    'przedsiębiorstwo usługowy usługowa usługowe handlowy handlowa handlowe produkcyjny produkcyjna ' +
+    'rolny rolna rolne transportowy budowlany budowlana wielobranżowy'
   ).split(/\s+/),
 );
 
@@ -440,6 +547,49 @@ export function redactPII(input: string, options?: RedactOptions): RedactionResu
         return M.EMAIL;
       },
     );
+  }
+
+  // 1b) POLA FORMULARZA — etykieta w linii, wartość w tej samej („Nazwisko: X") lub NASTĘPNEJ
+  // („Nazwisko\nWILCZYŃSKI"). Kotwica strukturalna o wysokiej precyzji; łapie też WERSALIKI,
+  // których reguły nazwiskowe (wymagają Kapitalizacji) nie widzą. Biegnie wcześnie, więc
+  // zamaskowane wartości nie są ponownie przetwarzane przez dalsze kroki.
+  {
+    const lines = text.split('\n');
+    for (let i = 0; i < lines.length; i++) {
+      const bare = stripFormPrefix(lines[i]);
+      const field = FORM_FIELDS.find((f) => f.re.test(bare.replace(/\s*:.*$/, '').replace(/\s*\([^)]*\)\s*$/, '')));
+      if (!field || !on(field.type)) continue;
+      const colon = bare.match(/:\s*(.+)$/); // „Etykieta: WARTOŚĆ" w tej samej linii
+      if (colon) {
+        // Data w tej samej linii ma już swój detektor (krok 11, zachowuje adnotacje typu
+        // „(wg aktu)"), więc same-line obsługujemy tylko dla imion/miejsc/adresów.
+        if (field.kind === 'date') continue;
+        const val = colon[1].trim();
+        if (isValidFormValue(val, field.kind)) {
+          lines[i] = lines[i].replace(new RegExp(`${escapeRe(val)}\\s*$`), field.mask);
+          bump(field.type);
+        }
+        continue;
+      }
+      // wartość w następnej NIEPUSTEJ linii — pomiń puste i podpowiedzi w nawiasach
+      // („(wielkimi literami)"); o ile sama nie jest etykietą (pole puste)
+      let j = i + 1;
+      while (j < lines.length && (lines[j].trim() === '' || /^\(.*\)$/.test(lines[j].trim()))) j++;
+      if (j >= lines.length || isFormLabelLine(lines[j])) continue;
+      const val = lines[j].trim();
+      if (!isValidFormValue(val, field.kind)) continue;
+      if (field.kind === 'date') {
+        // maskuj SAMĄ datę w linii wartości (zachowaj ewentualne adnotacje: „1990-01-01 (wg aktu)")
+        if (RE_DATE_VALUE.test(lines[j])) {
+          lines[j] = lines[j].replace(RE_DATE_VALUE, field.mask);
+          bump(field.type);
+        }
+        continue;
+      }
+      lines[j] = lines[j].replace(/^(\s*)[\s\S]*?(\s*)$/, `$1${field.mask}$2`);
+      bump(field.type);
+    }
+    text = lines.join('\n');
   }
 
   // 2) IBAN (z prefiksem kraju, walidacja mod 97). Dopuszcza spacje w grupach.
@@ -693,7 +843,7 @@ export function redactPII(input: string, options?: RedactOptions): RedactionResu
   if (on('MIEJSCOWOSC')) {
     const KOD = escapeRe(M['KOD-POCZTOWY']);
     text = text.replace(
-      new RegExp(`(${KOD}|(?<![\\d-])\\d{2}-\\d{3})(\\s+)(${CAP_CITY})((?:\\s+${CAP_CITY}){0,2})`, 'g'),
+      new RegExp(`(${KOD}|(?<![\\d-])\\d{2}-\\d{3})([ \\t]+)(${CAP_CITY})((?:[ \\t]+${CAP_CITY}){0,2})`, 'g'),
       (m, anchor: string, sep: string, first: string, restRaw: string, offset: number) => {
         // surowy kod poprzedzony odwołaniem prawnym („poz. 12-345 Rejestr") → nie adres
         if (anchor !== M['KOD-POCZTOWY'] && precededByLegalRef(text, offset)) return m;
@@ -720,7 +870,7 @@ export function redactPII(input: string, options?: RedactOptions): RedactionResu
     // „Zielona Góra", „Nowy Sącz"), a wyrazy przed nim zostawiamy nietknięte.
     const ADR = escapeRe(M.ADRES);
     text = text.replace(
-      new RegExp(`((?:${CAP_CITY}\\s+){0,2}${CAP_CITY})(\\s*,?\\s+)(${ADR}|ul\\.|al\\.|os\\.|pl\\.)`, 'g'),
+      new RegExp(`((?:${CAP_CITY}[ \\t]+){0,2}${CAP_CITY})([ \\t]*,?[ \\t]+)(${ADR}|ul\\.|al\\.|os\\.|pl\\.)`, 'g'),
       (m, capRun: string, sep: string, anchor: string) => {
         const words = capRun.split(/\s+/);
         for (let n = Math.min(3, words.length); n >= 1; n--) {
@@ -831,10 +981,12 @@ export function redactPII(input: string, options?: RedactOptions): RedactionResu
 
   // (b) wyzwalacze kontekstu — łapią nazwiska spoza listy imion.
   // UWAGA #1: bez trailing `\b` po wyzwalaczu — „się"/„imię"/„panią" kończą się polską literą (ę/ą),
-  // a ASCII `\b` nie stawia granicy po znaku spoza [A-Za-z0-9_]. Separator `[\s:]+` sam ogranicza.
+  // a ASCII `\b` nie stawia granicy po znaku spoza [A-Za-z0-9_]. Separator `[ \t:]+` sam ogranicza.
   // UWAGA #2: NIE używamy flagi `i`. Pod `i` klasa [PL_UP] łapie też MAŁE litery, więc grupa
   // „nazwiska" pożerała kolejne małe słowo („Pan Wiśniewski nie" → maskowało także „nie", odwracając
   // sens zdania!). Dlatego wielkość liter wyzwalacza kodujemy jawnie ([Pp]an…), a flaga zostaje samo `g`.
+  // UWAGA #3: separatory to [ \t:]+ / [ \t]+ (BEZ \n) — inaczej „Nazwisko:\nRozpoznanie" (puste pole
+  // formularza) wciągałoby etykietę z następnej linii. Pola wieloliniowe obsługuje krok 1b.
   if (on('IMIE')) {
     // myślnik dozwolony w KAŻDYM członie — „Pan Habdank-Wojewódzki" to jedno nazwisko
     // (bez tego maskowała się połowa, a resztka „-Wojewódzki" zatruwała dalsze warstwy).
@@ -842,7 +994,7 @@ export function redactPII(input: string, options?: RedactOptions): RedactionResu
     const nameTrigger = new RegExp(
       `\\b([Nn]azywam się|[Mm]am na imię|[Ii]mię i nazwisko|[Ii]mie i nazwisko|[Nn]azwisko:|` +
         `[Pp]anowie|[Pp]anami|[Pp]anom|[Pp]anów|[Pp]anem|[Pp]ana|[Pp]anią|[Pp]aniom|[Pp]anu|[Pp]ani|[Pp]an)` +
-        `([\\s:]+)([${PL_UP}][${PL_LO}]+(?:-[${PL_UP}][${PL_LO}]+)?(?:\\s+[${PL_UP}][${PL_LO}]+(?:-[${PL_UP}][${PL_LO}]+)?)?)`,
+        `([ \\t:]+)([${PL_UP}][${PL_LO}]+(?:-[${PL_UP}][${PL_LO}]+)?(?:[ \\t]+[${PL_UP}][${PL_LO}]+(?:-[${PL_UP}][${PL_LO}]+)?)?)`,
       'g',
     );
     text = text.replace(nameTrigger, (m, kw: string, sep: string, name: string) => {
@@ -869,9 +1021,12 @@ export function redactPII(input: string, options?: RedactOptions): RedactionResu
   if (on('IMIE')) {
     text = text.replace(
       RE_SOLO_DICT,
-      (m) => {
+      (m, offset: number) => {
         if (LEGAL_ENTITY_WORDS.has(m.toLowerCase())) return m;
         if (!surnameBase(m)) return m;
+        // „choroba Kowalskiego", „ulica Kwiatkowska" — kontekst nie-osobowy → nie maskuj
+        const prev = prevLowerWord(text, offset);
+        if (prev && NON_PERSON_CONTEXT.has(prev)) return m;
         bump('IMIE');
         return personMask(m);
       },
@@ -894,6 +1049,9 @@ export function redactPII(input: string, options?: RedactOptions): RedactionResu
         // drugi człon złożenia z wielkiej litery (np. „… Warszawski") → to przymiotnik nazwy.
         // Okno 40 znaków przed dopasowaniem wystarcza (unikamy O(n²) na długim tekście).
         if (PRECEDED_BY_CAP.test(text.slice(Math.max(0, offset - 40), offset))) return m;
+        // eponim/ulica po wyrazie z małej litery („choroba Leśniowskiego", „ulica Puławska")
+        const prev = prevLowerWord(text, offset);
+        if (prev && NON_PERSON_CONTEXT.has(prev)) return m;
         bump('IMIE');
         return personMask(first);
       },
