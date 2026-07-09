@@ -34,6 +34,7 @@ export type PiiType =
   | 'DOWOD'
   | 'PASZPORT'
   | 'KRS'
+  | 'ZNAK-SPRAWY'
   | 'KOD-POCZTOWY'
   | 'DATA-UR'
   | 'ADRES'
@@ -92,6 +93,7 @@ const MASK: Record<PiiType, string> = {
   DOWOD: '[NR-DOWODU]',
   PASZPORT: '[NR-PASZPORTU]',
   KRS: '[KRS]',
+  'ZNAK-SPRAWY': '[ZNAK-SPRAWY]',
   'KOD-POCZTOWY': '[KOD-POCZTOWY]',
   'DATA-UR': '[DATA-URODZENIA]',
   ADRES: '[ADRES]',
@@ -614,6 +616,45 @@ export function redactPII(input: string, options?: RedactOptions): RedactionResu
       bump(field.type);
     }
     text = lines.join('\n');
+  }
+
+  // 1c) ZNAK SPRAWY / ZNAK PISMA — sygnatura pisma urzędowego (dla urzędników identyfikuje sprawę
+  // i pośrednio osobę). Biegnie WCZEŚNIE, by zamaskować cały znak, zanim krótsze detektory (kod,
+  // telefon) odgryzą jego fragmenty cyfrowe. Dwa tryby:
+  if (on('ZNAK-SPRAWY')) {
+    // (a) STRUKTURALNIE — znak wg JRWA „SYMBOL.klasa.numer.ROK" (np. ABC-def.123.77.2016,
+    //     DPR-II.054.3.2026, ZP.271.12.2026, DC.WAC.5555.30.2026). Symbol komórki bywa
+    //     WIELOCZŁONOWY (człony po „-" lub „."), po nim grupy cyfr i 4-cyfrowy ROK (19xx/20xx)
+    //     jako ostatni człon. Start od ≥2 WERSALIKÓW + rok na końcu odróżniają znak od daty
+    //     („12.05.2024" — start cyfrą) i od prozy („Rozdział.5" — jedna wielka litera).
+    const ZNAK_START = `[${PL_UP}]{2,}[0-9]*(?:-[A-Za-z${PL_UP}${PL_LO}0-9]+)*`;
+    const ZNAK_MID = `(?:\\.[A-Za-z${PL_UP}${PL_LO}0-9-]+)*?`;
+    text = text.replace(
+      new RegExp(`(?<![A-Za-z0-9./-])${ZNAK_START}${ZNAK_MID}\\.\\d+\\.(?:19|20)\\d{2}(?!\\d)`, 'g'),
+      () => {
+        bump('ZNAK-SPRAWY');
+        return M['ZNAK-SPRAWY'];
+      },
+    );
+
+    // (b) Z KONTEKSTEM („Znak sprawy:", „Nasz znak:", „Sygn. akt", „Znak:") — słowo zostaje,
+    //     maskujemy sam znak. Łapie też sygnatury sądowe („II CSK 234/19") oraz warianty znaku,
+    //     których suchy wzorzec (a) nie ujmuje. Wartość musi zawierać separator + cyfrę, więc
+    //     zwykłe frazy („znak drogowy", „nasz znak rozpoznawczy") nie są ruszane.
+    const ZNAK_VALUE =
+      `(?:[IVXLCDM]{1,4}[ \\t]+)?[${PL_UP}][A-Za-z${PL_LO}]{0,4}[ \\t]+\\d+[ \\t]*/[ \\t]*\\d{2,4}` + // sygn. sądowa
+      `|[A-Za-z0-9${PL_UP}${PL_LO}]+(?:[.\\-/][A-Za-z0-9${PL_UP}${PL_LO}]+)+`; // znak z kropkami/ukośnikiem
+    text = text.replace(
+      new RegExp(
+        `\\b(znak sprawy|znak pisma|nasz znak|wasz znak|sygn\\.?[ \\t]*akt|sygnatura akt|sygn\\.|znak(?=[ \\t]*:))` +
+          `([ \\t]*:?[ \\t]*)(${ZNAK_VALUE})`,
+        'gi',
+      ),
+      (_m, kw: string, sep: string) => {
+        bump('ZNAK-SPRAWY');
+        return `${kw}${sep}${M['ZNAK-SPRAWY']}`;
+      },
+    );
   }
 
   // 2) IBAN (z prefiksem kraju, walidacja mod 97). Dopuszcza spacje w grupach.
@@ -1149,6 +1190,7 @@ const HUMAN_LABEL: Record<PiiType, string> = {
   DOWOD: 'numer dowodu',
   PASZPORT: 'numer paszportu',
   KRS: 'numer KRS',
+  'ZNAK-SPRAWY': 'znak sprawy',
   'KOD-POCZTOWY': 'kod pocztowy',
   'DATA-UR': 'datę urodzenia',
   ADRES: 'adres',

@@ -1,5 +1,22 @@
 # Changelog
 
+## v0.41.0 — 2026-07-09
+
+**Maskowanie znaku sprawy / znaku pisma** (nowy typ `[ZNAK-SPRAWY]`) — z myślą o urzędnikach,
+u których sygnatura pisma identyfikuje sprawę i pośrednio osobę. Dwa tryby wykrywania:
+
+- **Strukturalnie, wg JRWA** — znak `SYMBOL.klasa.numer.ROK` (np. `DPR-II.054.3.2026`,
+  `ZP.271.12.2026`, `DC.WAC.5555.30.2026`, `ABC-def.123.77.2016`). Kotwica: symbol komórki
+  (≥2 wersaliki, człony po „-" lub „.") + grupy cyfr zakończone 4-cyfrowym rokiem. Rozpoznawany
+  także w środku zdania, bez etykiety.
+- **Z kontekstem** — „Znak sprawy:", „Znak pisma:", „Nasz/Wasz znak:", „Sygn. akt", „Znak:";
+  łapie też sygnatury sądowe („Sygn. akt II CSK 234/19"). Słowo kontekstowe zostaje, maskujemy
+  sam znak.
+
+Anty-nadmaskowanie: daty (`12.05.2024`), odwołania prawne (`art. 5 ust. 1`), numeracja
+(`Rozdział 5.2`) i frazy typu „znak drogowy B-2" pozostają nietknięte. Nowy przełącznik
+w „Co maskować" (Identyfikatory).
+
 ## v0.39.0 — 2026-07-07
 
 Dopracowanie UX (bez zmian w silniku):

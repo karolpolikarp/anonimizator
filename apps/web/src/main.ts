@@ -83,6 +83,7 @@ const MASK_TIP: Record<string, string> = {
   'NR-DOWODU': 'Identyfikatory · 3 litery + 6 cyfr, suma kontrolna poprawna',
   'NR-PASZPORTU': 'Identyfikatory · kontekst „paszport" + 2 litery + 7 cyfr',
   KRS: 'Identyfikatory · kontekst „KRS" + 10 cyfr',
+  'ZNAK-SPRAWY': 'Identyfikatory · znak sprawy/pisma (JRWA) lub sygnatura akt',
   'NR-KONTA': 'Finanse · IBAN (mod 97) lub kontekst „konto/rachunek”',
   EMAIL: 'Kontakt · wzorzec adresu e-mail',
   TELEFON: 'Kontakt · 9 cyfr, opcjonalnie +48',
@@ -118,6 +119,7 @@ const MASK_GROUPS: MaskGroup[] = [
   { key: 'dowod', label: 'Nr dowodu osobistego', types: ['DOWOD'], cat: 'ident', icon: 'numer-dok', code: '[NR-DOWODU]', tip: '3 litery + 6 cyfr + suma kontrolna' },
   { key: 'paszport', label: 'Nr paszportu', types: ['PASZPORT'], cat: 'ident', icon: 'numer-dok', code: '[NR-PASZPORTU]', tip: 'Kontekst „paszport" + 2 litery + 7 cyfr' },
   { key: 'krs', label: 'Numer KRS', types: ['KRS'], cat: 'ident', icon: 'dane-id', code: '[KRS]', tip: 'Kontekst „KRS" + 10 cyfr' },
+  { key: 'znak', label: 'Znak sprawy / pisma', types: ['ZNAK-SPRAWY'], cat: 'ident', icon: 'numer-dok', code: '[ZNAK-SPRAWY]', tip: 'Znak sprawy/pisma wg JRWA (ABC-def.123.77.2016) lub sygnatura akt („Sygn. akt II CSK 234/19")' },
   { key: 'konto', label: 'IBAN / nr konta', types: ['IBAN', 'NR-KONTA'], cat: 'fin', icon: 'iban', code: '[NR-KONTA]', tip: 'Walidacja mod 97 lub kontekst „konto/rachunek”' },
   { key: 'email', label: 'E-mail', types: ['EMAIL'], cat: 'contact', icon: 'login', code: '[EMAIL]', tip: 'Wzorzec adresu e-mail' },
   { key: 'telefon', label: 'Telefon', types: ['TELEFON'], cat: 'contact', icon: 'telefon', code: '[TELEFON]', tip: '9 cyfr, opcjonalnie prefiks +48' },
@@ -236,7 +238,7 @@ function escapeHtml(s: string): string {
 }
 
 const MASK_TOKEN_RE =
-  /\[(PESEL|NIP|REGON|NR-KONTA|NR-DOWODU|NR-PASZPORTU|KRS|EMAIL|TELEFON|KOD-POCZTOWY|DATA-URODZENIA|ADRES|MIEJSCOWOŚĆ|IMIĘ I NAZWISKO|OSOBA-[A-Z]+)\]/g;
+  /\[(PESEL|NIP|REGON|NR-KONTA|NR-DOWODU|NR-PASZPORTU|KRS|ZNAK-SPRAWY|EMAIL|TELEFON|KOD-POCZTOWY|DATA-URODZENIA|ADRES|MIEJSCOWOŚĆ|IMIĘ I NAZWISKO|OSOBA-[A-Z]+)\]/g;
 
 function maskHtml(name: string): string {
   return `<mark class="pii pii-${maskCategory(name)}" data-tip="${escapeHtml(maskTip(name))}" tabindex="0">[${name}]</mark>`;
@@ -425,6 +427,7 @@ const CHIP_META: Record<string, { label: string; cat: Cat; icon: string }> = {
   DOWOD: { label: 'nr dowodu', cat: 'ident', icon: 'numer-dok' },
   PASZPORT: { label: 'nr paszportu', cat: 'ident', icon: 'numer-dok' },
   KRS: { label: 'numer KRS', cat: 'ident', icon: 'dane-id' },
+  'ZNAK-SPRAWY': { label: 'znak sprawy', cat: 'ident', icon: 'numer-dok' },
   IBAN: { label: 'nr konta', cat: 'fin', icon: 'iban' },
   'NR-KONTA': { label: 'nr konta', cat: 'fin', icon: 'iban' },
   EMAIL: { label: 'e-mail', cat: 'contact', icon: 'login' },

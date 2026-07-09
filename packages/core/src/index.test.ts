@@ -225,6 +225,26 @@ test('numer KRS maskowany (kontekst „KRS" + 10 cyfr, zera wiodące)', () => {
   expect(r.redacted.includes('0000173413')).toBe(false);
   expect(redactPII('KRS: 0000173413').redacted).toContain('[KRS]');
 });
+test('znak sprawy/pisma (JRWA) maskowany strukturalnie — różne warianty symbolu', () => {
+  for (const znak of ['DPR-II.054.3.2026', 'DNW-1.054.1.2024', 'ZP.271.12.2026', 'DC.WAC.5555.30.2026', 'ABC-def.123.77.2016']) {
+    const r = redactPII(`Znak pisma: ${znak}`);
+    expect(r.redacted).toContain('[ZNAK-SPRAWY]');
+    expect(r.redacted.includes(znak)).toBe(false);
+  }
+  // w środku zdania, bez etykiety
+  expect(redactPII('W nawiązaniu do DPR-II.054.3.2026 informujemy...').redacted).toContain('[ZNAK-SPRAWY]');
+});
+test('sygnatura akt sądowych maskowana z kontekstem', () => {
+  const r = redactPII('Sygn. akt II CSK 234/19 w sprawie...');
+  expect(r.redacted).toContain('[ZNAK-SPRAWY]');
+  expect(r.redacted.includes('234/19')).toBe(false);
+});
+test('znak sprawy NIE nadmaskowuje dat, odwołań prawnych ani prozy', () => {
+  expect(redactPII('Spotkanie odbyło się 12.05.2024 o poranku.').redacted).toBe('Spotkanie odbyło się 12.05.2024 o poranku.');
+  expect(redactPII('Zgodnie z art. 5 ust. 1 pkt 3 ustawy.').redacted).toBe('Zgodnie z art. 5 ust. 1 pkt 3 ustawy.');
+  expect(redactPII('Rozdział 5.2 opisuje procedurę.').redacted).toBe('Rozdział 5.2 opisuje procedurę.');
+  expect(redactPII('Zamieszczono znak drogowy B-2 przy wjeździe.').redacted).toBe('Zamieszczono znak drogowy B-2 przy wjeździe.');
+});
 test('data urodzenia słowna („ur. 5 maja 1985") maskowana; bez kontekstu nie', () => {
   expect(redactPII('ur. 5 maja 1985 r.').redacted).toContain('[DATA-URODZENIA]');
   expect(redactPII('urodzony 12 grudnia 1970').redacted).toContain('[DATA-URODZENIA]');
