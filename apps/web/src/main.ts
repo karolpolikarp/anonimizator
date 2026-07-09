@@ -408,6 +408,13 @@ function linkScroll(from: HTMLElement, to: HTMLElement): void {
 linkScroll(input, output);
 linkScroll(output, input);
 
+// Rozszerzanie okien — przeciągasz uchwyt w prawym-dolnym rogu okna źródła, a okno wyniku
+// dostaje dokładnie tę samą wysokość, więc oba rosną i maleją równocześnie i równo.
+const syncEditorHeight = (): void => {
+  output.style.height = `${input.offsetHeight}px`;
+};
+new ResizeObserver(syncEditorHeight).observe(input);
+
 /* ── Pasek „Zamaskowano" (chipy z ikonami, licznik, kategorie) ── */
 
 const CHIP_META: Record<string, { label: string; cat: Cat; icon: string }> = {

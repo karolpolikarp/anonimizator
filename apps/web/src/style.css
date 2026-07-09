@@ -356,6 +356,9 @@ select.field { font-family: "Segoe UI", system-ui, sans-serif; line-height: norm
   padding: 10px 16px; border-bottom: 1px solid var(--line);
   background: rgba(30, 50, 90, .015);
   flex-wrap: wrap;
+  /* RÓWNE paski narzędzi w obu oknach — ta sama wysokość niezależnie od zawartości
+     (segment vs pojedyncze przyciski), by wiersze przycisków nie rozjeżdżały się w pionie. */
+  min-height: 90px;
 }
 .toolbar .hint { margin-left: auto; font-size: 11.5px; color: var(--mut-2); letter-spacing: .06em; }
 
@@ -375,10 +378,12 @@ select.field { font-family: "Segoe UI", system-ui, sans-serif; line-height: norm
 .cl .no { text-align: right; color: var(--mut-2); user-select: none; font-size: 12px; padding-top: 2px; }
 .cl > span:last-child { white-space: pre-wrap; min-width: 0; }
 
-/* textarea źródła — ta sama anatomia co .editor, ale edytowalna. resize: none, by okno źródła
-   miało DOKŁADNIE tę samą wysokość co okno wyniku (nie rozjeżdżały się). */
+/* textarea źródła — ta sama anatomia co .editor, ale edytowalna. resize: vertical daje uchwyt
+   do rozszerzania; wysokość okna wyniku podąża za nim (ResizeObserver w main.ts), więc oba okna
+   rosną i maleją równocześnie i równo. */
 textarea.editor-ta {
-  width: 100%; resize: none;
+  width: 100%; resize: vertical;
+  min-height: clamp(280px, 42vh, 500px);
   padding: 13px 14px;
   overflow-y: auto;
 }
