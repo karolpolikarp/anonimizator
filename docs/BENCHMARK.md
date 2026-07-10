@@ -1,8 +1,8 @@
 # Benchmark anonimizacji — precision / recall
 
-- **Data uruchomienia:** 2026-07-07
+- **Data uruchomienia:** 2026-07-10
 - **Wersja rdzenia (`anonimizator`):** 0.23.0
-- **Zbiór ewaluacyjny:** 159 syntetycznych zdań (deterministyczny, seed `20260704`), 165 elementów do zamaskowania (mustMask), 169 elementów do zachowania (mustKeep)
+- **Zbiór ewaluacyjny:** 177 syntetycznych zdań (deterministyczny, seed `20260704`), 175 elementów do zamaskowania (mustMask), 187 elementów do zachowania (mustKeep)
 - **Reprodukcja:** `npm run build -w anonimizator && node scripts/benchmark/run.mjs`
 
 ## Metodologia
@@ -20,31 +20,32 @@ Wszystkie identyfikatory w zbiorze mają **poprawne sumy kontrolne** policzone w
 (PESEL, NIP, REGON, IBAN mod-97, nr dowodu), a negatywy zawierają m.in. ciągi o celowo
 **błędnych** sumach kontrolnych — silnik ma je zostawić w spokoju.
 
-Liczności kategorii: osoby-podstawowe — 23, osoby-odmiana — 32, osoby-rzadkie — 24, strukturalne — 40, negatywy — 40.
+Liczności kategorii: osoby-podstawowe — 23, osoby-odmiana — 32, osoby-rzadkie — 24, strukturalne — 40, negatywy — 48, osoby-rzadkie-ner — 10.
 
 ### Warstwy
 
 - **T0+T1 core** — redactPII() — regex + sumy kontrolne + słownik (in-process, offline)
 - **core+spacy** — POMINIĘTA: usługa `http://127.0.0.1:8090` niedostępna w chwili uruchomienia (health-check).
 - **core+fastpdn** — POMINIĘTA: usługa `http://127.0.0.1:8091` niedostępna w chwili uruchomienia (health-check).
+- **core+onnx (Node)** — POMINIĘTA: biblioteka @huggingface/transformers lub lokalny model ONNX niedostępne.
 
 ## Wyniki
 
 | Warstwa | Recall (łącznie) | Precision-proxy (łącznie) | Porażki (przypadki) | Czas | Wynik ≠ core |
 |---|---|---|---|---|---|
-| T0+T1 core | 100.0% (165/165) | 99.4% (168/169) | 1 | 0.0 s | — |
+| T0+T1 core | 94.3% (165/175) | 98.9% (185/187) | 12 | 0.0 s | — |
 
 ### Recall per kategoria
 
-| Warstwa | osoby-podstawowe | osoby-odmiana | osoby-rzadkie | strukturalne | negatywy |
-|---|---|---|---|---|---|
-| T0+T1 core | 100.0% | 100.0% | 100.0% | 100.0% | — |
+| Warstwa | osoby-podstawowe | osoby-odmiana | osoby-rzadkie | strukturalne | negatywy | osoby-rzadkie-ner |
+|---|---|---|---|---|---|---|
+| T0+T1 core | 100.0% | 100.0% | 100.0% | 100.0% | — | 0.0% |
 
 ### Precision-proxy per kategoria
 
-| Warstwa | osoby-podstawowe | osoby-odmiana | osoby-rzadkie | strukturalne | negatywy |
-|---|---|---|---|---|---|
-| T0+T1 core | 100.0% | 100.0% | 100.0% | 100.0% | 97.7% |
+| Warstwa | osoby-podstawowe | osoby-odmiana | osoby-rzadkie | strukturalne | negatywy | osoby-rzadkie-ner |
+|---|---|---|---|---|---|---|
+| T0+T1 core | 100.0% | 100.0% | 100.0% | 100.0% | 96.1% | 100.0% |
 
 („—" = brak elementów danego rodzaju w kategorii, np. negatywy nie mają mustMask.)
 
@@ -53,14 +54,36 @@ Liczności kategorii: osoby-podstawowe — 23, osoby-odmiana — 32, osoby-rzadk
 Legenda: **przeszło** = element mustMask pozostał w wyniku (wyciek PII);
 **zjedzono** = element mustKeep został zamaskowany (fałszywy pozytyw).
 
-### T0+T1 core — 1 przypadków z porażką
+### T0+T1 core — 12 przypadków z porażką
 
-**Nadmaskowania (zjedzono 1 elem. w 1 przypadkach):**
+**Wycieki (przeszło 10 elem. w 10 przypadkach):**
 
+- `os-rn-01` (osoby-rzadkie-ner): przeszło „Achtelika" — tekst: _list od Achtelika leżał tydzień na biurku_
+- `os-rn-02` (osoby-rzadkie-ner): przeszło „Fąfary" — tekst: _sprawę Fąfary umorzono w drugiej instancji_
+- `os-rn-03` (osoby-rzadkie-ner): przeszło „Gągały" — tekst: _zeznania Gągały spisano protokolarnie_
+- `os-rn-04` (osoby-rzadkie-ner): przeszło „Grzmota" — tekst: _wniosek Grzmota rozpatrzono odmownie_
+- `os-rn-05` (osoby-rzadkie-ner): przeszło „Ciołka" — tekst: _do akt dołączono notatkę Ciołka z rozmowy_
+- `os-rn-06` (osoby-rzadkie-ner): przeszło „Müller" — tekst: _reklamację złożył wczoraj Müller osobiście_
+- `os-rn-07` (osoby-rzadkie-ner): przeszło „Nguyen" — tekst: _umowę parafował Nguyen dzień wcześniej_
+- `os-rn-08` (osoby-rzadkie-ner): przeszło „Kovač" — tekst: _protokół podpisał Kovač w obecności świadka_
+- `os-rn-09` (osoby-rzadkie-ner): przeszło „Popescu" — tekst: _opinię biegłego sporządził Popescu w terminie_
+- `os-rn-10` (osoby-rzadkie-ner): przeszło „Schmidt" — tekst: _pełnomocnikiem powoda był mecenas Schmidt_
+
+**Nadmaskowania (zjedzono 2 elem. w 2 przypadkach):**
+
+- `neg-09` (negatywy): zjedzono „III CZP 12/23" — wynik: _Sygn. akt [ZNAK-SPRAWY] — uchwała siedmiu sędziów._
 - `neg-40` (negatywy): zjedzono „Tadeusz" — wynik: _Pan [IMIĘ I NAZWISKO] to najsłynniejsza polska epopeja narodowa._
 
 ## Uwagi
 
+- Kategoria **osoby-rzadkie-ner** to przypadki, które rdzeń deterministyczny PROWADZI
+  ŚWIADOMIE do wycieku (nazwiska bez wyzwalacza i bez sufiksu -ski/-cki/-icz/-czyk oraz
+  obce) — recall rdzenia jest tu z założenia niski (bliski 0%). Ta kategoria istnieje po to,
+  by ZMIERZYĆ przewagę warstwy NER: uruchom benchmark z modelem ONNX, aby zobaczyć wzrost
+  recall bez spadku precyzji na negatywach.
+- Warstwę **core+onnx (Node)** aktywujesz bez Dockera: `npm i -D @huggingface/transformers`
+  oraz rozpakuj model do `scripts/benchmark/models/fastpdn/` (albo wskaż `ONNX_MODELS_DIR`).
+  Bez biblioteki/modelu warstwa jest pomijana (fail-safe), a raport pokazuje tylko rdzeń.
 - Zbiór jest w pełni syntetyczny — wszystkie dane (PESEL-e, nazwiska, adresy) zostały
   wygenerowane albo wymyślone; nie zawierają danych rzeczywistych osób.
 - Kolumna „Wynik ≠ core" pokazuje, w ilu przypadkach warstwa NER faktycznie zmieniła

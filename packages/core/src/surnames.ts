@@ -205,3 +205,19 @@ export function looksLikeSurname(word: string): boolean {
   }
   return true;
 }
+
+/**
+ * Czy wyraz to przymiotnik geograficzny/narodowy/instytucjonalny (Polski, Warszawski,
+ * Mazowiecki, Warmińskiego, Jagiellońskiej…), a więc NIE nazwisko? Sprowadza odmianę
+ * przymiotnikową do bazy -ski/-cki/-dzki (reguły ADJ_RULES) i sprawdza stoplistę
+ * NON_SURNAME_ADJ. Filtr precyzji dla kandydatów z warstwy NER (patrz ner-postprocess.ts).
+ * UWAGA: nazwiska-przymiotniki (np. „Górski") NIE są w NON_SURNAME_ADJ → zwraca false.
+ */
+export function isGeoAdjective(word: string): boolean {
+  const w = word.toLowerCase();
+  if (NON_SURNAME_ADJ.has(w)) return true;
+  for (const [re, rep] of ADJ_RULES) {
+    if (re.test(w) && NON_SURNAME_ADJ.has(w.replace(re, rep))) return true;
+  }
+  return false;
+}

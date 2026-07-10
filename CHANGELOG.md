@@ -1,5 +1,34 @@
 # Changelog
 
+## v0.42.0 — 2026-07-11
+
+**Utwardzenie warstwy NER w przeglądarce (ONNX + transformers.js) — precyzyjniej, bez Dockera.**
+Funkcja „Wykrywanie nazwisk AI" działała, ale jej post-processing był stratny. Teraz:
+
+- **Poprawna lokalizacja bez offsetów.** Przeglądarkowy transformers.js nie zwraca offsetów
+  znakowych ani nie agreguje encji — dawne sklejanie subwordów i globalny `indexOf` gubiły
+  pozycje przy duplikatach nazwisk, subwordach i obcych diakrytykach. Zastąpione lokalizacją
+  przez strumień liter (Unicode) z mapą na oryginał + rozszerzeniem do granic słowa.
+- **Próg pewności `score`** (min 0.5; homonimy rzeczowników — Wilk, Baran, Lis — tylko przy
+  score ≥ 0.9) i **reużyte stoplisty rdzenia** (przymiotniki geo/narodowe, słowa instytucji):
+  „Uniwersytet Warmiński", „Bank Śląski", „Sąd Najwyższy" nie są maskowane. Zgodnie z zasadą
+  precyzja > nadmaskowanie.
+- **Koniec duplikacji:** cała selekcja i maskowanie osób to jeden wspólny moduł rdzenia
+  `anonimizator/ner-postprocess`, używany przez przeglądarkę, przykład Node i benchmark.
+- **Testy:** nowe zestawy jednostkowe dla modułu i dla warstwy przeglądarki (mock pipeline,
+  kontrakt fail-safe).
+
+**Dwie edycje w release.** `Anonimizator.html` — „czysty HTML" (jeden plik, `file://`, bez AI,
+bez uruchamiania) dla maszyn z blokadami firmowymi. `Anonimizator-AI.zip` — „pełna / AI"
+(HTML z sekcją AI + launcher HTTP + instrukcja) dla komputerów bez blokad.
+
+**Benchmark.** Nowa warstwa `core+onnx (Node)` — FastPDN ONNX int8 w Node, bez Dockera
+(pomijana fail-safe, gdy brak biblioteki/modelu). Nowa kategoria `osoby-rzadkie-ner` — przypadki,
+których rdzeń deterministyczny świadomie nie łapie (recall ~0%), mierzące przewagę warstwy NER.
+
+Rdzeń `anonimizator` 0.23.0 → 0.24.0 (nowy publiczny eksport `./ner-postprocess`; wyeksportowane
+stoplisty `LEGAL_ENTITY_WORDS`, `NON_PERSON_CONTEXT`, pomocnik `isGeoAdjective`).
+
 ## v0.41.0 — 2026-07-09
 
 **Maskowanie znaku sprawy / znaku pisma** (nowy typ `[ZNAK-SPRAWY]`) — z myślą o urzędnikach,

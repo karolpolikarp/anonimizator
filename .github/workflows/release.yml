@@ -21,11 +21,13 @@ jobs:
       - run: npm ci
       - run: npm run build -w anonimizator
       - run: npm run test -w anonimizator
+      # ── Edycja 1: „czysty HTML / urząd" — jeden plik, file://, bez AI, bez uruchamiania ──
+      # Dla maszyn z blokadami firmowymi (nie da się odpalić .bat ani serwera).
       - name: Zbuduj aplikację (edycja „urzędnik" — bez warstwy AI/NER)
         run: npm run build -w anonimizator-web
         env:
           VITE_EDITION: urzednik
-      - name: Przygotuj pliki release'u (sam HTML + instrukcja)
+      - name: Przygotuj artefakt „czysty HTML" (sam plik + instrukcja)
         run: |
           cp apps/web/dist/index.html Anonimizator.html
           cat > JAK-UZYC.txt <<'EOF'
@@ -44,16 +46,55 @@ jobs:
           Kod źródłowy:
           https://github.com/karolpolikarp/anonimizator
           EOF
+      # ── Edycja 2: „pełna / AI" — HTML z sekcją AI + launcher HTTP (dla maszyn bez blokad) ──
+      # UWAGA: build MUSI iść PO skopiowaniu Anonimizator.html, bo nadpisuje dist/index.html.
+      - name: Zbuduj aplikację (edycja pełna — z warstwą AI/NER)
+        run: npm run build -w anonimizator-web
+      - name: Przygotuj artefakt „pełna / AI" (HTML + launcher + instrukcja)
+        run: |
+          mkdir -p Anonimizator-AI
+          cp apps/web/dist/index.html Anonimizator-AI/index.html
+          cp launcher/START-ANONIMIZATOR.bat launcher/serve.ps1 Anonimizator-AI/
+          cat > Anonimizator-AI/JAK-UZYC-AI.txt <<'EOF'
+          ANONIMIZATOR (wersja z AI) — dokładniejsze wykrywanie nazwisk, bez Dockera
+
+          Ta wersja dokłada rzadkie i odmienione nazwiska modelem AI działającym W CAŁOŚCI
+          na Twoim komputerze (tekst nie jest nigdzie wysyłany). Wymaga uruchomienia
+          mini-serwera lokalnego, bo przeglądarki blokują modele AI dla plików z dysku.
+          Jeśli na Twoim komputerze nie możesz uruchamiać plików .bat — użyj zamiast tego
+          wersji „czysty HTML" (Anonimizator.html), która działa bez uruchamiania.
+
+          1. Rozpakuj to archiwum do dowolnego folderu.
+          2. Pobierz paczkę modelu (~190 MB) z zakładki Releases → „models-fastpdn-onnx-v1"
+             i rozpakuj jej zawartość OBOK index.html — pojawią się foldery vendor/ i models/.
+          3. Uruchom START-ANONIMIZATOR.bat (podwójny klik). Otworzy się przeglądarka
+             pod http://127.0.0.1:8123.
+          4. W sekcji „Wykrywanie nazwisk AI" przestaw przełącznik na „Włącz AI".
+             Status zmieni się na „aktywny ✓". Zamknięcie okna konsoli zatrzymuje aplikację.
+
+          Bez pobrania paczki modelu warstwa AI po prostu się nie pojawia — reguły, słowniki
+          i sumy kontrolne działają i tak.
+
+          Kod źródłowy: https://github.com/karolpolikarp/anonimizator
+          EOF
+          zip -r Anonimizator-AI.zip Anonimizator-AI
       - uses: softprops/action-gh-release@v3
         with:
           files: |
             Anonimizator.html
             JAK-UZYC.txt
+            Anonimizator-AI.zip
           body: |
-            **Anonimizator — jeden plik, bez instalacji.**
-            1. Pobierz `Anonimizator.html`.
-            2. Otwórz go podwójnym kliknięciem (uruchomi się w przeglądarce).
-            3. Wklej tekst — anonimizacja odbywa się w całości na Twoim komputerze,
-               bez połączenia z internetem.
+            **Anonimizator — dwie wersje. Wybierz jedną:**
 
-            `JAK-UZYC.txt` zawiera tę samą instrukcję do wydrukowania/rozesłania.
+            ### `Anonimizator.html` — wersja „czysty HTML" (zalecana dla urzędów)
+            Jeden plik, zero instalacji i zero uruchamiania. Otwórz podwójnym kliknięciem —
+            działa nawet na komputerach z blokadami firmowymi (nie wymaga `.bat` ani serwera).
+            Anonimizacja regułami, słownikami i sumami kontrolnymi, w całości offline.
+
+            ### `Anonimizator-AI.zip` — wersja „pełna / AI" (komputery bez blokad)
+            To samo + model AI, który dokłada rzadkie i odmienione nazwiska, działając
+            wyłącznie na Twoim komputerze (tekst nie opuszcza przeglądarki). Wymaga
+            uruchomienia dołączonego `START-ANONIMIZATOR.bat` (mini-serwer `127.0.0.1`,
+            bo przeglądarki blokują modele AI dla plików `file://`) oraz pobrania paczki
+            modelu z release'u `models-fastpdn-onnx-v1`. Instrukcja: `JAK-UZYC-AI.txt` w zipie.

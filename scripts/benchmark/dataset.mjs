@@ -225,6 +225,9 @@ export function buildDataset() {
   const osp = (t, mm, mk) => add('osoby-podstawowe', 'os-p', t, mm, mk);
   const oso = (t, mm, mk) => add('osoby-odmiana', 'os-o', t, mm, mk);
   const osr = (t, mm, mk) => add('osoby-rzadkie', 'os-r', t, mm, mk);
+  // osoby-rzadkie-ner: nazwiska, których rdzeń deterministyczny NIE łapie (brak wyzwalacza,
+  // brak sufiksu -ski/-cki/-icz/-czyk, nazwiska obce) — tu warstwa NER ma dać przewagę recall.
+  const osrn = (t, mm, mk) => add('osoby-rzadkie-ner', 'os-rn', t, mm, mk);
   const str = (t, mm, mk) => add('strukturalne', 'str', t, mm, mk);
   const neg = (t, mk) => add('negatywy', 'neg', t, [], mk);
 
@@ -457,6 +460,33 @@ export function buildDataset() {
   neg('Faktura VAT nr 4561237891 czeka na akceptację.', ['4561237891']);
   // pułapka wyzwalacza „Pan" — tytuł dzieła, nie osoba
   neg('Pan Tadeusz to najsłynniejsza polska epopeja narodowa.', ['Tadeusz']);
+  // przymiotniki geograficzne/instytucjonalne w nazwach własnych — warstwa NER NIE może ich
+  // maskować (stoplista NON_SURNAME_ADJ / LEGAL_ENTITY w ner-postprocess). To dowód precyzji AI.
+  neg('Uniwersytet Warmiński ogłosił nabór na studia.', ['Warmiński']);
+  neg('Kredyt zaciągnięto w Banku Śląskim w zeszłym roku.', ['Śląskim']);
+  neg('Komitet Obywatelski wystosował apel do władz.', ['Obywatelski']);
+  neg('Powstał Ogólnopolski Związek Przewoźników Drogowych.', ['Ogólnopolski']);
+  neg('Uniwersytet Jagielloński świętuje jubileusz.', ['Jagielloński']);
+  neg('Skargę rozpoznał Wojewódzki Sąd Administracyjny.', ['Wojewódzki']);
+  // dodatkowe sygnatury akt (pilnują, że warstwa NER nie tknie oznaczeń spraw)
+  neg('Postanowienie zapadło w sprawie IV CSK 77/24.', ['IV CSK 77/24']);
+  neg('Skargę kasacyjną zarejestrowano pod III UK 210/23.', ['III UK 210/23']);
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // OSOBY-RZADKIE-NER — rdzeń deterministyczny je PRZEPUSZCZA (brak wyzwalacza, brak sufiksu
+  // -ski/-cki/-icz/-czyk, nazwiska obce). Recall zależy od warstwy NER — to tu dowodzimy jej
+  // przewagi. mustKeep pilnuje, że kontekst nie jest zjadany.
+  // ──────────────────────────────────────────────────────────────────────────
+  osrn('list od Achtelika leżał tydzień na biurku', ['Achtelika'], ['biurku']);
+  osrn('sprawę Fąfary umorzono w drugiej instancji', ['Fąfary'], ['umorzono']);
+  osrn('zeznania Gągały spisano protokolarnie', ['Gągały'], ['protokolarnie']);
+  osrn('wniosek Grzmota rozpatrzono odmownie', ['Grzmota'], ['odmownie']);
+  osrn('do akt dołączono notatkę Ciołka z rozmowy', ['Ciołka'], ['notatkę']);
+  osrn('reklamację złożył wczoraj Müller osobiście', ['Müller'], ['reklamację']);
+  osrn('umowę parafował Nguyen dzień wcześniej', ['Nguyen'], ['umowę']);
+  osrn('protokół podpisał Kovač w obecności świadka', ['Kovač'], ['świadka']);
+  osrn('opinię biegłego sporządził Popescu w terminie', ['Popescu'], ['opinię']);
+  osrn('pełnomocnikiem powoda był mecenas Schmidt', ['Schmidt'], ['powoda']);
 
   // ── Kontrola spójności zbioru ──
   const ids = new Set();

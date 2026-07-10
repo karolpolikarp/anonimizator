@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-07-07T20:17:21.048Z",
+  "generatedAt": "2026-07-10T21:57:16.813Z",
   "seed": 20260704,
   "coreVersion": "0.23.0",
-  "casesTotal": 159,
-  "mustMaskTotal": 165,
-  "mustKeepTotal": 169,
+  "casesTotal": 177,
+  "mustMaskTotal": 175,
+  "mustKeepTotal": 187,
   "skippedLayers": [
     {
       "name": "core+spacy",
@@ -15,21 +15,26 @@
       "name": "core+fastpdn",
       "url": "http://127.0.0.1:8091",
       "reason": "usługa niedostępna (health-check)"
+    },
+    {
+      "name": "core+onnx (Node)",
+      "url": null,
+      "reason": "biblioteka @huggingface/transformers lub lokalny model ONNX niedostępne"
     }
   ],
   "layers": [
     {
       "name": "T0+T1 core",
       "desc": "redactPII() — regex + sumy kontrolne + słownik (in-process, offline)",
-      "elapsedMs": 13,
+      "elapsedMs": 12,
       "changedVsCore": null,
-      "recall": 1,
-      "precision": 0.9940828402366864,
+      "recall": 0.9428571428571428,
+      "precision": 0.9893048128342246,
       "agg": {
-        "maskTotal": 165,
+        "maskTotal": 175,
         "maskHit": 165,
-        "keepTotal": 169,
-        "keepHit": 168
+        "keepTotal": 187,
+        "keepHit": 185
       },
       "perCategory": {
         "osoby-podstawowe": {
@@ -66,14 +71,32 @@
         },
         "negatywy": {
           "recall": null,
-          "precision": 0.9767441860465116,
+          "precision": 0.9607843137254902,
           "maskTotal": 0,
           "maskHit": 0,
-          "keepTotal": 43,
-          "keepHit": 42
+          "keepTotal": 51,
+          "keepHit": 49
+        },
+        "osoby-rzadkie-ner": {
+          "recall": 0,
+          "precision": 1,
+          "maskTotal": 10,
+          "maskHit": 0,
+          "keepTotal": 10,
+          "keepHit": 10
         }
       },
       "failures": [
+        {
+          "id": "neg-09",
+          "category": "negatywy",
+          "text": "Sygn. akt III CZP 12/23 — uchwała siedmiu sędziów.",
+          "leaked": [],
+          "eaten": [
+            "III CZP 12/23"
+          ],
+          "redacted": "Sygn. akt [ZNAK-SPRAWY] — uchwała siedmiu sędziów."
+        },
         {
           "id": "neg-40",
           "category": "negatywy",
@@ -83,6 +106,106 @@
             "Tadeusz"
           ],
           "redacted": "Pan [IMIĘ I NAZWISKO] to najsłynniejsza polska epopeja narodowa."
+        },
+        {
+          "id": "os-rn-01",
+          "category": "osoby-rzadkie-ner",
+          "text": "list od Achtelika leżał tydzień na biurku",
+          "leaked": [
+            "Achtelika"
+          ],
+          "eaten": [],
+          "redacted": "list od Achtelika leżał tydzień na biurku"
+        },
+        {
+          "id": "os-rn-02",
+          "category": "osoby-rzadkie-ner",
+          "text": "sprawę Fąfary umorzono w drugiej instancji",
+          "leaked": [
+            "Fąfary"
+          ],
+          "eaten": [],
+          "redacted": "sprawę Fąfary umorzono w drugiej instancji"
+        },
+        {
+          "id": "os-rn-03",
+          "category": "osoby-rzadkie-ner",
+          "text": "zeznania Gągały spisano protokolarnie",
+          "leaked": [
+            "Gągały"
+          ],
+          "eaten": [],
+          "redacted": "zeznania Gągały spisano protokolarnie"
+        },
+        {
+          "id": "os-rn-04",
+          "category": "osoby-rzadkie-ner",
+          "text": "wniosek Grzmota rozpatrzono odmownie",
+          "leaked": [
+            "Grzmota"
+          ],
+          "eaten": [],
+          "redacted": "wniosek Grzmota rozpatrzono odmownie"
+        },
+        {
+          "id": "os-rn-05",
+          "category": "osoby-rzadkie-ner",
+          "text": "do akt dołączono notatkę Ciołka z rozmowy",
+          "leaked": [
+            "Ciołka"
+          ],
+          "eaten": [],
+          "redacted": "do akt dołączono notatkę Ciołka z rozmowy"
+        },
+        {
+          "id": "os-rn-06",
+          "category": "osoby-rzadkie-ner",
+          "text": "reklamację złożył wczoraj Müller osobiście",
+          "leaked": [
+            "Müller"
+          ],
+          "eaten": [],
+          "redacted": "reklamację złożył wczoraj Müller osobiście"
+        },
+        {
+          "id": "os-rn-07",
+          "category": "osoby-rzadkie-ner",
+          "text": "umowę parafował Nguyen dzień wcześniej",
+          "leaked": [
+            "Nguyen"
+          ],
+          "eaten": [],
+          "redacted": "umowę parafował Nguyen dzień wcześniej"
+        },
+        {
+          "id": "os-rn-08",
+          "category": "osoby-rzadkie-ner",
+          "text": "protokół podpisał Kovač w obecności świadka",
+          "leaked": [
+            "Kovač"
+          ],
+          "eaten": [],
+          "redacted": "protokół podpisał Kovač w obecności świadka"
+        },
+        {
+          "id": "os-rn-09",
+          "category": "osoby-rzadkie-ner",
+          "text": "opinię biegłego sporządził Popescu w terminie",
+          "leaked": [
+            "Popescu"
+          ],
+          "eaten": [],
+          "redacted": "opinię biegłego sporządził Popescu w terminie"
+        },
+        {
+          "id": "os-rn-10",
+          "category": "osoby-rzadkie-ner",
+          "text": "pełnomocnikiem powoda był mecenas Schmidt",
+          "leaked": [
+            "Schmidt"
+          ],
+          "eaten": [],
+          "redacted": "pełnomocnikiem powoda był mecenas Schmidt"
         }
       ],
       "perCase": [
@@ -724,7 +847,9 @@
         {
           "id": "neg-09",
           "leaked": [],
-          "eaten": []
+          "eaten": [
+            "III CZP 12/23"
+          ]
         },
         {
           "id": "neg-10",
@@ -882,6 +1007,116 @@
           "eaten": [
             "Tadeusz"
           ]
+        },
+        {
+          "id": "neg-41",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-42",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-43",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-44",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-45",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-46",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-47",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-48",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-rn-01",
+          "leaked": [
+            "Achtelika"
+          ],
+          "eaten": []
+        },
+        {
+          "id": "os-rn-02",
+          "leaked": [
+            "Fąfary"
+          ],
+          "eaten": []
+        },
+        {
+          "id": "os-rn-03",
+          "leaked": [
+            "Gągały"
+          ],
+          "eaten": []
+        },
+        {
+          "id": "os-rn-04",
+          "leaked": [
+            "Grzmota"
+          ],
+          "eaten": []
+        },
+        {
+          "id": "os-rn-05",
+          "leaked": [
+            "Ciołka"
+          ],
+          "eaten": []
+        },
+        {
+          "id": "os-rn-06",
+          "leaked": [
+            "Müller"
+          ],
+          "eaten": []
+        },
+        {
+          "id": "os-rn-07",
+          "leaked": [
+            "Nguyen"
+          ],
+          "eaten": []
+        },
+        {
+          "id": "os-rn-08",
+          "leaked": [
+            "Kovač"
+          ],
+          "eaten": []
+        },
+        {
+          "id": "os-rn-09",
+          "leaked": [
+            "Popescu"
+          ],
+          "eaten": []
+        },
+        {
+          "id": "os-rn-10",
+          "leaked": [
+            "Schmidt"
+          ],
+          "eaten": []
         }
       ]
     }

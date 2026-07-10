@@ -31,6 +31,9 @@ export default defineConfig({
     alias: {
       // Importujemy rdzeń bezpośrednio ze źródeł TS — dev/build nie wymaga
       // wcześniejszego `npm run build` w packages/core.
+      'anonimizator/ner-postprocess': fileURLToPath(
+        new URL('../../packages/core/src/ner-postprocess.ts', import.meta.url),
+      ),
       'anonimizator/ner': fileURLToPath(new URL('../../packages/core/src/ner-client.ts', import.meta.url)),
       anonimizator: fileURLToPath(new URL('../../packages/core/src/index.ts', import.meta.url)),
     },

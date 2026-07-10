@@ -28,12 +28,13 @@
  *   node scripts/benchmark/run.mjs
  */
 
-import { writeFileSync, readFileSync } from 'node:fs';
+import { writeFileSync, readFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
 import { buildDataset, SEED } from './dataset.mjs';
 import { redactPII } from '../../packages/core/dist/index.js';
 import { redactPIIFull, nerHealthCheck } from '../../packages/core/dist/ner-client.js';
+import { applyNerPersons } from '../../packages/core/dist/ner-postprocess.js';
 
 // ── Ścieżki wyjściowe (względem pliku, nie CWD — runner działa z dowolnego katalogu) ──
 const RESULTS_JSON = fileURLToPath(new URL('./results.json', import.meta.url));
@@ -44,6 +45,36 @@ const CORE_PKG = fileURLToPath(new URL('../../packages/core/package.json', impor
 const NER_TIMEOUT_MS = 20000;
 /** Równoległość zapytań do usługi NER (lokalna usługa, nie przeciążamy). */
 const CONCURRENCY = 4;
+
+// ── Warstwa ONNX w Node (bez Dockera) — ta sama ścieżka co w przeglądarce ───────────────
+// Aktywuje się TYLKO gdy zainstalowany jest `@huggingface/transformers` i lokalnie leży model
+// (domyślnie scripts/benchmark/models/<id>/, nadpisywalne przez ONNX_MODELS_DIR/ONNX_MODEL_ID).
+// Brak biblioteki lub modelu ⇒ warstwa pominięta z adnotacją — dokładnie jak warstwy HTTP.
+const ONNX_MODELS_DIR = process.env.ONNX_MODELS_DIR
+  ? process.env.ONNX_MODELS_DIR
+  : fileURLToPath(new URL('./models/', import.meta.url));
+const ONNX_MODEL_ID = process.env.ONNX_MODEL_ID || 'fastpdn';
+
+let onnxPipe = null;
+let onnxProbe = null; // memoizacja: null=niesprawdzone, true/false=wynik
+
+async function onnxAvailable() {
+  if (onnxProbe !== null) return onnxProbe;
+  onnxProbe = await (async () => {
+    const cfg = `${ONNX_MODELS_DIR.replace(/[\\/]$/, '')}/${ONNX_MODEL_ID}/config.json`;
+    if (!existsSync(cfg)) return false; // model nie leży lokalnie
+    try {
+      const T = await import('@huggingface/transformers');
+      T.env.allowRemoteModels = false; // zero sieci — model tylko lokalny
+      T.env.localModelPath = ONNX_MODELS_DIR;
+      onnxPipe = await T.pipeline('token-classification', ONNX_MODEL_ID, { dtype: 'q8' });
+      return true;
+    } catch {
+      return false; // brak @huggingface/transformers albo błąd ładowania modelu
+    }
+  })();
+  return onnxProbe;
+}
 
 // ── Definicje warstw ──
 const LAYERS = [
@@ -66,6 +97,18 @@ const LAYERS = [
     url: 'http://127.0.0.1:8091',
     run: async (text) =>
       (await redactPIIFull(text, { url: 'http://127.0.0.1:8091', timeoutMs: NER_TIMEOUT_MS })).redacted,
+  },
+  {
+    name: 'core+onnx (Node)',
+    desc: 'redactPII() + FastPDN ONNX int8 (q8) w Node przez @huggingface/transformers — bez Dockera',
+    url: null,
+    probe: onnxAvailable,
+    skipReason: 'biblioteka @huggingface/transformers lub lokalny model ONNX niedostępne',
+    run: async (text) => {
+      const base = redactPII(text).redacted; // NER widzi tekst PO redakcji strukturalnej
+      const tokens = await onnxPipe(base, { ignore_labels: [] });
+      return applyNerPersons(base, tokens).redacted;
+    },
   },
 ];
 
@@ -106,27 +149,34 @@ async function main() {
 
   console.log(`Benchmark anonimizatora — ${cases.length} przypadków (seed ${SEED}), core v${coreVersion}\n`);
 
-  // Health-check usług NER; warstwa bez zdrowej usługi jest pomijana z adnotacją.
+  // Sonda dostępności warstw NER (HTTP: health-check; ONNX-Node: import biblioteki + lokalny
+  // model). Warstwa niedostępna jest pomijana z adnotacją — fail-safe, jak w bibliotece.
   const activeLayers = [];
   const skippedLayers = [];
+  const WARMUP = 'Rozgrzewka modelu: Jan Testowy z Warszawy.';
   for (const layer of LAYERS) {
-    if (!layer.url) {
-      activeLayers.push(layer);
+    if (!layer.url && !layer.probe) {
+      activeLayers.push(layer); // czysty rdzeń — zawsze dostępny, offline
       continue;
     }
-    const healthy = await nerHealthCheck({ url: layer.url, timeoutMs: 5000 });
-    if (healthy) {
-      // Rozgrzewka: pierwsze wywołanie modelu bywa wolne — nie chcemy fałszywego timeoutu
-      // ani otwarcia circuit breakera na starcie pomiaru.
-      await redactPIIFull('Rozgrzewka modelu: Jan Testowy z Warszawy.', {
-        url: layer.url,
-        timeoutMs: 60000,
-      });
+    const ok = layer.probe ? await layer.probe() : await nerHealthCheck({ url: layer.url, timeoutMs: 5000 });
+    if (ok) {
+      // Rozgrzewka: pierwsze wywołanie modelu bywa wolne (ładowanie/JIT) — nie chcemy fałszywego
+      // timeoutu ani otwarcia circuit breakera na starcie pomiaru.
+      if (layer.url) {
+        await redactPIIFull(WARMUP, { url: layer.url, timeoutMs: 60000 });
+      } else {
+        try {
+          await layer.run(WARMUP);
+        } catch {
+          /* rozgrzewka nie może wywrócić biegu */
+        }
+      }
       activeLayers.push(layer);
-      console.log(`✔ ${layer.name}: usługa dostępna (${layer.url})`);
+      console.log(`✔ ${layer.name}: dostępna${layer.url ? ` (${layer.url})` : ''}`);
     } else {
       skippedLayers.push(layer);
-      console.log(`✖ ${layer.name}: usługa NIEDOSTĘPNA (${layer.url}) — warstwa pominięta`);
+      console.log(`✖ ${layer.name}: NIEDOSTĘPNA${layer.url ? ` (${layer.url})` : ''} — warstwa pominięta`);
     }
   }
   console.log('');
@@ -134,8 +184,10 @@ async function main() {
   // Pomiar per warstwa.
   const layerResults = [];
   for (const layer of activeLayers) {
+    const isNer = Boolean(layer.url || layer.probe);
     const t0 = Date.now();
-    const coreOutputs = layer.url ? await mapPool(cases, 1, async (c) => redactPII(c.text).redacted) : null;
+    const coreOutputs = isNer ? await mapPool(cases, 1, async (c) => redactPII(c.text).redacted) : null;
+    // ONNX-Node ma jeden pipeline (CPU, nie zrównoleglamy) → concurrency 1; HTTP → CONCURRENCY.
     const outputs = await mapPool(cases, layer.url ? CONCURRENCY : 1, (c) => layer.run(c.text));
     const elapsedMs = Date.now() - t0;
 
@@ -169,7 +221,7 @@ async function main() {
       name: layer.name,
       desc: layer.desc,
       elapsedMs,
-      changedVsCore: layer.url ? changedVsCore : null,
+      changedVsCore: isNer ? changedVsCore : null,
       recall: pct(agg.maskHit, agg.maskTotal),
       precision: pct(agg.keepHit, agg.keepTotal),
       agg,
@@ -187,7 +239,7 @@ async function main() {
       `${layer.name}: recall ${fmtPct(pct(agg.maskHit, agg.maskTotal))}, ` +
         `precision ${fmtPct(pct(agg.keepHit, agg.keepTotal))}, ` +
         `porażek: ${failures.length}, czas: ${(elapsedMs / 1000).toFixed(1)} s` +
-        (layer.url ? `, wynik różny od core w ${changedVsCore} przypadkach` : ''),
+        (isNer ? `, wynik różny od core w ${changedVsCore} przypadkach` : ''),
     );
   }
 
@@ -213,7 +265,11 @@ async function main() {
     casesTotal: cases.length,
     mustMaskTotal: cases.reduce((a, c) => a + c.mustMask.length, 0),
     mustKeepTotal: cases.reduce((a, c) => a + c.mustKeep.length, 0),
-    skippedLayers: skippedLayers.map((l) => ({ name: l.name, url: l.url, reason: 'usługa niedostępna (health-check)' })),
+    skippedLayers: skippedLayers.map((l) => ({
+      name: l.name,
+      url: l.url,
+      reason: l.skipReason ?? 'usługa niedostępna (health-check)',
+    })),
     layers: layerResults.map(({ perCase, failures, ...rest }) => ({
       ...rest,
       failures,
@@ -229,12 +285,13 @@ async function main() {
 }
 
 function printTable(layerResults, categories, catShort, metric) {
-  const header = ['Warstwa'.padEnd(14), 'ŁĄCZNIE'.padStart(8), ...categories.map((c) => catShort[c].padStart(11))].join(' | ');
+  const col = (c) => (catShort[c] ?? c).padStart(11);
+  const header = ['Warstwa'.padEnd(16), 'ŁĄCZNIE'.padStart(8), ...categories.map(col)].join(' | ');
   console.log(header);
   console.log('-'.repeat(header.length));
   for (const lr of layerResults) {
     const cells = categories.map((cat) => fmtPct(lr.perCategory[cat][metric]).padStart(11));
-    console.log([lr.name.padEnd(14), fmtPct(lr[metric]).padStart(8), ...cells].join(' | '));
+    console.log([lr.name.padEnd(16), fmtPct(lr[metric]).padStart(8), ...cells].join(' | '));
   }
 }
 
@@ -279,7 +336,8 @@ function buildMarkdown({ startedAt, coreVersion, cases, categories, layerResults
   push('');
   for (const lr of layerResults) push(`- **${lr.name}** — ${lr.desc}`);
   for (const sl of skippedLayers) {
-    push(`- **${sl.name}** — POMINIĘTA: usługa \`${sl.url}\` niedostępna w chwili uruchomienia (health-check).`);
+    const why = sl.skipReason ?? `usługa \`${sl.url}\` niedostępna w chwili uruchomienia (health-check)`;
+    push(`- **${sl.name}** — POMINIĘTA: ${why}.`);
   }
   push('');
   push(`## Wyniki`);
@@ -346,6 +404,14 @@ function buildMarkdown({ startedAt, coreVersion, cases, categories, layerResults
   }
   push(`## Uwagi`);
   push('');
+  push(`- Kategoria **osoby-rzadkie-ner** to przypadki, które rdzeń deterministyczny PROWADZI`);
+  push(`  ŚWIADOMIE do wycieku (nazwiska bez wyzwalacza i bez sufiksu -ski/-cki/-icz/-czyk oraz`);
+  push(`  obce) — recall rdzenia jest tu z założenia niski (bliski 0%). Ta kategoria istnieje po to,`);
+  push(`  by ZMIERZYĆ przewagę warstwy NER: uruchom benchmark z modelem ONNX, aby zobaczyć wzrost`);
+  push(`  recall bez spadku precyzji na negatywach.`);
+  push(`- Warstwę **core+onnx (Node)** aktywujesz bez Dockera: \`npm i -D @huggingface/transformers\``);
+  push(`  oraz rozpakuj model do \`scripts/benchmark/models/fastpdn/\` (albo wskaż \`ONNX_MODELS_DIR\`).`);
+  push(`  Bez biblioteki/modelu warstwa jest pomijana (fail-safe), a raport pokazuje tylko rdzeń.`);
   push(`- Zbiór jest w pełni syntetyczny — wszystkie dane (PESEL-e, nazwiska, adresy) zostały`);
   push(`  wygenerowane albo wymyślone; nie zawierają danych rzeczywistych osób.`);
   push(`- Kolumna „Wynik ≠ core" pokazuje, w ilu przypadkach warstwa NER faktycznie zmieniła`);

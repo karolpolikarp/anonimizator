@@ -262,7 +262,7 @@ const escapeRe = (s: string): string => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
  * medyczny („choroba Leśniowskiego"), nazwa ulicy/miejsca („ulica Puławska") lub termin.
  * Wstrzymują samodzielny detektor morfologiczny/słownikowy nazwiska (kroki 13c/13c2).
  */
-const NON_PERSON_CONTEXT = new Set<string>(
+export const NON_PERSON_CONTEXT = new Set<string>(
   (
     'choroba chorobę choroby chorobą chorobie objaw objawu objawy objawie zespół zespołu zespole ' +
     'syndrom syndromu próba próbę próby odczyn odczynu test testu testem skala skali skalę metoda ' +
@@ -380,7 +380,7 @@ const isValidFormValue = (value: string, kind: FormKind): boolean => {
  * Encje prawne/instytucje, których NIE traktujemy jako „imię nazwisko"
  * (np. „Sąd Najwyższy", „Kodeks Cywilny", „Prawo Pracy").
  */
-const LEGAL_ENTITY_WORDS = new Set<string>(
+export const LEGAL_ENTITY_WORDS = new Set<string>(
   (
     'sąd sądu trybunał trybunału izba kodeks kodeksu ustawa ustawie prawo prawa ordynacja ' +
     'rozporządzenie urząd urzędu ministerstwo sejm senat parlament komisja inspekcja straż ' +
