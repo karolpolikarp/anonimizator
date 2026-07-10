@@ -39,7 +39,11 @@ import { LEGAL_ENTITY_WORDS, NON_PERSON_CONTEXT } from './index.js';
 
 const DEFAULT_MASK = '[IMIĘ I NAZWISKO]';
 const DEFAULT_MIN_SCORE = 0.5; // == PII_NER_MIN_SCORE (services/ner/app.py)
-const DEFAULT_HOMOGRAPH_MIN_SCORE = 0.9;
+// Domyślnie NIE maskujemy gołych homonimów rzeczowników (Wilk/Lis/Baran…) — nawet przy wysokim
+// score. Empirycznie int8 FastPDN daje „Lis przemknął przez drogę" score ≥0.9 (fałszywy pozytyw).
+// Homonim będący realną osobą z kontekstem (imię obok / „Pan") łapie rdzeń PRZED warstwą NER,
+// więc model widzi już placeholder. Opt-in przez `homographMinScore` (np. 0.9). Precyzja > recall.
+const DEFAULT_HOMOGRAPH_MIN_SCORE = Infinity;
 
 // Dowolna litera Unicode (nie tylko polska) — strumień liter + boundary. Dzięki temu obce
 // nazwiska (Müller, Kovač, Nguyễn) nie gubią końcówek przy dopasowaniu/rozszerzaniu.
@@ -74,7 +78,7 @@ export interface NerPostprocessOptions {
   isStopword?: (candidate: string) => boolean;
   /** Czy kandydat to homonim rzeczownika pospolitego (Wilk, Baran…). Domyślnie: HOMOGRAPH_SURNAMES. */
   isHomograph?: (candidate: string) => boolean;
-  /** Homonim maskujemy tylko przy score >= tej wartości. Domyślnie 0.9. */
+  /** Homonim maskujemy tylko przy score >= tej wartości. Domyślnie Infinity = NIGDY (opt-in np. 0.9). */
   homographMinScore?: number;
 }
 

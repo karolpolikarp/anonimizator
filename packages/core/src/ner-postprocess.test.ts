@@ -109,23 +109,23 @@ test('nazwisko-przymiotnik Górski NIE jest w stopliście → maskowane', () => 
 
 // ── Homonimy rzeczowników pospolitych ────────────────────────────────────────
 
-test('homonim „Wilk" przy niskiej pewności NIE jest maskowany', () => {
-  const text = 'Wilk biegał po lesie za sarną.';
-  expect(applyNerPersons(text, [person('Wilk', 0.6)]).redacted).toBe(text);
+test('homonim domyślnie NIE jest maskowany — nawet przy bardzo wysokim score (precyzja > recall)', () => {
+  // regresja z benchmarku: int8 FastPDN dawał „Lis przemknął…" score ≥0.9 (fałszywy pozytyw)
+  expect(applyNerPersons('Wilk biegał po lesie za sarną.', [person('Wilk', 0.99)]).redacted).toBe(
+    'Wilk biegał po lesie za sarną.',
+  );
+  expect(applyNerPersons('Lis przemknął przez drogę tuż przed autem.', [person('Lis', 0.97)]).redacted).toBe(
+    'Lis przemknął przez drogę tuż przed autem.',
+  );
 });
 
-test('homonim „Wilk" przy bardzo wysokiej pewności jest maskowany', () => {
+test('homonim można włączyć opcją homographMinScore (opt-in)', () => {
   const text = 'Orzeczenie wydał sędzia Wilk osobiście.';
-  expect(applyNerPersons(text, [person('Wilk', 0.95)]).redacted).toBe(
+  expect(applyNerPersons(text, [person('Wilk', 0.95)], { homographMinScore: 0.9 }).redacted).toBe(
     `Orzeczenie wydał sędzia ${MASK} osobiście.`,
   );
-});
-
-test('konfigurowalny homographMinScore', () => {
-  const text = 'Zeznał Baran wczoraj.';
-  expect(applyNerPersons(text, [person('Baran', 0.85)], { homographMinScore: 0.8 }).redacted).toBe(
-    `Zeznał ${MASK} wczoraj.`,
-  );
+  // poniżej progu opt-in → nie maskuj
+  expect(applyNerPersons(text, [person('Wilk', 0.85)], { homographMinScore: 0.9 }).redacted).toBe(text);
 });
 
 // ── Rzadkie i obce nazwiska (domena przewagi NER) ────────────────────────────

@@ -5,3 +5,7 @@ coverage/
 .DS_Store
 .env
 /anonimizator/
+
+# Lokalne modele ONNX do benchmarku (pobierane z release'u, nie wersjonowane — ~125 MB)
+scripts/benchmark/models/
+scripts/benchmark/_dl/
