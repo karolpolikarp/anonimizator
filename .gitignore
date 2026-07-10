@@ -9,3 +9,7 @@ coverage/
 # Lokalne modele ONNX do benchmarku (pobierane z release'u, nie wersjonowane — ~125 MB)
 scripts/benchmark/models/
 scripts/benchmark/_dl/
+
+# Wynik reprodukowalnego builda paczki onnx (vendor+model) i zrzut z weryfikacji E2E
+dist-onnx-pack/
+e2e-screenshot.png
