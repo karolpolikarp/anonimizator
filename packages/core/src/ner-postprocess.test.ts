@@ -218,6 +218,39 @@ test('nazwisko z apostrofem w pełni pokryte (obie części otagowane)', () => {
   expect(r.redacted).toBe(`Zeznał świadek ${MASK} wczoraj.`);
 });
 
+// ── Rzeczowniki pospolite z wielkiej litery (regresja audytu F1) ──
+
+test('rzeczownik dokumentowy z wielkiej litery NIE jest maskowany (Sprawa/Oświadczenie)', () => {
+  expect(applyNerPersons('Sprawa dotyczy zwrotu kaucji.', [person('Sprawa', 0.9)]).redacted).toBe(
+    'Sprawa dotyczy zwrotu kaucji.',
+  );
+  expect(applyNerPersons('Oświadczenie złożono w terminie.', [person('Oświadczenie', 0.95)]).redacted).toBe(
+    'Oświadczenie złożono w terminie.',
+  );
+});
+
+test('częsty rzeczownik przez krótki prefiks NIE jest maskowany (Kotł/Ko → Kotłownia)', () => {
+  const text = 'Zalana została Kotłownia w piwnicy.';
+  expect(applyNerPersons(text, [person('Kotł', 0.95)]).redacted).toBe(text);
+  expect(applyNerPersons(text, [person('Ko', 0.95)]).redacted).toBe(text);
+});
+
+test('obce nazwisko przez krótki prefiks NADAL maskowane mimo fixu F1 (Schmi → Schmidt)', () => {
+  const text = 'pełnomocnikiem był mecenas Schmidt osobiście';
+  expect(applyNerPersons(text, [person('Schmi', 1.0)]).redacted).toBe(
+    `pełnomocnikiem był mecenas ${MASK} osobiście`,
+  );
+});
+
+// ── Wystąpienie w placeholderze nie porzuca grupy (regresja audytu F2) ──
+
+test('kandydat trafiający NAJPIERW w placeholder maskuje prawdziwe późniejsze wystąpienie', () => {
+  const text = '[PESEL] podał także Pesel jako pseudonim.';
+  expect(applyNerPersons(text, [person('Pesel', 0.9)]).redacted).toBe(
+    '[PESEL] podał także [IMIĘ I NAZWISKO] jako pseudonim.',
+  );
+});
+
 // ── Scalanie i podmiana od końca ─────────────────────────────────────────────
 
 test('wiele osób → poprawne pozycje bez korupcji offsetów (podmiana od końca)', () => {

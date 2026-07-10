@@ -50,6 +50,19 @@ const WORD_CHAR = /[\p{L}-]/u;
 // Istniejące placeholdery rdzenia ([PESEL], [IMIĘ I NAZWISKO], [OSOBA-A]…) — NIE tykać (idempotencja).
 const MASK_SPAN = /\[[^\][\n]*\]/gu;
 
+// Częste polskie rzeczowniki pospolite z wielkiej litery na początku zdania (kontekst urzędowy/
+// prawny), które model NER bywa fałszywie taguje jako osobę. Bramka „capitalized ⇒ akceptuj"
+// (potrzebna, by obce nazwiska bez polskiej morfologii przeszły) sama ich nie odrzuci — stąd wąska,
+// dziedzinowa stoplista. Żaden z tych wyrazów nie jest polskim nazwiskiem.
+const NER_COMMON_NOUNS = new Set<string>(
+  (
+    'sprawa sprawie sprawy sprawą sprawozdanie postanowienie postanowieniu rozpoznanie ' +
+    'uzasadnienie oświadczenie zawiadomienie wezwanie wezwaniu orzeczenie odwołanie zażalenie ' +
+    'skarga skargę skargi protokół protokole notatka notatkę notatki pełnomocnictwo upoważnienie ' +
+    'zaświadczenie potwierdzenie zgłoszenie rozstrzygnięcie zarządzenie kotłownia'
+  ).split(/\s+/),
+);
+
 /** Pojedyncza encja z pipeline `token-classification`. `start`/`end` future-proof (dziś brak). */
 export interface NerToken {
   entity: string;
@@ -98,7 +111,7 @@ export function defaultIsStopword(candidate: string): boolean {
   if (!w) return true;
   const parts = w.split(/\s+/).filter(Boolean);
   for (const p of parts) {
-    if (LEGAL_ENTITY_WORDS.has(p) || NON_PERSON_CONTEXT.has(p)) return true;
+    if (LEGAL_ENTITY_WORDS.has(p) || NON_PERSON_CONTEXT.has(p) || NER_COMMON_NOUNS.has(p)) return true;
     if (NON_SURNAME_ADJ.has(p) || isGeoAdjective(p)) return true;
   }
   return false;
@@ -236,27 +249,36 @@ export function applyNerPersons(
     if (isStopword(cand)) continue; // przymiotnik geo / instytucja → nie osoba
     if (isHomograph(cand) && g.headScore < homographMinScore) continue; // homonim tylko przy pewności
 
+    // Lokalizacja: przejdź KOLEJNE wystąpienia od kursora (fallback od 0). Trafienie w istniejącym
+    // placeholderze albo nachodzące na już zajęty span POMIJAMY i próbujemy następne wystąpienie —
+    // nie porzucamy całego kandydata, inaczej realne późniejsze nazwisko by wyciekło.
     let hit = locate(stream, pos, text, candLetters, cursorLi);
-    if (!hit) hit = locate(stream, pos, text, candLetters, 0); // fallback (rozjazd kolejności)
-    if (!hit) continue;
-    cursorLi = Math.max(cursorLi, hit.nextLi);
-
-    const [s, e] = expandToWord(text, hit.rawS, hit.rawE);
-    if (inMask(s, e)) continue; // nie dotykaj istniejącego placeholdera
-
-    // Filtr precyzji na słowie POWIERZCHNIOWYM (po rozszerzeniu): odrzuć instytucje/homonimy,
-    // które kandydat-fragment mógł ominąć (np. „War"→„Warszawski", „Ba"→„Baran"). Homonim wg tego
-    // samego progu co na poziomie kandydata (domyślnie Infinity = zawsze, opt-in = wg score).
-    const surf = text.slice(s, e).trim();
-    if (isStopword(surf)) continue;
-    if (isHomograph(surf) && g.headScore < homographMinScore) continue;
-    // Bramka „prefix-grow": rozrost na słowo pisane z MAŁEJ litery to zwykły wyraz, nie nazwisko
-    // własne („mai"→„maila", „tre"→„treść") — odrzuć. Pełne trafienia i słowa z wielkiej przechodzą,
-    // więc obce nazwiska tagowane krótkim prefiksem (Kovač←„Ko", Schmidt←„Schmi") zostają maskowane.
-    const surfLetters = surf.toLowerCase().replace(NON_LETTER_G, '');
-    if (surfLetters !== candLetters && !/^\p{Lu}/u.test(surf)) continue;
-
-    if (!overlaps(s, e)) spans.push([s, e]);
+    if (!hit) hit = locate(stream, pos, text, candLetters, 0); // rozjazd kolejności
+    while (hit) {
+      cursorLi = Math.max(cursorLi, hit.nextLi);
+      const [s, e] = expandToWord(text, hit.rawS, hit.rawE);
+      if (inMask(s, e) || overlaps(s, e)) {
+        hit = locate(stream, pos, text, candLetters, hit.nextLi); // zajęte/w masce → następne wystąpienie
+        continue;
+      }
+      // Filtry precyzji na słowie POWIERZCHNIOWYM — dotyczą KANDYDATA (nie pojedynczego wystąpienia),
+      // więc gdy odrzucą, kandydat odpada w całości:
+      //  - instytucja / przymiotnik geo / częsty rzeczownik dokumentowy (stoplista),
+      //  - homonim rzeczownika pospolitego (wg progu; domyślnie Infinity = zawsze odrzuć),
+      //  - „prefix-grow" na słowo pisane z MAŁEJ litery („mai"→„maila") — zwykły wyraz, nie nazwisko.
+      //    (Obce nazwiska tagowane krótkim prefiksem, np. Schmidt←„Schmi", zaczynają się z wielkiej.)
+      const surf = text.slice(s, e).trim();
+      const surfLetters = surf.toLowerCase().replace(NON_LETTER_G, '');
+      if (
+        isStopword(surf) ||
+        (isHomograph(surf) && g.headScore < homographMinScore) ||
+        (surfLetters !== candLetters && !/^\p{Lu}/u.test(surf))
+      ) {
+        break;
+      }
+      spans.push([s, e]);
+      break;
+    }
   }
 
   if (spans.length === 0) return empty;
