@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-07-10T22:40:04.513Z",
+  "generatedAt": "2026-07-10T22:52:06.156Z",
   "seed": 20260704,
   "coreVersion": "0.24.0",
-  "casesTotal": 177,
-  "mustMaskTotal": 175,
-  "mustKeepTotal": 187,
+  "casesTotal": 193,
+  "mustMaskTotal": 184,
+  "mustKeepTotal": 203,
   "skippedLayers": [
     {
       "name": "core+spacy",
@@ -21,16 +21,16 @@
     {
       "name": "T0+T1 core",
       "desc": "redactPII() — regex + sumy kontrolne + słownik (in-process, offline)",
-      "elapsedMs": 17,
+      "elapsedMs": 12,
       "changedVsCore": null,
-      "recall": 0.9428571428571428,
-      "precision": 0.9893048128342246,
-      "f1": 0.9655226949232958,
+      "recall": 0.8967391304347826,
+      "precision": 0.9901477832512315,
+      "f1": 0.9411314008428042,
       "agg": {
-        "maskTotal": 175,
+        "maskTotal": 184,
         "maskHit": 165,
-        "keepTotal": 187,
-        "keepHit": 185
+        "keepTotal": 203,
+        "keepHit": 201
       },
       "perCategory": {
         "osoby-podstawowe": {
@@ -71,21 +71,21 @@
         },
         "negatywy": {
           "recall": null,
-          "precision": 0.9607843137254902,
+          "precision": 0.9655172413793104,
           "f1": null,
           "maskTotal": 0,
           "maskHit": 0,
-          "keepTotal": 51,
-          "keepHit": 49
+          "keepTotal": 58,
+          "keepHit": 56
         },
         "osoby-rzadkie-ner": {
           "recall": 0,
           "precision": 1,
           "f1": 0,
-          "maskTotal": 10,
+          "maskTotal": 19,
           "maskHit": 0,
-          "keepTotal": 10,
-          "keepHit": 10
+          "keepTotal": 19,
+          "keepHit": 19
         }
       },
       "failures": [
@@ -208,6 +208,96 @@
           ],
           "eaten": [],
           "redacted": "pełnomocnikiem powoda był mecenas Schmidt"
+        },
+        {
+          "id": "os-rn-11",
+          "category": "osoby-rzadkie-ner",
+          "text": "sprawę Pytlaka odroczono do przyszłego miesiąca",
+          "leaked": [
+            "Pytlaka"
+          ],
+          "eaten": [],
+          "redacted": "sprawę Pytlaka odroczono do przyszłego miesiąca"
+        },
+        {
+          "id": "os-rn-12",
+          "category": "osoby-rzadkie-ner",
+          "text": "zeznania Habaja spisano na komisariacie",
+          "leaked": [
+            "Habaja"
+          ],
+          "eaten": [],
+          "redacted": "zeznania Habaja spisano na komisariacie"
+        },
+        {
+          "id": "os-rn-13",
+          "category": "osoby-rzadkie-ner",
+          "text": "wniosek Momota oddalono w pierwszej instancji",
+          "leaked": [
+            "Momota"
+          ],
+          "eaten": [],
+          "redacted": "wniosek Momota oddalono w pierwszej instancji"
+        },
+        {
+          "id": "os-rn-14",
+          "category": "osoby-rzadkie-ner",
+          "text": "do akt dołączono notatkę Cieciory z narady",
+          "leaked": [
+            "Cieciory"
+          ],
+          "eaten": [],
+          "redacted": "do akt dołączono notatkę Cieciory z narady"
+        },
+        {
+          "id": "os-rn-15",
+          "category": "osoby-rzadkie-ner",
+          "text": "pismo od Bździucha wpłynęło z opóźnieniem",
+          "leaked": [
+            "Bździucha"
+          ],
+          "eaten": [],
+          "redacted": "pismo od Bździucha wpłynęło z opóźnieniem"
+        },
+        {
+          "id": "os-rn-16",
+          "category": "osoby-rzadkie-ner",
+          "text": "opinię prawną wydał Petrov zeszłego tygodnia",
+          "leaked": [
+            "Petrov"
+          ],
+          "eaten": [],
+          "redacted": "opinię prawną wydał Petrov zeszłego tygodnia"
+        },
+        {
+          "id": "os-rn-17",
+          "category": "osoby-rzadkie-ner",
+          "text": "umowę serwisową parafował Horvat osobiście",
+          "leaked": [
+            "Horvat"
+          ],
+          "eaten": [],
+          "redacted": "umowę serwisową parafował Horvat osobiście"
+        },
+        {
+          "id": "os-rn-18",
+          "category": "osoby-rzadkie-ner",
+          "text": "reklamację rozpatrzył Weber w dwa dni",
+          "leaked": [
+            "Weber"
+          ],
+          "eaten": [],
+          "redacted": "reklamację rozpatrzył Weber w dwa dni"
+        },
+        {
+          "id": "os-rn-19",
+          "category": "osoby-rzadkie-ner",
+          "text": "kontrakt firmował Rossi przed notariuszem",
+          "leaked": [
+            "Rossi"
+          ],
+          "eaten": [],
+          "redacted": "kontrakt firmował Rossi przed notariuszem"
         }
       ],
       "perCase": [
@@ -1047,6 +1137,41 @@
         },
         {
           "id": "neg-48",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-49",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-50",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-51",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-52",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-53",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-54",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-55",
           "leaked": [],
           "eaten": []
         },
@@ -1119,22 +1244,85 @@
             "Schmidt"
           ],
           "eaten": []
+        },
+        {
+          "id": "os-rn-11",
+          "leaked": [
+            "Pytlaka"
+          ],
+          "eaten": []
+        },
+        {
+          "id": "os-rn-12",
+          "leaked": [
+            "Habaja"
+          ],
+          "eaten": []
+        },
+        {
+          "id": "os-rn-13",
+          "leaked": [
+            "Momota"
+          ],
+          "eaten": []
+        },
+        {
+          "id": "os-rn-14",
+          "leaked": [
+            "Cieciory"
+          ],
+          "eaten": []
+        },
+        {
+          "id": "os-rn-15",
+          "leaked": [
+            "Bździucha"
+          ],
+          "eaten": []
+        },
+        {
+          "id": "os-rn-16",
+          "leaked": [
+            "Petrov"
+          ],
+          "eaten": []
+        },
+        {
+          "id": "os-rn-17",
+          "leaked": [
+            "Horvat"
+          ],
+          "eaten": []
+        },
+        {
+          "id": "os-rn-18",
+          "leaked": [
+            "Weber"
+          ],
+          "eaten": []
+        },
+        {
+          "id": "os-rn-19",
+          "leaked": [
+            "Rossi"
+          ],
+          "eaten": []
         }
       ]
     },
     {
       "name": "core+onnx (Node)",
       "desc": "redactPII() + FastPDN ONNX int8 (q8) w Node przez @huggingface/transformers — bez Dockera",
-      "elapsedMs": 1222,
-      "changedVsCore": 8,
-      "recall": 0.9885714285714285,
-      "precision": 0.9893048128342246,
-      "f1": 0.988937984735655,
+      "elapsedMs": 1010,
+      "changedVsCore": 15,
+      "recall": 0.9782608695652174,
+      "precision": 0.9901477832512315,
+      "f1": 0.9841684347968009,
       "agg": {
-        "maskTotal": 175,
-        "maskHit": 173,
-        "keepTotal": 187,
-        "keepHit": 185
+        "maskTotal": 184,
+        "maskHit": 180,
+        "keepTotal": 203,
+        "keepHit": 201
       },
       "perCategory": {
         "osoby-podstawowe": {
@@ -1175,21 +1363,21 @@
         },
         "negatywy": {
           "recall": null,
-          "precision": 0.9607843137254902,
+          "precision": 0.9655172413793104,
           "f1": null,
           "maskTotal": 0,
           "maskHit": 0,
-          "keepTotal": 51,
-          "keepHit": 49
+          "keepTotal": 58,
+          "keepHit": 56
         },
         "osoby-rzadkie-ner": {
-          "recall": 0.8,
+          "recall": 0.7894736842105263,
           "precision": 1,
-          "f1": 0.888888888888889,
-          "maskTotal": 10,
-          "maskHit": 8,
-          "keepTotal": 10,
-          "keepHit": 10
+          "f1": 0.8823529411764706,
+          "maskTotal": 19,
+          "maskHit": 15,
+          "keepTotal": 19,
+          "keepHit": 19
         }
       },
       "failures": [
@@ -1232,6 +1420,26 @@
           ],
           "eaten": [],
           "redacted": "do akt dołączono notatkę Ciołka z rozmowy"
+        },
+        {
+          "id": "os-rn-14",
+          "category": "osoby-rzadkie-ner",
+          "text": "do akt dołączono notatkę Cieciory z narady",
+          "leaked": [
+            "Cieciory"
+          ],
+          "eaten": [],
+          "redacted": "do akt dołączono notatkę Cieciory z narady"
+        },
+        {
+          "id": "os-rn-18",
+          "category": "osoby-rzadkie-ner",
+          "text": "reklamację rozpatrzył Weber w dwa dni",
+          "leaked": [
+            "Weber"
+          ],
+          "eaten": [],
+          "redacted": "reklamację rozpatrzył Weber w dwa dni"
         }
       ],
       "perCase": [
@@ -2075,6 +2283,41 @@
           "eaten": []
         },
         {
+          "id": "neg-49",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-50",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-51",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-52",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-53",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-54",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-55",
+          "leaked": [],
+          "eaten": []
+        },
+        {
           "id": "os-rn-01",
           "leaked": [],
           "eaten": []
@@ -2125,6 +2368,55 @@
         },
         {
           "id": "os-rn-10",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-rn-11",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-rn-12",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-rn-13",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-rn-14",
+          "leaked": [
+            "Cieciory"
+          ],
+          "eaten": []
+        },
+        {
+          "id": "os-rn-15",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-rn-16",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-rn-17",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-rn-18",
+          "leaked": [
+            "Weber"
+          ],
+          "eaten": []
+        },
+        {
+          "id": "os-rn-19",
           "leaked": [],
           "eaten": []
         }

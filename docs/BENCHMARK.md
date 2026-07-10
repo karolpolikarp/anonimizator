@@ -2,7 +2,7 @@
 
 - **Data uruchomienia:** 2026-07-10
 - **Wersja rdzenia (`anonimizator`):** 0.24.0
-- **Zbiór ewaluacyjny:** 177 syntetycznych zdań (deterministyczny, seed `20260704`), 175 elementów do zamaskowania (mustMask), 187 elementów do zachowania (mustKeep)
+- **Zbiór ewaluacyjny:** 193 syntetycznych zdań (deterministyczny, seed `20260704`), 184 elementów do zamaskowania (mustMask), 203 elementów do zachowania (mustKeep)
 - **Reprodukcja:** `npm run build -w anonimizator && node scripts/benchmark/run.mjs`
 
 ## Metodologia
@@ -20,7 +20,7 @@ Wszystkie identyfikatory w zbiorze mają **poprawne sumy kontrolne** policzone w
 (PESEL, NIP, REGON, IBAN mod-97, nr dowodu), a negatywy zawierają m.in. ciągi o celowo
 **błędnych** sumach kontrolnych — silnik ma je zostawić w spokoju.
 
-Liczności kategorii: osoby-podstawowe — 23, osoby-odmiana — 32, osoby-rzadkie — 24, strukturalne — 40, negatywy — 48, osoby-rzadkie-ner — 10.
+Liczności kategorii: osoby-podstawowe — 23, osoby-odmiana — 32, osoby-rzadkie — 24, strukturalne — 40, negatywy — 55, osoby-rzadkie-ner — 19.
 
 ### Warstwy
 
@@ -33,8 +33,8 @@ Liczności kategorii: osoby-podstawowe — 23, osoby-odmiana — 32, osoby-rzadk
 
 | Warstwa | Recall (łącznie) | Precision-proxy (łącznie) | F1 | Porażki (przypadki) | Czas | Wynik ≠ core |
 |---|---|---|---|---|---|---|
-| T0+T1 core | 94.3% (165/175) | 98.9% (185/187) | 96.6% | 12 | 0.0 s | — |
-| core+onnx (Node) | 98.9% (173/175) | 98.9% (185/187) | 98.9% | 4 | 1.2 s | 8 przyp. |
+| T0+T1 core | 89.7% (165/184) | 99.0% (201/203) | 94.1% | 21 | 0.0 s | — |
+| core+onnx (Node) | 97.8% (180/184) | 99.0% (201/203) | 98.4% | 6 | 1.0 s | 15 przyp. |
 
 F1 liczone jako średnia harmoniczna recall i precision-proxy (łącznie po wszystkich kategoriach
 z oboma rodzajami elementów; kategoria „negatywy" nie ma recall, więc nie wchodzi do składowej recall).
@@ -44,21 +44,21 @@ z oboma rodzajami elementów; kategoria „negatywy" nie ma recall, więc nie wc
 | Warstwa | osoby-podstawowe | osoby-odmiana | osoby-rzadkie | strukturalne | negatywy | osoby-rzadkie-ner |
 |---|---|---|---|---|---|---|
 | T0+T1 core | 100.0% | 100.0% | 100.0% | 100.0% | — | 0.0% |
-| core+onnx (Node) | 100.0% | 100.0% | 100.0% | 100.0% | — | 80.0% |
+| core+onnx (Node) | 100.0% | 100.0% | 100.0% | 100.0% | — | 78.9% |
 
 ### F1 per kategoria
 
 | Warstwa | osoby-podstawowe | osoby-odmiana | osoby-rzadkie | strukturalne | negatywy | osoby-rzadkie-ner |
 |---|---|---|---|---|---|---|
 | T0+T1 core | 100.0% | 100.0% | 100.0% | 100.0% | — | 0.0% |
-| core+onnx (Node) | 100.0% | 100.0% | 100.0% | 100.0% | — | 88.9% |
+| core+onnx (Node) | 100.0% | 100.0% | 100.0% | 100.0% | — | 88.2% |
 
 ### Precision-proxy per kategoria
 
 | Warstwa | osoby-podstawowe | osoby-odmiana | osoby-rzadkie | strukturalne | negatywy | osoby-rzadkie-ner |
 |---|---|---|---|---|---|---|
-| T0+T1 core | 100.0% | 100.0% | 100.0% | 100.0% | 96.1% | 100.0% |
-| core+onnx (Node) | 100.0% | 100.0% | 100.0% | 100.0% | 96.1% | 100.0% |
+| T0+T1 core | 100.0% | 100.0% | 100.0% | 100.0% | 96.6% | 100.0% |
+| core+onnx (Node) | 100.0% | 100.0% | 100.0% | 100.0% | 96.6% | 100.0% |
 
 („—" = brak elementów danego rodzaju w kategorii, np. negatywy nie mają mustMask.)
 
@@ -67,9 +67,9 @@ z oboma rodzajami elementów; kategoria „negatywy" nie ma recall, więc nie wc
 Legenda: **przeszło** = element mustMask pozostał w wyniku (wyciek PII);
 **zjedzono** = element mustKeep został zamaskowany (fałszywy pozytyw).
 
-### T0+T1 core — 12 przypadków z porażką
+### T0+T1 core — 21 przypadków z porażką
 
-**Wycieki (przeszło 10 elem. w 10 przypadkach):**
+**Wycieki (przeszło 19 elem. w 19 przypadkach):**
 
 - `os-rn-01` (osoby-rzadkie-ner): przeszło „Achtelika" — tekst: _list od Achtelika leżał tydzień na biurku_
 - `os-rn-02` (osoby-rzadkie-ner): przeszło „Fąfary" — tekst: _sprawę Fąfary umorzono w drugiej instancji_
@@ -81,18 +81,29 @@ Legenda: **przeszło** = element mustMask pozostał w wyniku (wyciek PII);
 - `os-rn-08` (osoby-rzadkie-ner): przeszło „Kovač" — tekst: _protokół podpisał Kovač w obecności świadka_
 - `os-rn-09` (osoby-rzadkie-ner): przeszło „Popescu" — tekst: _opinię biegłego sporządził Popescu w terminie_
 - `os-rn-10` (osoby-rzadkie-ner): przeszło „Schmidt" — tekst: _pełnomocnikiem powoda był mecenas Schmidt_
+- `os-rn-11` (osoby-rzadkie-ner): przeszło „Pytlaka" — tekst: _sprawę Pytlaka odroczono do przyszłego miesiąca_
+- `os-rn-12` (osoby-rzadkie-ner): przeszło „Habaja" — tekst: _zeznania Habaja spisano na komisariacie_
+- `os-rn-13` (osoby-rzadkie-ner): przeszło „Momota" — tekst: _wniosek Momota oddalono w pierwszej instancji_
+- `os-rn-14` (osoby-rzadkie-ner): przeszło „Cieciory" — tekst: _do akt dołączono notatkę Cieciory z narady_
+- `os-rn-15` (osoby-rzadkie-ner): przeszło „Bździucha" — tekst: _pismo od Bździucha wpłynęło z opóźnieniem_
+- `os-rn-16` (osoby-rzadkie-ner): przeszło „Petrov" — tekst: _opinię prawną wydał Petrov zeszłego tygodnia_
+- `os-rn-17` (osoby-rzadkie-ner): przeszło „Horvat" — tekst: _umowę serwisową parafował Horvat osobiście_
+- `os-rn-18` (osoby-rzadkie-ner): przeszło „Weber" — tekst: _reklamację rozpatrzył Weber w dwa dni_
+- `os-rn-19` (osoby-rzadkie-ner): przeszło „Rossi" — tekst: _kontrakt firmował Rossi przed notariuszem_
 
 **Nadmaskowania (zjedzono 2 elem. w 2 przypadkach):**
 
 - `neg-09` (negatywy): zjedzono „III CZP 12/23" — wynik: _Sygn. akt [ZNAK-SPRAWY] — uchwała siedmiu sędziów._
 - `neg-40` (negatywy): zjedzono „Tadeusz" — wynik: _Pan [IMIĘ I NAZWISKO] to najsłynniejsza polska epopeja narodowa._
 
-### core+onnx (Node) — 4 przypadków z porażką
+### core+onnx (Node) — 6 przypadków z porażką
 
-**Wycieki (przeszło 2 elem. w 2 przypadkach):**
+**Wycieki (przeszło 4 elem. w 4 przypadkach):**
 
 - `os-rn-03` (osoby-rzadkie-ner): przeszło „Gągały" — tekst: _zeznania Gągały spisano protokolarnie_
 - `os-rn-05` (osoby-rzadkie-ner): przeszło „Ciołka" — tekst: _do akt dołączono notatkę Ciołka z rozmowy_
+- `os-rn-14` (osoby-rzadkie-ner): przeszło „Cieciory" — tekst: _do akt dołączono notatkę Cieciory z narady_
+- `os-rn-18` (osoby-rzadkie-ner): przeszło „Weber" — tekst: _reklamację rozpatrzył Weber w dwa dni_
 
 **Nadmaskowania (zjedzono 2 elem. w 2 przypadkach):**
 

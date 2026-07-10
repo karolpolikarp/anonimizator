@@ -20,3 +20,8 @@ jobs:
       - run: npx tsc -p apps/web/tsconfig.json
       - run: npm run test -w anonimizator-web
       - run: npm run build -w anonimizator-web
+      # Bramka regresji detekcji na warstwie deterministycznej (bez modelu ONNX — warstwy NER
+      # pominięte fail-safe). Fail przy spadku recall na kategoriach osobowych/strukturalnych
+      # lub precyzji poniżej progu. Nie commituje raportu — tylko sprawdza progi.
+      - name: Bramka benchmarku (rdzeń)
+        run: node scripts/benchmark/run.mjs --check

@@ -295,6 +295,42 @@ async function main() {
   // ── Zapis docs/BENCHMARK.md ──
   writeFileSync(BENCHMARK_MD, buildMarkdown({ startedAt, coreVersion, cases, categories, layerResults, skippedLayers }), 'utf8');
   console.log(`Zapisano: ${BENCHMARK_MD}`);
+
+  // ── Bramka regresji (--check): gwarancje na warstwie DETERMINISTYCZNEJ (core), niezależne od
+  //    modelu — działa w CI bez pobierania ONNX. Warstwy NER (gdy obecne) nie mogą OBNIŻYĆ recall
+  //    ani precyzji względem core. ──
+  if (process.argv.includes('--check')) {
+    const core = layerResults.find((l) => l.changedVsCore === null); // tylko rdzeń nie jest warstwą NER
+    const violations = [];
+    if (!core) {
+      violations.push('brak warstwy rdzenia (core) w wynikach');
+    } else {
+      // rdzeń MUSI utrzymać 100% recall tam, gdzie działa deterministycznie
+      for (const cat of ['osoby-podstawowe', 'osoby-odmiana', 'osoby-rzadkie', 'strukturalne']) {
+        const r = core.perCategory[cat]?.recall;
+        if (r !== null && r !== undefined && r < 1) violations.push(`recall[${cat}] = ${fmtPct(r)} < 100% (regresja detekcji)`);
+      }
+      if (core.precision !== null && core.precision < 0.98) {
+        violations.push(`precision-proxy = ${fmtPct(core.precision)} < 98% (nadmaskowanie)`);
+      }
+      // warstwy NER nie mogą pogorszyć core (recall ani precyzji łącznej)
+      for (const lr of layerResults) {
+        if (lr === core) continue;
+        if (lr.recall !== null && core.recall !== null && lr.recall < core.recall - 1e-9) {
+          violations.push(`${lr.name}: recall ${fmtPct(lr.recall)} < core ${fmtPct(core.recall)} (warstwa NER obniża ochronę)`);
+        }
+        if (lr.precision !== null && core.precision !== null && lr.precision < core.precision - 1e-9) {
+          violations.push(`${lr.name}: precision ${fmtPct(lr.precision)} < core ${fmtPct(core.precision)} (warstwa NER nadmaskowuje)`);
+        }
+      }
+    }
+    if (violations.length) {
+      console.error('\n❌ BRAMKA BENCHMARKU (--check) — regresja:');
+      for (const v of violations) console.error('   - ' + v);
+      process.exit(1);
+    }
+    console.log('\n✔ BRAMKA BENCHMARKU (--check): brak regresji (rdzeń w normie, warstwy NER nie obniżają ochrony).');
+  }
 }
 
 function printTable(layerResults, categories, catShort, metric) {

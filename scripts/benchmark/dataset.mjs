@@ -471,6 +471,15 @@ export function buildDataset() {
   // dodatkowe sygnatury akt (pilnują, że warstwa NER nie tknie oznaczeń spraw)
   neg('Postanowienie zapadło w sprawie IV CSK 77/24.', ['IV CSK 77/24']);
   neg('Skargę kasacyjną zarejestrowano pod III UK 210/23.', ['III UK 210/23']);
+  // instytucje z przymiotnikiem (chronione stoplistą LEGAL_ENTITY/NON_SURNAME_ADJ w NER)
+  neg('Sąd Rejonowy w Pruszkowie wydał nakaz.', ['Rejonowy']);
+  neg('Prokuratura Krajowa wszczęła postępowanie.', ['Krajowa']);
+  neg('Wojewódzki Fundusz Ochrony Środowiska ogłosił nabór.', ['Wojewódzki']);
+  neg('Naczelny Sąd Administracyjny oddalił skargę.', ['Naczelny']);
+  // homonimy w kontekście rzeczownikowym (warstwa NER nie maskuje homonimów)
+  neg('Sroka skakała po świeżo skoszonym trawniku.', ['Sroka']);
+  neg('Mróz ściął kałuże twardą skorupą nad ranem.', ['Mróz']);
+  neg('Kruk siedział na gałęzi i obserwował drogę.', ['Kruk']);
 
   // ──────────────────────────────────────────────────────────────────────────
   // OSOBY-RZADKIE-NER — rdzeń deterministyczny je PRZEPUSZCZA (brak wyzwalacza, brak sufiksu
@@ -487,6 +496,17 @@ export function buildDataset() {
   osrn('protokół podpisał Kovač w obecności świadka', ['Kovač'], ['świadka']);
   osrn('opinię biegłego sporządził Popescu w terminie', ['Popescu'], ['opinię']);
   osrn('pełnomocnikiem powoda był mecenas Schmidt', ['Schmidt'], ['powoda']);
+  // dalsze rzadkie rodzime bez wyzwalacza/sufiksu -ski/-cki/-icz/-czyk
+  osrn('sprawę Pytlaka odroczono do przyszłego miesiąca', ['Pytlaka'], ['odroczono']);
+  osrn('zeznania Habaja spisano na komisariacie', ['Habaja'], ['komisariacie']);
+  osrn('wniosek Momota oddalono w pierwszej instancji', ['Momota'], ['instancji']);
+  osrn('do akt dołączono notatkę Cieciory z narady', ['Cieciory'], ['narady']);
+  osrn('pismo od Bździucha wpłynęło z opóźnieniem', ['Bździucha'], ['opóźnieniem']);
+  // dalsze nazwiska obce (różne systemy)
+  osrn('opinię prawną wydał Petrov zeszłego tygodnia', ['Petrov'], ['opinię']);
+  osrn('umowę serwisową parafował Horvat osobiście', ['Horvat'], ['umowę']);
+  osrn('reklamację rozpatrzył Weber w dwa dni', ['Weber'], ['reklamację']);
+  osrn('kontrakt firmował Rossi przed notariuszem', ['Rossi'], ['kontrakt']);
 
   // ── Kontrola spójności zbioru ──
   const ids = new Set();
