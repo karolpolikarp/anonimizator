@@ -14,8 +14,10 @@ Ta paczka jest **świadomie poza buildem aplikacji** (single-file HTML zostaje m
 
 ## Wymagania
 
-`npm ci` daje `esbuild` i `@huggingface/transformers` (z `onnxruntime-web`) — to wystarcza do
-zbudowania **vendora**. Model dostarczasz osobno (niżej).
+`npm ci` daje `esbuild`. `@huggingface/transformers` (z `onnxruntime-web`) **nie jest** commitowanym
+devDep — jest ciężki i wciąga `onnxruntime-node` (postinstall pobiera binarkę, potrafi wywalić `npm ci`
+w CI). Zainstaluj go on-demand do zbudowania **vendora**: `npm i -D @huggingface/transformers`.
+Model dostarczasz osobno (niżej).
 
 ## Build
 
