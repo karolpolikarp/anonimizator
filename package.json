@@ -11,7 +11,6 @@
     "dev": "npm run dev -w anonimizator-web"
   },
   "devDependencies": {
-    "@huggingface/transformers": "^4.2.0",
     "esbuild": "^0.28.1"
   }
 }
