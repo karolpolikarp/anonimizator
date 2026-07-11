@@ -435,12 +435,83 @@ function linkScroll(from: HTMLElement, to: HTMLElement): void {
 linkScroll(input, output);
 linkScroll(output, input);
 
-// Rozszerzanie okien — przeciągasz uchwyt w prawym-dolnym rogu okna źródła, a okno wyniku
-// dostaje dokładnie tę samą wysokość, więc oba rosną i maleją równocześnie i równo.
-const syncEditorHeight = (): void => {
-  output.style.height = `${input.offsetHeight}px`;
-};
-new ResizeObserver(syncEditorHeight).observe(input);
+// Rozszerzanie okien — czytelny, symetryczny uchwyt u dołu KAŻDEGO okna (źródła i wyniku).
+// Przeciąganie dowolnego z nich zmienia wspólną wysokość --ed-h, więc oba okna rosną i maleją
+// równocześnie i równo. Uchwyt jest widoczny, obsługiwany myszą, dotykiem i klawiaturą (↑/↓),
+// a dwuklik przywraca domyślną wysokość. Intuicyjniej niż drobny natywny trójkącik w rogu.
+const MIN_ED_H = 220;
+const grips: HTMLElement[] = [];
+
+const maxEdH = (): number => Math.max(MIN_ED_H, window.innerHeight - 140);
+const clampEdH = (px: number): number => Math.max(MIN_ED_H, Math.min(Math.round(px), maxEdH()));
+
+function applyEditorHeight(px: number): void {
+  const h = clampEdH(px);
+  document.documentElement.style.setProperty('--ed-h', `${h}px`);
+  for (const g of grips) g.setAttribute('aria-valuenow', String(h));
+}
+function resetEditorHeight(): void {
+  document.documentElement.style.removeProperty('--ed-h');
+  for (const g of grips) g.setAttribute('aria-valuenow', String(input.offsetHeight));
+}
+
+function makeGrip(): HTMLElement {
+  const g = document.createElement('div');
+  g.className = 'ed-grip';
+  g.tabIndex = 0;
+  g.setAttribute('role', 'separator');
+  g.setAttribute('aria-orientation', 'horizontal');
+  g.setAttribute('aria-label', 'Zmień wysokość okien — przeciągnij lub użyj strzałek ↑ ↓');
+  g.setAttribute('aria-valuemin', String(MIN_ED_H));
+  g.dataset.tip = 'Przeciągnij, aby zmienić wysokość obu okien · strzałki ↑ ↓ · dwuklik = reset';
+  g.innerHTML = '<span class="ed-grip-bar"></span>';
+
+  let startY = 0;
+  let startH = 0;
+  let dragging = false;
+  g.addEventListener('pointerdown', (e) => {
+    dragging = true;
+    startY = e.clientY;
+    startH = input.offsetHeight;
+    g.setPointerCapture(e.pointerId);
+    document.body.classList.add('ed-resizing');
+    e.preventDefault();
+  });
+  g.addEventListener('pointermove', (e) => {
+    if (dragging) applyEditorHeight(startH + (e.clientY - startY));
+  });
+  const endDrag = (e: PointerEvent): void => {
+    if (!dragging) return;
+    dragging = false;
+    try {
+      g.releasePointerCapture(e.pointerId);
+    } catch {
+      /* wskaźnik mógł już zniknąć */
+    }
+    document.body.classList.remove('ed-resizing');
+  };
+  g.addEventListener('pointerup', endDrag);
+  g.addEventListener('pointercancel', endDrag);
+  g.addEventListener('keydown', (e) => {
+    const step = e.shiftKey ? 60 : 20;
+    if (e.key === 'ArrowUp') {
+      applyEditorHeight(input.offsetHeight - step);
+      e.preventDefault();
+    } else if (e.key === 'ArrowDown') {
+      applyEditorHeight(input.offsetHeight + step);
+      e.preventDefault();
+    }
+  });
+  g.addEventListener('dblclick', resetEditorHeight);
+  return g;
+}
+
+const inputGrip = makeGrip();
+const outputGrip = makeGrip();
+grips.push(inputGrip, outputGrip);
+input.parentElement?.append(inputGrip); // .card-b okna źródła
+output.parentElement?.append(outputGrip); // .card-b okna wyniku
+for (const g of grips) g.setAttribute('aria-valuenow', String(input.offsetHeight));
 
 /* ── Pasek „Zamaskowano" (chipy z ikonami, licznik, kategorie) ── */
 

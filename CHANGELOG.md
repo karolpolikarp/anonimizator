@@ -13,6 +13,10 @@
   `[VIN]`, `[IP]`, `[MAC]`, `[TOKEN]` były renderowane jako zwykły tekst — teraz dostają
   kolorowy znacznik kategorii „Identyfikatory" (jak PESEL/NIP) wraz z tooltipem metody wykrycia.
   Przyczyna: brak tych typów w `MASK_TOKEN_RE`.
+- **Intuicyjniejsza zmiana wysokości okien.** Drobny natywny trójkącik w rogu okna źródła
+  zastąpiony widocznym, symetrycznym uchwytem u dołu OBU okien (źródła i wyniku). Przeciągnięcie
+  dowolnego z nich zmienia wysokość obu równocześnie; działa myszą, dotykiem i klawiaturą
+  (strzałki ↑ ↓), a dwuklik przywraca wysokość domyślną. Wyraźny stan hover i podpowiedź.
 - **Lepsze wykorzystanie przestrzeni panelu „Co maskować".** Cztery małe kategorie
   (Kontakt, Finanse, Adres i czas, Dane osobowe) stoją teraz obok siebie w jednym wspólnym
   pasie, zamiast czterech osobnych, w większości pustych rzędów. Kafelki utrzymują jednolitą

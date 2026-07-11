@@ -368,9 +368,9 @@ select.field { font-family: "Segoe UI", system-ui, sans-serif; line-height: norm
   padding: 13px 14px 13px 8px;
   font: 400 14px/1.6 var(--mono);
   color: var(--text);
-  /* RÓWNE okna źródła i wyniku — ta sama wysokość (ta sama reguła), scroll wewnątrz.
-     Synchronizację przewijania robi main.ts. Wysokość umiarkowana (nie zajmuje całego ekranu). */
-  height: clamp(280px, 42vh, 500px);
+  /* RÓWNE okna źródła i wyniku — ta sama wysokość (wspólna zmienna --ed-h ustawiana przez uchwyt),
+     scroll wewnątrz. Domyślnie umiarkowana wysokość (nie zajmuje całego ekranu). */
+  height: var(--ed-h, clamp(280px, 42vh, 500px));
   overflow-y: auto;
   word-wrap: break-word;
 }
@@ -378,15 +378,31 @@ select.field { font-family: "Segoe UI", system-ui, sans-serif; line-height: norm
 .cl .no { text-align: right; color: var(--mut-2); user-select: none; font-size: 12px; padding-top: 2px; }
 .cl > span:last-child { white-space: pre-wrap; min-width: 0; }
 
-/* textarea źródła — ta sama anatomia co .editor, ale edytowalna. resize: vertical daje uchwyt
-   do rozszerzania; wysokość okna wyniku podąża za nim (ResizeObserver w main.ts), więc oba okna
-   rosną i maleją równocześnie i równo. */
+/* textarea źródła — ta sama anatomia co .editor, ale edytowalna. Natywny uchwyt wyłączony
+   (resize: none) — zastępuje go widoczny, symetryczny uchwyt .ed-grip u dołu obu okien, który
+   zmienia wspólną --ed-h, więc oba okna rosną i maleją równocześnie i równo. */
 textarea.editor-ta {
-  width: 100%; resize: vertical;
-  min-height: clamp(280px, 42vh, 500px);
+  width: 100%; resize: none;
+  min-height: 220px;
   padding: 13px 14px;
   overflow-y: auto;
 }
+
+/* Uchwyt zmiany wysokości okien — czytelny „grabber" u dołu każdego okna (źródła i wyniku).
+   Przeciąganie dowolnego z nich zmienia wysokość obu. Duże pole trafienia + wyraźny stan hover. */
+.ed-grip {
+  height: 18px; margin-top: 5px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: ns-resize; border-radius: 8px; touch-action: none;
+  transition: background .12s ease;
+}
+.ed-grip:hover, .ed-grip:focus-visible { background: var(--acc-soft); outline: none; }
+.ed-grip-bar {
+  width: 44px; height: 4px; border-radius: 999px;
+  background: var(--line-2); transition: background .12s ease, width .12s ease;
+}
+.ed-grip:hover .ed-grip-bar, .ed-grip:focus-visible .ed-grip-bar { background: var(--acc-line); width: 56px; }
+body.ed-resizing, body.ed-resizing * { cursor: ns-resize !important; user-select: none !important; }
 textarea.editor-ta:focus {
   outline: none;
   border-color: var(--acc-line);
