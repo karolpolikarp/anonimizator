@@ -1,5 +1,22 @@
 # Changelog
 
+## v0.43.0 — 2026-07-11
+
+**Rozszerzenie słownika nazwisk — wyższy recall edycji „czysty HTML", bez AI, bez launchera.**
+Warstwa deterministyczna (jeden plik, `file://`, zero instalacji) łapie teraz ~900 dodatkowych
+najczęstszych nazwisk BEZ sufiksu `-ski/-cki/-icz/-czyk` (te i tak łapie morfologia) — w tym częste
+nazwiska obce (ukraińskie, niemieckie, wietnamskie), coraz realniejsze w dzisiejszej Polsce.
+
+- **Źródło:** rejestr PESEL osób żyjących (dane.gov.pl, 2023, licencja **CC0**).
+- **Kuracja precyzja > recall:** odsiew homonimów wyrazów pospolitych (filtr listy częstości korpusu)
+  + wieloagentowa klasyfikacja nazwisko/wyraz. Homonimy typu „górka/zięba/żurek/bednarz" świadomie
+  pominięte — łapie je warstwa kontekstowa (imię obok / „Pan"). Zero nowego nadmaskowania.
+- **Wynik (benchmark):** recall rdzenia 89,7% → 91,8% (kategoria `osoby-rzadkie-ner` 0% → 21%),
+  **precyzja 99,0% bez zmian**. Plik edycji „urząd" nadal ~1,83 MB (fosa single-HTML zachowana).
+- Nowa kategoria benchmarku `osoby-slownik` (strażnik słownika) + bramka regresji CI na nią.
+
+Rdzeń `anonimizator` 0.24.0 → 0.25.0.
+
 ## v0.42.0 — 2026-07-11
 
 **Utwardzenie warstwy NER w przeglądarce (ONNX + transformers.js) — precyzyjniej, bez Dockera.**

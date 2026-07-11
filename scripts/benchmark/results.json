@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-07-10T22:52:06.156Z",
+  "generatedAt": "2026-07-11T08:43:34.527Z",
   "seed": 20260704,
-  "coreVersion": "0.24.0",
-  "casesTotal": 193,
-  "mustMaskTotal": 184,
-  "mustKeepTotal": 203,
+  "coreVersion": "0.25.0",
+  "casesTotal": 203,
+  "mustMaskTotal": 194,
+  "mustKeepTotal": 213,
   "skippedLayers": [
     {
       "name": "core+spacy",
@@ -21,16 +21,16 @@
     {
       "name": "T0+T1 core",
       "desc": "redactPII() — regex + sumy kontrolne + słownik (in-process, offline)",
-      "elapsedMs": 12,
+      "elapsedMs": 14,
       "changedVsCore": null,
-      "recall": 0.8967391304347826,
-      "precision": 0.9901477832512315,
-      "f1": 0.9411314008428042,
+      "recall": 0.9226804123711341,
+      "precision": 0.9906103286384976,
+      "f1": 0.9554394707883785,
       "agg": {
-        "maskTotal": 184,
-        "maskHit": 165,
-        "keepTotal": 203,
-        "keepHit": 201
+        "maskTotal": 194,
+        "maskHit": 179,
+        "keepTotal": 213,
+        "keepHit": 211
       },
       "perCategory": {
         "osoby-podstawowe": {
@@ -79,13 +79,22 @@
           "keepHit": 56
         },
         "osoby-rzadkie-ner": {
-          "recall": 0,
+          "recall": 0.21052631578947367,
           "precision": 1,
-          "f1": 0,
+          "f1": 0.34782608695652173,
           "maskTotal": 19,
-          "maskHit": 0,
+          "maskHit": 4,
           "keepTotal": 19,
           "keepHit": 19
+        },
+        "osoby-slownik": {
+          "recall": 1,
+          "precision": 1,
+          "f1": 1,
+          "maskTotal": 10,
+          "maskHit": 10,
+          "keepTotal": 10,
+          "keepHit": 10
         }
       },
       "failures": [
@@ -170,16 +179,6 @@
           "redacted": "reklamację złożył wczoraj Müller osobiście"
         },
         {
-          "id": "os-rn-07",
-          "category": "osoby-rzadkie-ner",
-          "text": "umowę parafował Nguyen dzień wcześniej",
-          "leaked": [
-            "Nguyen"
-          ],
-          "eaten": [],
-          "redacted": "umowę parafował Nguyen dzień wcześniej"
-        },
-        {
           "id": "os-rn-08",
           "category": "osoby-rzadkie-ner",
           "text": "protokół podpisał Kovač w obecności świadka",
@@ -210,16 +209,6 @@
           "redacted": "pełnomocnikiem powoda był mecenas Schmidt"
         },
         {
-          "id": "os-rn-11",
-          "category": "osoby-rzadkie-ner",
-          "text": "sprawę Pytlaka odroczono do przyszłego miesiąca",
-          "leaked": [
-            "Pytlaka"
-          ],
-          "eaten": [],
-          "redacted": "sprawę Pytlaka odroczono do przyszłego miesiąca"
-        },
-        {
           "id": "os-rn-12",
           "category": "osoby-rzadkie-ner",
           "text": "zeznania Habaja spisano na komisariacie",
@@ -228,16 +217,6 @@
           ],
           "eaten": [],
           "redacted": "zeznania Habaja spisano na komisariacie"
-        },
-        {
-          "id": "os-rn-13",
-          "category": "osoby-rzadkie-ner",
-          "text": "wniosek Momota oddalono w pierwszej instancji",
-          "leaked": [
-            "Momota"
-          ],
-          "eaten": [],
-          "redacted": "wniosek Momota oddalono w pierwszej instancji"
         },
         {
           "id": "os-rn-14",
@@ -258,16 +237,6 @@
           ],
           "eaten": [],
           "redacted": "pismo od Bździucha wpłynęło z opóźnieniem"
-        },
-        {
-          "id": "os-rn-16",
-          "category": "osoby-rzadkie-ner",
-          "text": "opinię prawną wydał Petrov zeszłego tygodnia",
-          "leaked": [
-            "Petrov"
-          ],
-          "eaten": [],
-          "redacted": "opinię prawną wydał Petrov zeszłego tygodnia"
         },
         {
           "id": "os-rn-17",
@@ -1219,9 +1188,7 @@
         },
         {
           "id": "os-rn-07",
-          "leaked": [
-            "Nguyen"
-          ],
+          "leaked": [],
           "eaten": []
         },
         {
@@ -1247,9 +1214,7 @@
         },
         {
           "id": "os-rn-11",
-          "leaked": [
-            "Pytlaka"
-          ],
+          "leaked": [],
           "eaten": []
         },
         {
@@ -1261,9 +1226,7 @@
         },
         {
           "id": "os-rn-13",
-          "leaked": [
-            "Momota"
-          ],
+          "leaked": [],
           "eaten": []
         },
         {
@@ -1282,9 +1245,7 @@
         },
         {
           "id": "os-rn-16",
-          "leaked": [
-            "Petrov"
-          ],
+          "leaked": [],
           "eaten": []
         },
         {
@@ -1307,22 +1268,72 @@
             "Rossi"
           ],
           "eaten": []
+        },
+        {
+          "id": "os-sl-01",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-sl-02",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-sl-03",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-sl-04",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-sl-05",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-sl-06",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-sl-07",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-sl-08",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-sl-09",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-sl-10",
+          "leaked": [],
+          "eaten": []
         }
       ]
     },
     {
       "name": "core+onnx (Node)",
       "desc": "redactPII() + FastPDN ONNX int8 (q8) w Node przez @huggingface/transformers — bez Dockera",
-      "elapsedMs": 1010,
-      "changedVsCore": 15,
-      "recall": 0.9782608695652174,
-      "precision": 0.9901477832512315,
-      "f1": 0.9841684347968009,
+      "elapsedMs": 1106,
+      "changedVsCore": 11,
+      "recall": 0.979381443298969,
+      "precision": 0.9906103286384976,
+      "f1": 0.984963883838632,
       "agg": {
-        "maskTotal": 184,
-        "maskHit": 180,
-        "keepTotal": 203,
-        "keepHit": 201
+        "maskTotal": 194,
+        "maskHit": 190,
+        "keepTotal": 213,
+        "keepHit": 211
       },
       "perCategory": {
         "osoby-podstawowe": {
@@ -1378,6 +1389,15 @@
           "maskHit": 15,
           "keepTotal": 19,
           "keepHit": 19
+        },
+        "osoby-slownik": {
+          "recall": 1,
+          "precision": 1,
+          "f1": 1,
+          "maskTotal": 10,
+          "maskHit": 10,
+          "keepTotal": 10,
+          "keepHit": 10
         }
       },
       "failures": [
@@ -2417,6 +2437,56 @@
         },
         {
           "id": "os-rn-19",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-sl-01",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-sl-02",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-sl-03",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-sl-04",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-sl-05",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-sl-06",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-sl-07",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-sl-08",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-sl-09",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-sl-10",
           "leaked": [],
           "eaten": []
         }

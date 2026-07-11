@@ -228,6 +228,9 @@ export function buildDataset() {
   // osoby-rzadkie-ner: nazwiska, których rdzeń deterministyczny NIE łapie (brak wyzwalacza,
   // brak sufiksu -ski/-cki/-icz/-czyk, nazwiska obce) — tu warstwa NER ma dać przewagę recall.
   const osrn = (t, mm, mk) => add('osoby-rzadkie-ner', 'os-rn', t, mm, mk);
+  // osoby-slownik: częste nazwiska z rozszerzonego słownika PESEL (bez sufiksu -ski/-cki/-icz/-czyk),
+  // samodzielnie/w odmianie, bez wyzwalacza — rdzeń deterministyczny łapie je BEZ AI (strażnik słownika).
+  const osd = (t, mm, mk) => add('osoby-slownik', 'os-sl', t, mm, mk);
   const str = (t, mm, mk) => add('strukturalne', 'str', t, mm, mk);
   const neg = (t, mk) => add('negatywy', 'neg', t, [], mk);
 
@@ -507,6 +510,20 @@ export function buildDataset() {
   osrn('umowę serwisową parafował Horvat osobiście', ['Horvat'], ['umowę']);
   osrn('reklamację rozpatrzył Weber w dwa dni', ['Weber'], ['reklamację']);
   osrn('kontrakt firmował Rossi przed notariuszem', ['Rossi'], ['kontrakt']);
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // OSOBY-SLOWNIK — częste nazwiska z rozszerzonego słownika PESEL (deterministyka, bez AI)
+  // ──────────────────────────────────────────────────────────────────────────
+  osd('Sprawę Szczepaniaka umorzono w drugiej instancji.', ['Szczepaniaka'], ['umorzono']);
+  osd('Zeznania Madeja potwierdzili sąsiedzi.', ['Madeja'], ['sąsiedzi']);
+  osd('Wniosek Michalika rozpatrzono odmownie.', ['Michalika'], ['odmownie']);
+  osd('list od Ratajczaka leżał tydzień na biurku', ['Ratajczaka'], ['biurku']);
+  osd('pismo od Grzelaka wpłynęło z opóźnieniem', ['Grzelaka'], ['opóźnieniem']);
+  osd('opinię sporządził biegły Kujawa w terminie', ['Kujawa'], ['opinię']);
+  osd('reklamację złożył wczoraj Nguyen osobiście', ['Nguyen'], ['reklamację']);
+  osd('umowę serwisową parafował Melnyk', ['Melnyk'], ['umowę']);
+  osd('protokół podpisał mecenas Schulz', ['Schulz'], ['protokół']);
+  osd('do akt dołączono zeznania świadka Petrova', ['Petrova'], ['akt']);
 
   // ── Kontrola spójności zbioru ──
   const ids = new Set();

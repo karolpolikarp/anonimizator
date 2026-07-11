@@ -259,6 +259,7 @@ async function main() {
     'osoby-odmiana': 'os-odmiana',
     'osoby-rzadkie': 'os-rzadkie',
     'osoby-rzadkie-ner': 'os-rz-ner',
+    'osoby-slownik': 'os-slownik',
     strukturalne: 'struktur.',
     negatywy: 'negatywy',
   };
@@ -306,7 +307,7 @@ async function main() {
       violations.push('brak warstwy rdzenia (core) w wynikach');
     } else {
       // rdzeń MUSI utrzymać 100% recall tam, gdzie działa deterministycznie
-      for (const cat of ['osoby-podstawowe', 'osoby-odmiana', 'osoby-rzadkie', 'strukturalne']) {
+      for (const cat of ['osoby-podstawowe', 'osoby-odmiana', 'osoby-rzadkie', 'osoby-slownik', 'strukturalne']) {
         const r = core.perCategory[cat]?.recall;
         if (r !== null && r !== undefined && r < 1) violations.push(`recall[${cat}] = ${fmtPct(r)} < 100% (regresja detekcji)`);
       }
