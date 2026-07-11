@@ -34,6 +34,12 @@ export type PiiType =
   | 'DOWOD'
   | 'PASZPORT'
   | 'KRS'
+  | 'PRAWO-JAZDY'
+  | 'NR-REJESTRACYJNY'
+  | 'VIN'
+  | 'IP'
+  | 'MAC'
+  | 'TOKEN'
   | 'ZNAK-SPRAWY'
   | 'KOD-POCZTOWY'
   | 'DATA-UR'
@@ -93,6 +99,12 @@ const MASK: Record<PiiType, string> = {
   DOWOD: '[NR-DOWODU]',
   PASZPORT: '[NR-PASZPORTU]',
   KRS: '[KRS]',
+  'PRAWO-JAZDY': '[PRAWO-JAZDY]',
+  'NR-REJESTRACYJNY': '[NR-REJESTRACYJNY]',
+  VIN: '[VIN]',
+  IP: '[IP]',
+  MAC: '[MAC]',
+  TOKEN: '[TOKEN]',
   'ZNAK-SPRAWY': '[ZNAK-SPRAWY]',
   'KOD-POCZTOWY': '[KOD-POCZTOWY]',
   'DATA-UR': '[DATA-URODZENIA]',
@@ -575,6 +587,71 @@ export function redactPII(input: string, options?: RedactOptions): RedactionResu
     );
   }
 
+  // 1a) IDENTYFIKATORY TECHNICZNE / DOKUMENTY (strukturalne, wysoka precyzja). Biegną WCZEŚNIE,
+  //     by zająć swoje charakterystyczne wzorce, zanim krótsze detektory cyfrowe je „odgryzą".
+
+  // TOKEN (JWT): eyJ<base64url>.<base64url>.<base64url>. „eyJ" = base64 z „{\"" — znikome FP,
+  // a token może dawać dostęp, więc maskujemy w całości.
+  if (on('TOKEN')) {
+    text = text.replace(/\beyJ[A-Za-z0-9_-]{5,}\.[A-Za-z0-9_-]{5,}\.[A-Za-z0-9_-]{2,}/g, () => {
+      bump('TOKEN');
+      return M.TOKEN;
+    });
+  }
+
+  // MAC: 6 par hex po „:"/„-". MUSI biec PRZED IPv6 (MAC pasuje do wzorca grup hex IPv6).
+  if (on('MAC')) {
+    text = text.replace(/\b(?:[0-9A-Fa-f]{2}[:-]){5}[0-9A-Fa-f]{2}\b/g, () => {
+      bump('MAC');
+      return M.MAC;
+    });
+  }
+
+  // IP: IPv6 (grupy hex, także skrócone „::") PRZED IPv4 (oktety 0–255). Jeden typ dla obu wersji.
+  if (on('IP')) {
+    const H = '[0-9A-Fa-f]{1,4}';
+    const IPV6 =
+      `(?:${H}:){7}${H}|(?:${H}:){1,7}:|(?:${H}:){1,6}:${H}|(?:${H}:){1,5}(?::${H}){1,2}|` +
+      `(?:${H}:){1,4}(?::${H}){1,3}|(?:${H}:){1,3}(?::${H}){1,4}|(?:${H}:){1,2}(?::${H}){1,5}|` +
+      `${H}:(?:(?::${H}){1,6})|:(?:(?::${H}){1,7}|:)`;
+    text = text.replace(new RegExp(`(?<![:.\\w])(?:${IPV6})(?![:.\\w])`, 'g'), (m) => {
+      bump('IP');
+      return M.IP;
+    });
+    // IPv4: 4 oktety 0–255. Nie po „art./poz." ani po „wersja/ver./v" (numer wersji ≠ IP).
+    text = text.replace(
+      /(?<![\d.])(?:(?:25[0-5]|2[0-4]\d|1?\d?\d)\.){3}(?:25[0-5]|2[0-4]\d|1?\d?\d)(?![\d.])/g,
+      (m, offset: number) => {
+        if (precededByLegalRef(text, offset)) return m;
+        const before = text.slice(Math.max(0, offset - 12), offset).toLowerCase();
+        if (/(?:wersj\w*|\bver\.?|\bv\.?)\s*$/.test(before)) return m; // numer wersji, nie IP
+        bump('IP');
+        return M.IP;
+      },
+    );
+  }
+
+  // VIN: 17 znaków, charset bez I/O/Q. Z kontekstem („VIN"/„nadwozia") ZAWSZE; bez kontekstu tylko
+  // gdy układ jest wyraźnie VIN-owy (WIELKIE litery + ≥4 cyfry + ≥3 litery) — inaczej hash/kod.
+  if (on('VIN')) {
+    text = text.replace(
+      /\b((?:vin|nr\s+vin|numer\s+vin|nr\s+nadwozia|numer\s+nadwozia)[\s:.=-]*)([A-HJ-NPR-Za-hj-npr-z0-9]{17})\b/gi,
+      (_m, ctx: string) => {
+        bump('VIN');
+        return `${ctx}${M.VIN}`;
+      },
+    );
+    text = text.replace(/\b[A-HJ-NPR-Z0-9]{17}\b/g, (m) => {
+      const digits = (m.match(/\d/g) || []).length;
+      const letters = (m.match(/[A-Z]/g) || []).length;
+      if (digits >= 4 && letters >= 3) {
+        bump('VIN');
+        return M.VIN;
+      }
+      return m;
+    });
+  }
+
   // 1b) POLA FORMULARZA — etykieta w linii, wartość w tej samej („Nazwisko: X") lub NASTĘPNEJ
   // („Nazwisko\nWILCZYŃSKI"). Kotwica strukturalna o wysokiej precyzji; łapie też WERSALIKI,
   // których reguły nazwiskowe (wymagają Kapitalizacji) nie widzą. Biegnie wcześnie, więc
@@ -680,6 +757,16 @@ export function redactPII(input: string, options?: RedactOptions): RedactionResu
         return `${kw}${sep}${M['NR-KONTA']}`;
       },
     );
+    // (b) z etykietą + wartość w formacie IBAN (2 litery + 2 cyfry + reszta) — maskuj NAWET bez
+    //     poprawnej sumy mod-97 (etykieta „konto/rachunek/IBAN" to mocny sygnał; numer bywa fikcyjny).
+    //     Łapie też wartość w następnej linii („Konto:\nPL12 1020 5558 …").
+    text = text.replace(
+      /\b((?:konto|konta|rachunek|rachunku|nr konta|numer konta|iban)(?:\s+[A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźż]{3,})?)([\s:=.-]+)([A-Z]{2}\d{2}(?:[ ]?[A-Z0-9]){11,30})(?![A-Z0-9])/gi,
+      (_m, kw: string, sep: string) => {
+        bump('NR-KONTA');
+        return `${kw}${sep}${M['NR-KONTA']}`;
+      },
+    );
   }
 
   // 4) PESEL — 11 cyfr + suma kontrolna, nie po „art./poz.".
@@ -692,6 +779,16 @@ export function redactPII(input: string, options?: RedactOptions): RedactionResu
       }
       return m;
     });
+    // (b) z SILNĄ etykietą „PESEL" — maskuj 11 cyfr NAWET bez poprawnej sumy (numer bywa celowo
+    //     zmieniony/z literówką; etykieta to mocny sygnał). Słowo zostaje. „[\s:=.-]*" łapie też
+    //     wartość w NASTĘPNEJ linii („PESEL:\n90010112344").
+    text = text.replace(
+      /\b(pesel(?:\s+[A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźż]{3,})?)([\s:=.-]+)(\d{11})(?![\d])/gi,
+      (_m, kw: string, sep: string) => {
+        bump('PESEL');
+        return `${kw}${sep}${M.PESEL}`;
+      },
+    );
   }
 
   // 5) NIP — separator MYŚLNIK LUB SPACJA (XXX-XXX-XX-XX, XXX XX XX XXX itd.) lub 10 cyfr ciągiem,
@@ -709,6 +806,15 @@ export function redactPII(input: string, options?: RedactOptions): RedactionResu
         return m;
       },
     );
+    // (b) z SILNĄ etykietą „NIP" (opcjonalnie + kwalifikator: „NIP działalności/firmy") — maskuj
+    //     10 cyfr (dowolny separator) NAWET bez poprawnej sumy.
+    text = text.replace(
+      /\b(nip(?:\s+[A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźż]{3,})?)([\s:=.-]+)(\d{3}[- ]\d{3}[- ]\d{2}[- ]\d{2}|\d{3}[- ]\d{2}[- ]\d{2}[- ]\d{3}|\d{10})(?![\d])/gi,
+      (_m, kw: string, sep: string) => {
+        bump('NIP');
+        return `${kw}${sep}${M.NIP}`;
+      },
+    );
   }
 
   // 6) REGON 14-cyfrowy (jednoznaczny — nie myli się z telefonem/PESEL) + suma kontrolna.
@@ -721,15 +827,14 @@ export function redactPII(input: string, options?: RedactOptions): RedactionResu
       return m;
     });
 
-    // 7) REGON 9-cyfrowy — TYLKO zakotwiczony słowem „REGON" (bez tego 9 cyfr to częściej telefon).
+    // 7) REGON z etykietą „REGON" — 9 lub 14 cyfr. Maskuj NAWET bez poprawnej sumy (etykieta to
+    //    mocny sygnał; wcześniej 9-cyfrowy REGON z literówką/na osobnej linii lądował w telefonie).
+    //    Słowo zostaje. „[\s:=.-]*" łapie też wartość w następnej linii („REGON:\n123456784").
     text = text.replace(
-      /\b(regon)\b([\s:.-]*)(\d{9})(?![\d])/gi,
-      (m, kw, sep, num) => {
-        if (isValidRegon9(num)) {
-          bump('REGON');
-          return `${kw}${sep}${M.REGON}`;
-        }
-        return m;
+      /\b(regon(?:\s+[A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźż]{3,})?)([\s:=.-]+)(\d{14}|\d{9})(?![\d])/gi,
+      (_m, kw: string, sep: string) => {
+        bump('REGON');
+        return `${kw}${sep}${M.REGON}`;
       },
     );
   }
@@ -743,9 +848,10 @@ export function redactPII(input: string, options?: RedactOptions): RedactionResu
   if (on('TELEFON')) {
     const hasNineDigits = (s: string) => s.replace(/\D/g, '').length === 9;
 
-    // (a) prefiks +48/0048 — maskujemy RAZEM z prefiksem.
+    // (a) prefiks +48/0048 — maskujemy RAZEM z prefiksem. Separatory obejmują też NAWIASY
+    //     wokół kierunkowego: „+48 (501) 234-567" (realny format — wcześniej wyciekał).
     text = text.replace(
-      /(?<![\d])(?:\+|00)\s?48[\s-]?(?:\d[\s-]?){8}\d(?![\d])/g,
+      /(?<![\d])(?:\+|00)[\s]?48(?:[\s\-()]{0,3}\d){9}(?![\d])/g,
       (m, offset: number) => {
         if (precededByLegalRef(text, offset)) return m;
         bump('TELEFON');
@@ -753,9 +859,10 @@ export function redactPII(input: string, options?: RedactOptions): RedactionResu
       },
     );
 
-    // (b) słowo kontekstowe + 9 cyfr (zachowujemy słowo, maskujemy numer).
+    // (b) słowo kontekstowe + 9 cyfr (zachowujemy słowo, maskujemy numer). Numer może zaczynać się
+    //     od „(" i mieć nawiasy/myślniki: „tel. (22) 621-02-03".
     text = text.replace(
-      /\b(tel\.?|telefon(?:u|em)?|kom\.?|komórk[aiwy]|fax|faks|nr tel\.?)([\s:.-]*)((?:\d[\s-]?){8}\d)(?![\d])/gi,
+      /\b(tel\.?|telefon(?:u|em)?|kom\.?|komórk[aiwy]|fax|faks|nr tel\.?)([\s:.=-]*)((?:[\s\-()]{0,3}\d){9})(?![\d])/gi,
       (m, kw: string, sep: string, num: string) => {
         if (!hasNineDigits(num)) return m;
         bump('TELEFON');
@@ -832,6 +939,30 @@ export function redactPII(input: string, options?: RedactOptions): RedactionResu
       bump('KRS');
       return `KRS${sep}${M.KRS}`;
     });
+  }
+
+  // 9d) PRAWO JAZDY — TYLKO z kontekstem („prawo jazdy"/„nr prawa jazdy"), bo polski numer blankietu
+  //     jest zmienny; kontekst tnie FP. Wartość musi zawierać cyfrę (żeby nie zjeść „kategorii B").
+  if (on('PRAWO-JAZDY')) {
+    text = text.replace(
+      /\b((?:prawo\s+jazdy|prawa\s+jazdy|nr\s+prawa\s+jazdy|numer\s+prawa\s+jazdy)(?:\s+(?:nr\.?|numer|seria))*[\s:=.-]*)((?=[A-Za-z0-9]*\d)[A-Za-z0-9]{5,15})\b/gi,
+      (_m, ctx: string) => {
+        bump('PRAWO-JAZDY');
+        return `${ctx}${M['PRAWO-JAZDY']}`;
+      },
+    );
+  }
+
+  // 9e) NR REJESTRACYJNY (tablica) — z kontekstem („rejestracyjn"/„tablic"/„nr rej") + polski format
+  //     (2–3 litery + 4–5 znaków alfanum.). Kontekst tnie FP na zwykłych kodach.
+  if (on('NR-REJESTRACYJNY')) {
+    text = text.replace(
+      /\b((?:nr\s+rej\w*|numer\s+rej\w*|rejestracyjn\w*|tablic\w*)(?:\s+(?:nr\.?|numer|pojazdu|rej\w*))*[\s:=.-]*)([A-Z]{2,3}[\s-]?[A-Z0-9]{4,5})\b/gi,
+      (_m, ctx: string) => {
+        bump('NR-REJESTRACYJNY');
+        return `${ctx}${M['NR-REJESTRACYJNY']}`;
+      },
+    );
   }
 
   // 10) KOD POCZTOWY — XX-XXX, nie po „art./§" (żeby nie zjeść zakresu „art. 12-345").
@@ -1190,6 +1321,12 @@ const HUMAN_LABEL: Record<PiiType, string> = {
   DOWOD: 'numer dowodu',
   PASZPORT: 'numer paszportu',
   KRS: 'numer KRS',
+  'PRAWO-JAZDY': 'nr prawa jazdy',
+  'NR-REJESTRACYJNY': 'nr rejestracyjny',
+  VIN: 'VIN',
+  IP: 'adres IP',
+  MAC: 'adres MAC',
+  TOKEN: 'token',
   'ZNAK-SPRAWY': 'znak sprawy',
   'KOD-POCZTOWY': 'kod pocztowy',
   'DATA-UR': 'datę urodzenia',

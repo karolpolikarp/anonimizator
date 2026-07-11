@@ -452,8 +452,20 @@ export function buildDataset() {
   // ciągi cyfr ze ZŁĄ sumą kontrolną — muszą zostać nietknięte
   neg('Numer 44051401350 nie przeszedł walidacji w systemie.', ['44051401350']);
   neg('Ciąg 1234563210 to przykładowy identyfikator testowy.', ['1234563210']);
-  neg('REGON 123456784 zawiera błąd i został odrzucony.', ['123456784']);
-  neg(`Rachunek ${IBAN_BAD} ma błędną sumę kontrolną.`, [IBAN_BAD]);
+  // v0.44 (pkt 3): przy SILNEJ etykiecie („REGON"/„Rachunek") maskujemy mimo złej sumy kontrolnej
+  // (numer bywa realny z literówką). Bez etykiety bad-checksum dalej zostaje (patrz negatywy wyżej).
+  str('W formularzu wpisano REGON 123456784 z błędem.', ['123456784'], ['formularzu']);
+  str(`Podano rachunek ${IBAN_BAD} (błędna suma).`, [IBAN_BAD], ['błędna']);
+  // v0.44: nowe typy PII (token JWT, IP v4/v6, MAC, VIN, prawo jazdy, nr rejestracyjny)
+  str('Token: eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ4In0.abc-DEF_1', ['eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ4In0.abc-DEF_1'], ['Token']);
+  str('Adres IP serwera: 192.168.1.20 w sieci lokalnej.', ['192.168.1.20'], ['serwera']);
+  str('IPv6: 2001:db8::8a2e:370:7334 przydzielony automatycznie.', ['2001:db8::8a2e:370:7334'], ['automatycznie']);
+  str('MAC karty sieciowej 00:1A:2B:3C:4D:5E jest unikalny.', ['00:1A:2B:3C:4D:5E'], ['unikalny']);
+  str('Numer VIN WAUZZZ8V4JA123456 widnieje w dowodzie rejestracyjnym.', ['WAUZZZ8V4JA123456'], ['dowodzie']);
+  str('Prawo jazdy nr KR1234567 wydane w 2020 roku.', ['KR1234567'], ['wydane']);
+  str('Pojazd o nr rejestracyjnym WI1234K, marka Audi.', ['WI1234K'], ['Audi']);
+  // precyzja: numer wersji oprogramowania to NIE adres IP
+  neg('Aktualizacja do wersji 1.2.3.4 usuwa błędy krytyczne.', ['1.2.3.4']);
   // dowód BEZ kontekstu wymaga poprawnej sumy kontrolnej (v0.30) — ABA300001 ma złą sumę,
   // więc (jak sygnatura/kod) pozostaje; realny dowód z kontekstem „dowód…" maskuje gałąź (a)
   neg('Seria ABA300001 nie jest poprawnym numerem dowodu.', ['ABA300001']);

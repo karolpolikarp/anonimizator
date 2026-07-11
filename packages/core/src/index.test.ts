@@ -724,10 +724,71 @@ test('nazwisko słownikowe z myślnikiem (Nowak-Schmidt) maskowane', () => {
 });
 
 // ── Regresje z benchmarku (docs/BENCHMARK.md, 2026-07-04) ──
-test('REGON ze złą sumą NIE jest zjadany przez detektor telefonu', () => {
+test('REGON ze złą sumą przy etykiecie „REGON" → [REGON] mimo złej sumy (nie telefon)', () => {
+  // v0.44: silna etykieta „REGON" maskuje mimo złej sumy kontrolnej (i nie ląduje w telefonie).
   const r = redactPII('Firma o REGON 123456784 w rejestrze');
   expect(r.redacted.includes('[TELEFON]')).toBe(false);
-  expect(r.redacted).toContain('123456784');
+  expect(r.redacted).toContain('[REGON]');
+  expect(r.redacted).not.toContain('123456784');
+});
+
+// ── v0.44: telefon w nawiasach + maskowanie ID przy silnej etykiecie mimo złej sumy ──
+test('telefon w nawiasach z prefiksem +48 maskowany', () => {
+  expect(redactPII('tel. +48 (501) 234-567').redacted).toBe('tel. [TELEFON]');
+});
+test('telefon w nawiasach z kontekstem (bez +48)', () => {
+  const r = redactPII('tel. (22) 621-02-03 zadzwoń');
+  expect(r.redacted).toContain('[TELEFON]');
+  expect(r.redacted).not.toContain('621');
+});
+test('PESEL/NIP/konto ze złą sumą przy silnej etykiecie (też z kwalifikatorem) maskowane', () => {
+  expect(redactPII('PESEL 90010112344').redacted).toBe('PESEL [PESEL]');
+  expect(redactPII('PESEL wnioskodawcy: 90010112344').redacted).toContain('[PESEL]');
+  expect(redactPII('NIP 9452176998').redacted).toBe('NIP [NIP]');
+  expect(redactPII('NIP działalności:\n9452176998').redacted).not.toContain('9452176998');
+  const konto = redactPII('Konto:\nPL12 1020 5558 1111 2222 3333 4444');
+  expect(konto.redacted).toContain('[NR-KONTA]');
+  expect(konto.redacted).not.toContain('PL12');
+});
+test('PESEL bez etykiety i ze złą sumą NIE jest maskowany (precyzja)', () => {
+  expect(redactPII('Wartość 90010112344 w logu importu').redacted).toContain('90010112344');
+});
+
+// ── v0.44: nowe typy PII ──
+test('TOKEN (JWT) maskowany', () => {
+  const jwt = 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjMifQ.abc-DEF_123';
+  const r = redactPII('Authorization: ' + jwt);
+  expect(r.redacted).toContain('[TOKEN]');
+  expect(r.redacted).not.toContain('eyJ');
+});
+test('MAC maskowany (nie mylony z IPv6)', () => {
+  expect(redactPII('MAC: 00:1A:2B:3C:4D:5E').redacted).toBe('MAC: [MAC]');
+});
+test('IPv4 maskowany, ale numer wersji NIE (precyzja)', () => {
+  expect(redactPII('IP: 192.168.1.20').redacted).toBe('IP: [IP]');
+  expect(redactPII('wersja 1.2.3.4 aplikacji').redacted).toContain('1.2.3.4');
+});
+test('IPv6 maskowany', () => {
+  const r = redactPII('IPv6: 2001:db8::8a2e:370:7334');
+  expect(r.redacted).toContain('[IP]');
+  expect(r.redacted).not.toContain('8a2e');
+});
+test('VIN maskowany (kontekst i strukturalnie)', () => {
+  expect(redactPII('VIN: WAUZZZ8V4JA123456').redacted).toContain('[VIN]');
+  expect(redactPII('Nadwozie WAUZZZ8V4JA123456 sprawne').redacted).toContain('[VIN]');
+});
+test('prawo jazdy maskowane z kontekstem; „kategorii B" bez cyfry NIE', () => {
+  expect(redactPII('Prawo jazdy:\nKR1234567').redacted).toContain('[PRAWO-JAZDY]');
+  expect(redactPII('Prawo jazdy kategorii B').redacted).toContain('kategorii');
+});
+test('nr rejestracyjny maskowany z kontekstem', () => {
+  const r = redactPII('Nr rejestracyjny:\nWI1234K');
+  expect(r.redacted).toContain('[NR-REJESTRACYJNY]');
+  expect(r.redacted).not.toContain('WI1234K');
+});
+test('nowe typy respektują options.types (wyłączanie)', () => {
+  expect(redactPII('IP: 192.168.1.20', { types: [] }).redacted).toBe('IP: 192.168.1.20');
+  expect(redactPII('VIN: WAUZZZ8V4JA123456', { types: ['MAC'] }).redacted).toContain('WAUZZZ8V4JA123456');
 });
 test('„ur. DD.MM.RRRR" maskowane (trailing \\b po kropce nie działał)', () => {
   const r = redactPII('Powód, ur. 12.05.1985, wnosi o zapłatę');

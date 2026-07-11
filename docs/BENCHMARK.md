@@ -1,8 +1,8 @@
 # Benchmark anonimizacji — precision / recall
 
 - **Data uruchomienia:** 2026-07-11
-- **Wersja rdzenia (`anonimizator`):** 0.25.0
-- **Zbiór ewaluacyjny:** 203 syntetycznych zdań (deterministyczny, seed `20260704`), 194 elementów do zamaskowania (mustMask), 213 elementów do zachowania (mustKeep)
+- **Wersja rdzenia (`anonimizator`):** 0.26.0
+- **Zbiór ewaluacyjny:** 211 syntetycznych zdań (deterministyczny, seed `20260704`), 203 elementów do zamaskowania (mustMask), 221 elementów do zachowania (mustKeep)
 - **Reprodukcja:** `npm run build -w anonimizator && node scripts/benchmark/run.mjs`
 
 ## Metodologia
@@ -20,21 +20,20 @@ Wszystkie identyfikatory w zbiorze mają **poprawne sumy kontrolne** policzone w
 (PESEL, NIP, REGON, IBAN mod-97, nr dowodu), a negatywy zawierają m.in. ciągi o celowo
 **błędnych** sumach kontrolnych — silnik ma je zostawić w spokoju.
 
-Liczności kategorii: osoby-podstawowe — 23, osoby-odmiana — 32, osoby-rzadkie — 24, strukturalne — 40, negatywy — 55, osoby-rzadkie-ner — 19, osoby-slownik — 10.
+Liczności kategorii: osoby-podstawowe — 23, osoby-odmiana — 32, osoby-rzadkie — 24, strukturalne — 49, negatywy — 54, osoby-rzadkie-ner — 19, osoby-slownik — 10.
 
 ### Warstwy
 
 - **T0+T1 core** — redactPII() — regex + sumy kontrolne + słownik (in-process, offline)
-- **core+onnx (Node)** — redactPII() + FastPDN ONNX int8 (q8) w Node przez @huggingface/transformers — bez Dockera
 - **core+spacy** — POMINIĘTA: usługa `http://127.0.0.1:8090` niedostępna w chwili uruchomienia (health-check).
 - **core+fastpdn** — POMINIĘTA: usługa `http://127.0.0.1:8091` niedostępna w chwili uruchomienia (health-check).
+- **core+onnx (Node)** — POMINIĘTA: biblioteka @huggingface/transformers lub lokalny model ONNX niedostępne.
 
 ## Wyniki
 
 | Warstwa | Recall (łącznie) | Precision-proxy (łącznie) | F1 | Porażki (przypadki) | Czas | Wynik ≠ core |
 |---|---|---|---|---|---|---|
-| T0+T1 core | 92.3% (179/194) | 99.1% (211/213) | 95.5% | 17 | 0.0 s | — |
-| core+onnx (Node) | 97.9% (190/194) | 99.1% (211/213) | 98.5% | 6 | 1.1 s | 11 przyp. |
+| T0+T1 core | 92.6% (188/203) | 99.1% (219/221) | 95.7% | 17 | 0.0 s | — |
 
 F1 liczone jako średnia harmoniczna recall i precision-proxy (łącznie po wszystkich kategoriach
 z oboma rodzajami elementów; kategoria „negatywy" nie ma recall, więc nie wchodzi do składowej recall).
@@ -44,21 +43,18 @@ z oboma rodzajami elementów; kategoria „negatywy" nie ma recall, więc nie wc
 | Warstwa | osoby-podstawowe | osoby-odmiana | osoby-rzadkie | strukturalne | negatywy | osoby-rzadkie-ner | osoby-slownik |
 |---|---|---|---|---|---|---|---|
 | T0+T1 core | 100.0% | 100.0% | 100.0% | 100.0% | — | 21.1% | 100.0% |
-| core+onnx (Node) | 100.0% | 100.0% | 100.0% | 100.0% | — | 78.9% | 100.0% |
 
 ### F1 per kategoria
 
 | Warstwa | osoby-podstawowe | osoby-odmiana | osoby-rzadkie | strukturalne | negatywy | osoby-rzadkie-ner | osoby-slownik |
 |---|---|---|---|---|---|---|---|
 | T0+T1 core | 100.0% | 100.0% | 100.0% | 100.0% | — | 34.8% | 100.0% |
-| core+onnx (Node) | 100.0% | 100.0% | 100.0% | 100.0% | — | 88.2% | 100.0% |
 
 ### Precision-proxy per kategoria
 
 | Warstwa | osoby-podstawowe | osoby-odmiana | osoby-rzadkie | strukturalne | negatywy | osoby-rzadkie-ner | osoby-slownik |
 |---|---|---|---|---|---|---|---|
-| T0+T1 core | 100.0% | 100.0% | 100.0% | 100.0% | 96.6% | 100.0% | 100.0% |
-| core+onnx (Node) | 100.0% | 100.0% | 100.0% | 100.0% | 96.6% | 100.0% | 100.0% |
+| T0+T1 core | 100.0% | 100.0% | 100.0% | 100.0% | 96.5% | 100.0% | 100.0% |
 
 („—" = brak elementów danego rodzaju w kategorii, np. negatywy nie mają mustMask.)
 
@@ -90,21 +86,7 @@ Legenda: **przeszło** = element mustMask pozostał w wyniku (wyciek PII);
 **Nadmaskowania (zjedzono 2 elem. w 2 przypadkach):**
 
 - `neg-09` (negatywy): zjedzono „III CZP 12/23" — wynik: _Sygn. akt [ZNAK-SPRAWY] — uchwała siedmiu sędziów._
-- `neg-40` (negatywy): zjedzono „Tadeusz" — wynik: _Pan [IMIĘ I NAZWISKO] to najsłynniejsza polska epopeja narodowa._
-
-### core+onnx (Node) — 6 przypadków z porażką
-
-**Wycieki (przeszło 4 elem. w 4 przypadkach):**
-
-- `os-rn-03` (osoby-rzadkie-ner): przeszło „Gągały" — tekst: _zeznania Gągały spisano protokolarnie_
-- `os-rn-05` (osoby-rzadkie-ner): przeszło „Ciołka" — tekst: _do akt dołączono notatkę Ciołka z rozmowy_
-- `os-rn-14` (osoby-rzadkie-ner): przeszło „Cieciory" — tekst: _do akt dołączono notatkę Cieciory z narady_
-- `os-rn-18` (osoby-rzadkie-ner): przeszło „Weber" — tekst: _reklamację rozpatrzył Weber w dwa dni_
-
-**Nadmaskowania (zjedzono 2 elem. w 2 przypadkach):**
-
-- `neg-09` (negatywy): zjedzono „III CZP 12/23" — wynik: _Sygn. akt [ZNAK-SPRAWY] — uchwała siedmiu sędziów._
-- `neg-40` (negatywy): zjedzono „Tadeusz" — wynik: _Pan [IMIĘ I NAZWISKO] to najsłynniejsza polska epopeja narodowa._
+- `neg-39` (negatywy): zjedzono „Tadeusz" — wynik: _Pan [IMIĘ I NAZWISKO] to najsłynniejsza polska epopeja narodowa._
 
 ## Uwagi
 

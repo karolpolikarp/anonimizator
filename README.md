@@ -5,7 +5,8 @@
 [![Licencja MIT](https://img.shields.io/badge/licencja-MIT-blue.svg)](./LICENSE)
 
 Lokalny anonimizator polskich danych osobowych (PII). Zamienia PESEL, NIP, REGON, KRS, numery kont,
-numery dowodów i paszportów, e-maile, telefony, adresy, miejscowości, daty urodzenia oraz imiona
+numery dowodów i paszportów, prawo jazdy, nr rejestracyjny, VIN, adres IP/MAC, token, e-maile,
+telefony, adresy, miejscowości, daty urodzenia oraz imiona
 i nazwiska na neutralne placeholdery — **zanim** tekst trafi do czatu z modelem językowym, e-maila,
 zgłoszenia czy bazy danych.
 
@@ -105,15 +106,21 @@ przebieg po zredagowanym tekście niczego nie psuje.
 
 | Dane | Metoda | Placeholder |
 |---|---|---|
-| PESEL | 11 cyfr + suma kontrolna | `[PESEL]` |
-| NIP | 10 cyfr (też z myślnikami) + suma kontrolna | `[NIP]` |
-| REGON | 9/14 cyfr + suma kontrolna | `[REGON]` |
-| IBAN / nr konta | mod 97 lub kontekst „konto/rachunek" + 26 cyfr | `[NR-KONTA]` |
-| Nr dowodu | 3 litery + 6 cyfr + suma kontrolna | `[NR-DOWODU]` |
+| PESEL | 11 cyfr + suma kontrolna (lub przy etykiecie „PESEL" mimo złej sumy) | `[PESEL]` |
+| NIP | 10 cyfr (też z myślnikami) + suma kontrolna (lub przy etykiecie „NIP") | `[NIP]` |
+| REGON | 9/14 cyfr + suma kontrolna (lub przy etykiecie „REGON") | `[REGON]` |
+| IBAN / nr konta | mod 97 lub kontekst „konto/rachunek/IBAN" (też format IBAN mimo złej sumy) | `[NR-KONTA]` |
+| Nr dowodu | 3 litery + 6 cyfr (+ suma kontrolna bez kontekstu) | `[NR-DOWODU]` |
 | Nr paszportu | kontekst „paszport" + 2 litery + 7 cyfr | `[NR-PASZPORTU]` |
 | Numer KRS | kontekst „KRS" + 10 cyfr (też z zerami wiodącymi) | `[KRS]` |
+| Nr prawa jazdy | kontekst „prawo jazdy" + numer (z cyfrą) | `[PRAWO-JAZDY]` |
+| Nr rejestracyjny | kontekst „rejestracyjny/tablica" + tablica (np. WI1234K) | `[NR-REJESTRACYJNY]` |
+| VIN | 17 znaków bez I/O/Q; kontekst „VIN/nadwozia" lub wyraźny układ VIN | `[VIN]` |
+| Adres IP | IPv4 (oktety 0–255) oraz IPv6 (numery wersji „1.2.3.4" pomijane) | `[IP]` |
+| Adres MAC | 6 par hex (00:1A:2B:3C:4D:5E) | `[MAC]` |
+| Token / JWT | `eyJ…` (base64) — może dawać dostęp | `[TOKEN]` |
 | E-mail | wzorzec adresu | `[EMAIL]` |
-| Telefon | 9 cyfr, opcjonalnie +48 | `[TELEFON]` |
+| Telefon | 9 cyfr, opcjonalnie +48, także w nawiasach „+48 (501) 234-567" | `[TELEFON]` |
 | Kod pocztowy | XX-XXX | `[KOD-POCZTOWY]` |
 | Data urodzenia | data z kontekstem „ur./urodzony" — cyfrowa i słowna („5 maja 1985") | `[DATA-URODZENIA]` |
 | Adres | ul./al./os./pl. + nazwa + numer (też „3 Maja", „gen./ks./św.") | `[ADRES]` |

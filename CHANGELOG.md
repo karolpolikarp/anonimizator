@@ -1,5 +1,30 @@
 # Changelog
 
+## v0.44.0 — 2026-07-11
+
+**Nowe typy danych technicznych + maskowanie przy silnej etykiecie mimo złej sumy kontrolnej.**
+Rdzeń rozpoznaje teraz ponad 20 typów PII. Zmiany wynikły z audytu realnego pisma, w którym
+wyciekał NIP („NIP działalności:\n9452176998" — kwalifikator rozbijał kotwicę), telefon w nawiasach
+i identyfikatory techniczne.
+
+- **6 nowych typów:** nr prawa jazdy, nr rejestracyjny pojazdu, VIN (17 znaków), adres IP (v4 i v6),
+  adres MAC, token/JWT. Wszystkie precyzyjnie kotwiczone: VIN/prawo jazdy/tablica wymagają kontekstu,
+  IPv4 pomija numery wersji (`wersja 1.2.3.4`), VIN wymaga min. 4 cyfr i 3 liter, JWT/MAC/IPv6 są
+  strukturalnie odróżnialne. Kolejność przebiegów: identyfikatory techniczne PRZED ciągami cyfr,
+  MAC przed IPv6.
+- **Maskowanie mimo złej sumy przy silnej etykiecie.** PESEL/NIP/REGON/IBAN z literówką (błędna suma
+  kontrolna) są teraz maskowane, gdy poprzedza je jednoznaczna etykieta („PESEL:", „NIP", „REGON",
+  „konto/rachunek"). Numer z literówką to nadal dana osobowa. Bez etykiety — walidacja sumy dalej
+  chroni przed fałszywym trafieniem. Kotwieta toleruje kwalifikator („NIP działalności", „PESEL matki").
+- **Telefon w nawiasach.** `+48 (501) 234-567` jest teraz maskowany; zawężono też zachłanność
+  9-cyfrowego fallbacku telefonu, by nie zjadał REGON-u.
+- **UI:** nowa grupa „Identyfikatory techniczne" w panelu „Co maskować" (6 przełączników).
+- **Testy:** 207 testów rdzenia (nowe: telefon-nawiasy, PESEL/NIP/konto zła-suma-z-etykietą,
+  wszystkie 6 nowych typów, poszanowanie `options.types`). Benchmark 211 przypadków, precyzja 99,1%.
+- Dodano `CLAUDE.md` (przewodnik po repozytorium).
+
+Rdzeń `anonimizator` 0.25.0 → 0.26.0, aplikacja web 0.43.0 → 0.44.0.
+
 ## v0.43.0 — 2026-07-11
 
 **Rozszerzenie słownika nazwisk — wyższy recall edycji „czysty HTML", bez AI, bez launchera.**
