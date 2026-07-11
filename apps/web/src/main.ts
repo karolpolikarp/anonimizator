@@ -84,6 +84,12 @@ const MASK_TIP: Record<string, string> = {
   'NR-PASZPORTU': 'Identyfikatory · kontekst „paszport" + 2 litery + 7 cyfr',
   KRS: 'Identyfikatory · kontekst „KRS" + 10 cyfr',
   'ZNAK-SPRAWY': 'Identyfikatory · znak sprawy/pisma (JRWA) lub sygnatura akt',
+  'PRAWO-JAZDY': 'Identyfikatory · kontekst „prawo jazdy" + numer z cyfrą',
+  'NR-REJESTRACYJNY': 'Identyfikatory · kontekst „rejestracyjny/tablica" + tablica',
+  VIN: 'Identyfikatory · 17 znaków bez I/O/Q; kontekst „VIN" lub układ VIN',
+  IP: 'Identyfikatory · adres IPv4 (oktety 0–255) lub IPv6',
+  MAC: 'Identyfikatory · 6 par hex (00:1A:2B:3C:4D:5E)',
+  TOKEN: 'Identyfikatory · token/JWT (eyJ…) — może dawać dostęp',
   'NR-KONTA': 'Finanse · IBAN (mod 97) lub kontekst „konto/rachunek”',
   EMAIL: 'Kontakt · wzorzec adresu e-mail',
   TELEFON: 'Kontakt · 9 cyfr, opcjonalnie +48',
@@ -196,9 +202,8 @@ const CAT_LABELS: Record<Cat, string> = {
   person: 'Dane osobowe',
 };
 const CAT_ORDER: Cat[] = ['ident', 'contact', 'fin', 'place', 'person'];
-for (const cat of CAT_ORDER) {
-  const groups = MASK_GROUPS.filter((g) => g.cat === cat);
-  if (!groups.length) continue;
+
+function buildCatSection(cat: Cat, groups: MaskGroup[]): HTMLElement {
   const section = document.createElement('section');
   section.className = 'tg-cat';
   const h = document.createElement('div');
@@ -212,8 +217,22 @@ for (const cat of CAT_ORDER) {
   body.className = 'tg-cat-body';
   for (const g of groups) body.append(buildToggle(g));
   section.append(h, body);
-  maskTogglesEl.append(section);
+  return section;
 }
+
+// „Identyfikatory" (najliczniejsza grupa) dostają pełną szerokość — same wypełniają rzędy.
+// Pozostałe, małe kategorie (Kontakt/Finanse/Adres/Osoby) pakujemy w jeden wspólny pas obok
+// siebie, zamiast czterech osobnych, w większości pustych rzędów — lepsze wykorzystanie miejsca.
+const restRow = document.createElement('div');
+restRow.className = 'tg-cat-row';
+for (const cat of CAT_ORDER) {
+  const groups = MASK_GROUPS.filter((g) => g.cat === cat);
+  if (!groups.length) continue;
+  const section = buildCatSection(cat, groups);
+  if (cat === 'ident') maskTogglesEl.append(section);
+  else restRow.append(section);
+}
+if (restRow.childElementCount) maskTogglesEl.append(restRow);
 
 /** Typy aktywne wg przełączników; undefined = wszystkie. */
 function activeTypes(): PiiType[] | undefined {
@@ -244,7 +263,7 @@ function escapeHtml(s: string): string {
 }
 
 const MASK_TOKEN_RE =
-  /\[(PESEL|NIP|REGON|NR-KONTA|NR-DOWODU|NR-PASZPORTU|KRS|ZNAK-SPRAWY|EMAIL|TELEFON|KOD-POCZTOWY|DATA-URODZENIA|ADRES|MIEJSCOWOŚĆ|IMIĘ I NAZWISKO|OSOBA-[A-Z]+)\]/g;
+  /\[(PESEL|NIP|REGON|NR-KONTA|NR-DOWODU|NR-PASZPORTU|KRS|ZNAK-SPRAWY|PRAWO-JAZDY|NR-REJESTRACYJNY|VIN|IP|MAC|TOKEN|EMAIL|TELEFON|KOD-POCZTOWY|DATA-URODZENIA|ADRES|MIEJSCOWOŚĆ|IMIĘ I NAZWISKO|OSOBA-[A-Z]+)\]/g;
 
 function maskHtml(name: string): string {
   return `<mark class="pii pii-${maskCategory(name)}" data-tip="${escapeHtml(maskTip(name))}" tabindex="0">[${name}]</mark>`;

@@ -1,5 +1,20 @@
 # Changelog
 
+## v0.44.1 — 2026-07-11
+
+**Poprawki interfejsu po dodaniu nowych typów PII (tylko warstwa web).**
+
+- **Kolorowe znaczniki dla nowych typów w wyniku.** `[PRAWO-JAZDY]`, `[NR-REJESTRACYJNY]`,
+  `[VIN]`, `[IP]`, `[MAC]`, `[TOKEN]` były renderowane jako zwykły tekst — teraz dostają
+  kolorowy znacznik kategorii „Identyfikatory" (jak PESEL/NIP) wraz z tooltipem metody wykrycia.
+  Przyczyna: brak tych typów w `MASK_TOKEN_RE`.
+- **Lepsze wykorzystanie przestrzeni panelu „Co maskować".** Cztery małe kategorie
+  (Kontakt, Finanse, Adres i czas, Dane osobowe) stoją teraz obok siebie w jednym wspólnym
+  pasie, zamiast czterech osobnych, w większości pustych rzędów. Kafelki utrzymują jednolitą
+  szerokość w całym panelu. „Identyfikatory" (najliczniejsze) zostają pełną szerokością.
+
+Aplikacja web 0.44.0 → 0.44.1 (rdzeń `anonimizator` bez zmian, 0.26.0).
+
 ## v0.44.0 — 2026-07-11
 
 **Nowe typy danych technicznych + maskowanie przy silnej etykiecie mimo złej sumy kontrolnej.**

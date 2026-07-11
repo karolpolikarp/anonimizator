@@ -536,6 +536,14 @@ mark.pii.pii-linked { box-shadow: 0 0 0 2px var(--acc-line); }
 /* Jednolita siatka: WSZYSTKIE kafelki tej samej szerokości (auto-fill, nie -fit → pojedynczy typ
    w kategorii, np. IBAN, zostaje normalnym kafelkiem, a nie rozciągniętą belką na całą szerokość). */
 .tg-cat-body { display: grid; grid-template-columns: repeat(auto-fill, minmax(205px, 1fr)); gap: 10px; }
+/* Wspólny pas małych kategorii: sekcje stoją obok siebie i wypełniają szerokość, zamiast
+   czterech osobnych, w większości pustych rzędów. Każda sekcja rośnie proporcjonalnie do
+   liczby swoich kafelków, więc „Adres i czas" (4) dostaje więcej miejsca niż „Finanse" (1). */
+.tg-cat-row { display: flex; flex-wrap: wrap; gap: 15px 22px; align-items: flex-start; }
+.tg-cat-row .tg-cat { flex: 1 1 200px; min-width: 0; }
+/* Jedna kolumna kafelków na kategorię, o szerokości zbliżonej do „Identyfikatorów" (nie
+   rozdmuchana na całą kolumnę flex) — spójny wygląd kafelków w całym panelu. */
+.tg-cat-row .tg-cat-body { grid-template-columns: minmax(0, 230px); }
 .tg {
   display: flex; align-items: center; gap: 11px;
   padding: 9px 12px 9px 9px;
