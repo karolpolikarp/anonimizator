@@ -195,9 +195,11 @@ export const NON_SURNAME_ADJ = new Set<string>((
   // rzeczowniki pospolite w liczbie mnogiej o końcówce -ski (lm. od -sek/-sk/-ska):
   // „Wnioski stron oddalono", „Zapiski z narady" — kapitalizowane na początku zdania
   // pożerane były jako nazwiska (realny, dotkliwy fałszywy pozytyw w pismach urzędowych)
-  'wnioski zapiski odpiski przypiski wypiski dopiski naciski zaciski pociski odciski wyciski ' +
-  'uściski ściski zyski wrzaski trzaski błyski przebłyski odgłoski kioski maski paski laski ' +
-  'deski miski piaski wioski troski kreski łuski pyski obeliski spiski półmiski meniski ' +
+  'wnioski zapiski odpiski przypiski wypiski dopiski naciski zaciski dociski przyciski ' +
+  'pociski odciski wyciski uciski uściski ściski zyski uzyski wrzaski trzaski potrzaski ' +
+  'błyski przebłyski rozbłyski blaski odblaski odgłoski kioski maski paski laski obcaski ' +
+  'deski miski piaski wioski troski kreski łuski pyski piski odpryski wypryski obeliski ' +
+  'spiski półmiski meniski kluski pieski noski klocki ' +
   // wieloznaczny wyraz o końcówce nazwiskowej, który nazwiskiem nie jest (Znicz Pruszków itp.)
   'znicz'
 ).split(/\s+/).filter(Boolean));

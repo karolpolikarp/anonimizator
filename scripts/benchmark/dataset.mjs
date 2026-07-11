@@ -490,6 +490,13 @@ export function buildDataset() {
   str('Zeznania złożył A. Baran do protokołu.', ['Baran'], ['protokołu']);
   str('Stawił się Jean-Pierre Dubois z tłumaczem.', ['Jean-Pierre Dubois'], ['tłumaczem']);
   neg('Pojazd MERCEDES odholowano na parking strzeżony.', ['MERCEDES']);
+  str('Ciągnik siodłowy GD 890KL zatrzymano do kontroli.', ['GD 890KL'], ['kontroli']);
+  str('Do wiadomości: K. Baran, referat pierwszy.', ['Baran'], ['referat']);
+  neg('pojazd marki KIA CEED2 oraz auto VW GOLF5 sprzedano.', ['KIA CEED2', 'VW GOLF5']);
+  neg('Golub-Dobrzyń Zaprasza turystów przez cały rok.', ['Golub-Dobrzyń', 'Zaprasza']);
+  neg('Rolls-Royce Motor Cars otworzył salon.', ['Rolls-Royce', 'Motor']);
+  neg('Mieszka przy ul. Rakowieckiej od dawna.', ['Rakowieckiej']);
+  neg('Przyciski i Klocki hamulcowe wymieniono.', ['Przyciski', 'Klocki']);
   neg('Wnioski dowodowe stron oddalono w całości.', ['Wnioski']);
   neg('Szkoła im. A. Mickiewicza ogłosiła nabór.', ['Mickiewicza']);
   neg('Ciąg 10 2010 9712 0000 1234 5678 9013 ma błędną sumę kontrolną.', ['10 2010 9712 0000 1234 5678 9013']);

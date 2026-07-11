@@ -1,5 +1,33 @@
 # Changelog
 
+## v0.44.4 — 2026-07-11
+
+**Audyt adwersarialny reguł z v0.44.3 — poprawki precyzji + filtr precyzji w usłudze NER.**
+
+- **Kotwica pojazdowa dopracowana**: druga część tablicy musi zaczynać się CYFRĄ („pojazd
+  VW GOLF5", „marki KIA CEED2" zostają — wcześniej modele aut stawały się tablicami przez
+  backtracking regexu marki), a wtrącenia „siodłowy/ciężarowy/o nr" nie przerywają dopasowania.
+- **Patron ULICY nie jest osobą**: „ul. Rakowieckiej", „al. Sikorskiego" — strażnik patrona
+  rozszerzony ze skrótu „im." na „ul./al./pl./os."; „Al. W. Andersa 15" (kapitalizowane, z
+  inicjałem) wchodzi teraz w `[ADRES]`.
+- **Inicjał po dwukropku maskowany**: „Do wiadomości: K. Baran" (rozdzielnik) — dwukropek
+  nie jest już traktowany jak początek wyliczenia.
+- **Obce imiona z myślnikiem tylko ze słownika**: bramka ~90 znanych obcych imion — bez niej
+  „Golub-Dobrzyń Zaprasza", „Ruciane-Nida", „Rolls-Royce Motor" stawały się osobami, a maska
+  obcinała „Toruń" do „ń" (ASCII \b nie działa po polskim znaku — granica lookaheadem).
+  „Jean-Claude Van Damme" maskowany w całości (cząstka w regule).
+- **Cząstki dwuliterowe (Da/De/La…) po masce osoby tylko z WIELKIEJ litery** — małe „da"
+  kolidowało z polską prozą („da Radę").
+- **Stoplista -ski/-cki rozszerzona**: przyciski, uciski, rozbłyski, odblaski, obcaski,
+  piski, odpryski, uzyski, potrzaski, klocki, kluski, pieski i in.
+- **Usługa NER (services/ner) dostała filtr precyzji** — odpowiednik stoplist rdzenia po
+  stronie Pythona: jednowyrazowe homonimy („Wilk biegał po lesie", „Baran to znak zodiaku"),
+  role procesowe („Powódka"), rzeczowniki techniczne („Token") i patroni („im. Mickiewicza")
+  nie są już maskowane przez spaCy. Warstwa core+spacy: precision 94,7% → 99,6% (F1 99,3%),
+  bramka benchmarku obejmuje teraz także żywą usługę.
+
+Aplikacja web 0.44.3 → 0.44.4, rdzeń `anonimizator` 0.28.0 → 0.28.1, usługa NER 2.0.1.
+
 ## v0.44.3 — 2026-07-11
 
 **Druga tura poprawek detekcji po finalnym raporcie regresyjnym (N1–N3, B3, B9/B10).**

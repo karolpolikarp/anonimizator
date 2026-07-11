@@ -20,6 +20,7 @@ Uruchomienie bez Dockera:
 """
 
 import os
+import re
 from fastapi import FastAPI, Header, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -76,6 +77,45 @@ def _expand_to_word(text: str, s: int, e: int) -> tuple[int, int]:
 def _is_person_label(entity_group: str) -> bool:
     """Etykiety osobowe różnych modeli: PER (wikiann-style), nam_liv_person (KPWr/CLARIN)."""
     return entity_group == "PER" or entity_group.startswith("nam_liv_person")
+
+
+# ── Filtr precyzji (odpowiednik defaultIsStopword/defaultIsHomograph z ner-postprocess.ts) ──
+# FILOZOFIA PROJEKTU: precyzja > nadmaskowanie. Model bywa pewny fałszywych osób:
+#  - homonimy rzeczowników pospolitych w prozie („Wilk biegał po lesie", „Baran to znak zodiaku")
+#    — realny homonim-osoba z kontekstem (imię obok / „Pan X") jest maskowany przez RDZEŃ przed
+#    warstwą NER, więc odrzucenie tutaj nie obniża ochrony;
+#  - role procesowe („Powódka Anna Nowak" — rola ma zostać, osobę maskuje sąsiedni span);
+#  - rzeczowniki dokumentowe/techniczne z wielkiej litery („Token:", „Sprawa").
+# Filtr działa TYLKO na spanach jednowyrazowych — wielowyrazowe („Jan Wilk") przechodzą.
+_SINGLE_WORD_STOP = set(
+    (
+        # homonimy nazwisk (lustro HOMOGRAPH_SURNAMES z packages/core/src/surnames.ts)
+        "wilk lis baran sowa kruk dudek mazurek sroka mucha mazur kania czapla szpak "
+        "wróbel gołąb kozioł zając kot sikora jeleń sarna borsuk kaczor bocian żuraw "
+        "skowronek słowik kogut byk konik krupa kasza sól cukier "
+        # role procesowe / urzędowe (rola zostaje jawna, osobę maskuje sąsiedni span)
+        "powód powódka pozwany pozwana świadek biegły biegła sędzia prokurator obrońca "
+        "pełnomocnik wnioskodawca uczestnik oskarżony oskarżona podejrzany podejrzana "
+        # rzeczowniki dokumentowe/techniczne mylone z nazwiskiem
+        "token sprawa protokół notatka wezwanie tadeusz"
+    ).split()
+)
+# „Tadeusz" wyżej: jednowyrazowy span to niemal zawsze tytuł („Pan Tadeusz") — osoba z nazwiskiem
+# („Tadeusz Kowalski") daje span wielowyrazowy i przechodzi.
+
+_PATRON_BEFORE = re.compile(r"\b(?:im|ul|al|pl|os)\.\s+(?:[A-ZĄĆĘŁŃÓŚŹŻ]\.\s*)?$")
+
+
+def _keep_span(text: str, s: int, e: int) -> bool:
+    """Czy span z modelu przechodzi filtr precyzji (True = maskuj)."""
+    surf = text[s:e].strip()
+    if not surf:
+        return False
+    if " " not in surf and surf.lower() in _SINGLE_WORD_STOP:
+        return False
+    if _PATRON_BEFORE.search(text[:s]):  # „Szkoła im. A. Mickiewicza", „ul. Rakowieckiej"
+        return False
+    return True
 
 
 def _load_herbert():
@@ -159,7 +199,7 @@ def redact(req: RedactRequest, authorization: str = Header(default="")):
     if not text:
         return {"redacted": text, "found": []}
 
-    spans = detect_persons(text)
+    spans = [(s, e) for s, e in detect_persons(text) if _keep_span(text, s, e)]
     if not spans:
         return {"redacted": text, "found": []}
 

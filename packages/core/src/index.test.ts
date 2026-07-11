@@ -1078,3 +1078,37 @@ test('etykiety osób idą w kolejności wystąpienia w tekście', () => {
   expect(order[0]).toBe('A');
   expect([...new Set(order)]).toEqual([...new Set(order)].sort());
 });
+
+// Poprawki po audycie adwersarialnym tury 2 (v0.44.4)
+test('kotwica pojazdowa: wtrącenia (siodłowy, o nr), a modele aut zostają', () => {
+  const r = redactPII('ciągnik siodłowy GD 890KL oraz pojazd o nr GD 891KL.');
+  expect(r.redacted.match(/\[NR-REJESTRACYJNY\]/g)?.length).toBe(2);
+  const neg = 'pojazd marki KIA CEED2 oraz auto VW GOLF5.';
+  expect(redactPII(neg).redacted).toBe(neg);
+});
+test('patron ulicy nie jest osobą; „Al." z inicjałem wchodzi w ADRES', () => {
+  expect(redactPII('Mieszka przy ul. Rakowieckiej.', { pseudonyms: true }).redacted).toBe('Mieszka przy ul. Rakowieckiej.');
+  expect(redactPII('Biuro przy Al. W. Andersa 15 czynne.').redacted).toContain('[ADRES]');
+});
+test('inicjał + nazwisko po dwukropku (rozdzielnik) maskowane', () => {
+  const r = redactPII('Do wiadomości: K. Baran.', { pseudonyms: true });
+  expect(r.redacted.includes('Baran')).toBe(false);
+});
+test('miasta z myślnikiem spoza słownika i firmy nie są obcymi imionami', () => {
+  for (const t of [
+    'Golub-Dobrzyń Zaprasza turystów. Trasa Golub-Dobrzyń Toruń.',
+    'Ruciane-Nida Zaprasza latem.',
+    'Napój Coca-Cola Company oraz Rolls-Royce Motor Cars.',
+  ]) {
+    expect(redactPII(t, { pseudonyms: true }).redacted).toBe(t);
+  }
+});
+test('cząstka nazwiska w regule imion z myślnikiem („Jean-Claude Van Damme") w całości', () => {
+  const r = redactPII('Wystąpił Jean-Claude Van Damme na gali.', { pseudonyms: true });
+  expect(r.redacted.includes('Damme')).toBe(false);
+  expect(r.redacted.includes('Van')).toBe(false);
+});
+test('rozszerzona stoplista -ski/-cki (przyciski, klocki, kluski…)', () => {
+  const t = 'Przyciski zamontowano. Klocki hamulcowe. Kluski śląskie. Odpryski lakieru. Uzyski energii.';
+  expect(redactPII(t, { pseudonyms: true }).redacted).toBe(t);
+});

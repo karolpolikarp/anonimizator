@@ -308,10 +308,11 @@ const prevLowerWord = (text: string, offset: number): string | undefined =>
     .slice(Math.max(0, offset - 40), offset)
     .match(/([\p{Ll}]+)\s*$/u)?.[1]
     ?.toLowerCase();
-/** Czy tuż przed pozycją stoi „im." (patron instytucji: „Szkoła im. A. Mickiewicza"),
- *  ewentualnie z inicjałem imienia? prevLowerWord tego nie widzi (kropka po „im"). */
+/** Czy tuż przed pozycją stoi „im." (patron instytucji: „Szkoła im. A. Mickiewicza") albo
+ *  skrót ulicy („ul. Rakowieckiej", „al. Sikorskiego" — patron ULICY, nie osoba), ewentualnie
+ *  z inicjałem imienia? prevLowerWord tego nie widzi (kropka po skrócie). */
 const precededByPatron = (t: string, offset: number): boolean =>
-  /\bim\.[ \t]+(?:[A-ZĄĆĘŁŃÓŚŹŻ]\.[ \t]*)?$/.test(t.slice(Math.max(0, offset - 12), offset));
+  /\b(?:im|ul|al|pl|os)\.[ \t]+(?:[A-ZĄĆĘŁŃÓŚŹŻ]\.[ \t]*)?$/i.test(t.slice(Math.max(0, offset - 12), offset));
 /** Kody walut — „PLN 123456" to kwota, nie dowód (wyjątek w kroku DOWÓD bez kontekstu). */
 const CURRENCY_CODES = new Set([
   'PLN', 'EUR', 'USD', 'GBP', 'CHF', 'CZK', 'SEK', 'NOK', 'DKK', 'JPY', 'UAH', 'RUB',
@@ -527,6 +528,20 @@ const POLISH_CITIES = new Set<string>([
     'stargardzie|świdnicy|piotrkowie|ostrowie|suwałkach|starachowicach|skierniewicach|tarnobrzegu'
   ).split('|'),
 ]);
+
+// Częste OBCE imiona — bramka dla reguły imion dwuczłonowych z myślnikiem („Jean-Pierre
+// Dubois"). Bez tej bramki każda para „Xxx-Yyy Zzz" (miasta spoza słownika, nazwy firm)
+// stawałaby się osobą. Wyłącznie imiona praktycznie niewystępujące jako polskie toponimy.
+const FOREIGN_GIVEN_NAMES = new Set<string>(
+  (
+    'jean pierre paul marie anne claude luc marc jacques michel andre andré louis henri ' +
+    'francois françois rené rene yves hans karl heinz klaus peter ernst fritz dieter uwe ' +
+    'kurt otto rolf wolf horst jurgen jürgen john james david michael mary sarah kevin ' +
+    'jose josé juan carlos luis pedro miguel diego pablo ana maria luigi giovanni marco ' +
+    'ali ahmed mohamed muhammad omar hassan ibrahim mustafa abdul kim lee chen wang li ' +
+    'minh thi anh van duc thu erik lars sven nils per ola'
+  ).split(/\s+/),
+);
 
 // Rdzenie imion (mianownik bez końcowego „a" dla imion żeńskich) — do rozpoznawania
 // form ODMIENIONYCH: „Anną", „Annę", „Janem", „Aleksandrą". Słownik ma tylko mianownik,
@@ -1040,10 +1055,13 @@ export function redactPII(input: string, options?: RedactOptions): RedactionResu
       },
     );
     // Kotwica POJAZDOWA — wyliczenia pojazdów bez słowa „rejestracyjny": „drugi pojazd
-    // WW 1234A", „motocykl ZS 4567". Wartość WIELKIMI literami (celowo bez flagi `i`)
-    // i z ≥1 CYFRĄ w drugiej części — inaczej „pojazd MERCEDES" stałby się tablicą.
+    // WW 1234A", „motocykl ZS 4567", „ciągnik siodłowy GD 890KL", „pojazd o nr GD 891KL".
+    // Wartość WIELKIMI literami (celowo bez flagi `i`), druga część zaczyna się CYFRĄ
+    // (polski wyróżnik) — inaczej „pojazd VW GOLF5" czy „MERCEDES" stawałyby się tablicą.
+    // Marka po „marki/typu" musi być PEŁNYM słowem (lookahead na spację — bez tego
+    // backtracking zostawiał „K" z „KIA" i maskował „IA CEED2").
     text = text.replace(
-      /\b([Pp]ojazd\w*|[Ss]amoch[oó]d\w*|[Mm]otocykl\w*|[Mm]otorower\w*|[Cc]iągnik\w*|[Pp]rzyczep\w*|[Aa]uto)((?:\s+(?:marki|typu)\s+[A-ZĄĆĘŁŃÓŚŹŻ][\w-]*)?[\s:=.-]*)((?!BMW\b)[A-Z]{2,3}[\s-]?(?=[A-Z0-9]*\d)[A-Z0-9]{4,5})\b/g,
+      /\b([Pp]ojazd\w*|[Ss]amoch[oó]d\w*|[Mm]otocykl\w*|[Mm]otorower\w*|[Cc]iągnik\w*|[Pp]rzyczep\w*|[Aa]uto)((?:\s+(?:o|nr\.?|numerze|siodłow\w+|ciężarow\w+|osobow\w+|dostawcz\w+|specjaln\w+|wolnobieżn\w+))*(?:\s+(?:marki|typu)\s+[A-ZĄĆĘŁŃÓŚŹŻ][\w-]*(?=[\s:=.-]))?[\s:=.-]*)((?!BMW\b)[A-Z]{2,3}[\s-]?\d[A-Z0-9]{3,4})\b/g,
       (_m, kw: string, sep: string) => {
         bump('NR-REJESTRACYJNY');
         return `${kw}${sep}${M['NR-REJESTRACYJNY']}`;
@@ -1080,11 +1098,13 @@ export function redactPII(input: string, options?: RedactOptions): RedactionResu
     text = text.replace(
       new RegExp(
         // też formy zależne: „na ulicy…", „przy alei…", „na osiedlu…", „na placu…"
-        `\\b(ul\\.|ulic[aiy]|al\\.|ale[ij][aię]?|os\\.|osiedl[eau]|pl\\.|plac[ua]?)\\s+` +
+        // skróty także KAPITALIZOWANE („Al. W. Andersa 15" na początku frazy/linii)
+        `\\b([Uu]l\\.|[Uu]lic[aiy]|[Aa]l\\.|[Aa]le[ij][aię]?|[Oo]s\\.|[Oo]siedl[eau]|[Pp]l\\.|[Pp]lac[ua]?)\\s+` +
           // nazwa ulicy może zaczynać się od LICZBY („3 Maja", „11 Listopada") lub od
           // małego SKRÓTU rangi/tytułu („gen. Andersa", „ks. Popiełuszki", „św. Marcin") —
           // bez tego ulice te zostawały jawne (nazwa nie startowała wielką literą).
-          `(?:(?:\\d+|gen|płk|ppłk|mjr|kpt|por|ks|św|bp|abp|kard|marsz|prof|dr|inż|hr)\\.?\\s+){0,2}` +
+          // patron bywa z INICJAŁEM („Al. W. Andersa 15" — inicjał z obowiązkową kropką)
+          `(?:(?:\\d+|gen|płk|ppłk|mjr|kpt|por|ks|św|bp|abp|kard|marsz|prof|dr|inż|hr)\\.?\\s+|[A-ZĄĆĘŁŃÓŚŹŻ]\\.\\s+){0,2}` +
           // numer lokalu także po „m."/„lok." („Długa 5 m. 7", „Polna 3 lok. 5"), nie tylko po „/"
           `[${PL_UP}][${PL_LO}${PL_UP}.-]*(?:\\s+[${PL_UP}0-9][${PL_LO}${PL_UP}0-9.-]*){0,3}\\s+\\d+[A-Za-z]?(?:\\s*(?:/|m\\.?|lok\\.?)\\s*\\d+[A-Za-z]?)?`,
         'g',
@@ -1400,7 +1420,8 @@ export function redactPII(input: string, options?: RedactOptions): RedactionResu
       // patron zostaje; „…stron. A. Wnioski" — wyliczenie zostaje), CHYBA ŻE ta kropka
       // należy do skrótu tytułu przed inicjałem („mec. J. Kowalski", „dr A. Baran").
       new RegExp(
-        `(?<!(?:^|\\n)[ \\t]*)(?<!(?<!\\b(?:[Mm]ec|[Pp]rof|[Dd]r|[Mm]gr|[Ii]nż|hab|[Aa]dw|[Kk]s|płk|gen|kpt|mjr|por|sierż|lek|med|[Ss]ędz))[.!?:;][ \\t]+)\\b[${PL_UP}]\\.[ \\t]+([${PL_UP}][${PL_LO}]+(?:-[${PL_UP}][${PL_LO}]+)?)`,
+        // (dwukropek NIE blokuje — „Do wiadomości: K. Baran" to rozdzielnik z realnym PII)
+        `(?<!(?:^|\\n)[ \\t]*)(?<!(?<!\\b(?:[Mm]ec|[Pp]rof|[Dd]r|[Mm]gr|[Ii]nż|hab|[Aa]dw|[Kk]s|płk|gen|kpt|mjr|por|sierż|lek|med|[Ss]ędz))[.!?][ \\t]+)\\b[${PL_UP}]\\.[ \\t]+([${PL_UP}][${PL_LO}]+(?:-[${PL_UP}][${PL_LO}]+)?)`,
         'g',
       ),
       (m, w2: string, offset: number) => {
@@ -1417,20 +1438,26 @@ export function redactPII(input: string, options?: RedactOptions): RedactionResu
   }
 
   // (c1b) OBCE imię DWUCZŁONOWE z myślnikiem + nazwisko („Jean-Pierre Dubois", „Anne-Marie
-  // Fischer"). Człony imienia krótkie (≤7 liter — odróżnia od miast „Czechowice-Dziedzice");
-  // całość nie może być znaną miejscowością z myślnikiem („Bielsko-Biała Centrum" zostaje).
+  // Fischer", „Jean-Claude Van Damme"). BRAMKA SŁOWNIKOWA: któryś człon imienia musi być
+  // znanym obcym imieniem — bez niej miasta spoza słownika („Golub-Dobrzyń Zaprasza") i firmy
+  // („Rolls-Royce Motor") stawały się osobami. Opcjonalna cząstka (Van/von/de…) przed
+  // nazwiskiem wciągana do maski. Prawa granica lookaheadem (ASCII \b nie działa po „ń").
   if (on('IMIE')) {
     text = text.replace(
       new RegExp(
-        `\\b([${PL_UP}][${PL_LO}]{1,6}-[${PL_UP}][${PL_LO}]{1,6})[ \\t]+([${PL_UP}][${PL_LO}]+(?:-[${PL_UP}][${PL_LO}]+)?)\\b`,
+        `\\b([${PL_UP}][${PL_LO}]{1,6}-[${PL_UP}][${PL_LO}]{1,6})[ \\t]+` +
+          `((?:(?:[Vv]an|[Vv]on|[Dd]e|[Dd]el|[Dd]ella|[Dd]i|Da|[Bb]in|[Tt]er|El|Al)[ \\t]+)?` +
+          `[${PL_UP}][${PL_LO}]+(?:-[${PL_UP}][${PL_LO}]+)?)(?![${PL_LO}])`,
         'g',
       ),
       (m, first: string, w2: string) => {
-        const wl = w2.toLowerCase();
-        if (POLISH_CITIES.has(first.toLowerCase()) || MULTIWORD_CITIES.has(first.toLowerCase())) return m;
+        const [f1, f2] = first.toLowerCase().split('-');
+        if (!FOREIGN_GIVEN_NAMES.has(f1) && !FOREIGN_GIVEN_NAMES.has(f2)) return m;
+        const last = w2.split(/[ \t]+/).pop() ?? w2;
+        const wl = last.toLowerCase();
         if (LEGAL_ENTITY_WORDS.has(wl) || NON_SURNAME_ADJ.has(wl) || TITLE_WORDS.has(wl) || ROLE_WORDS.has(wl)) return m;
         bump('IMIE');
-        return personMask(w2);
+        return personMask(last);
       },
     );
   }
@@ -1469,8 +1496,10 @@ export function redactPII(input: string, options?: RedactOptions): RedactionResu
 
   // DOMKNIĘCIE: cząstka obcego nazwiska wieloczłonowego po masce osoby („[OSOBA-F] Van Anh",
   // „[OSOBA-A] von Habsburg") — cząstka + następny człon należą do tego samego nazwiska.
+  // Cząstki DWULITEROWE wyłącznie z WIELKIEJ litery — małe „da/de/la" kolidują z polską
+  // prozą („[OSOBA-A] da Radę" to zdanie, nie nazwisko).
   text = text.replace(
-    /(\[OSOBA-[A-Z]+\]|\[IMIĘ I NAZWISKO\])[ \t]+(?:[Vv][ao]n|[Dd][aei]|[Dd]e[rl]|[Dd]ella|[Ee]l|[Aa]l|[Bb]in|[Tt]er|[Ll][ae])[ \t]+[A-ZĄĆĘŁŃÓŚŹŻ][a-ząćęłńóśźż]+/g,
+    /(\[OSOBA-[A-Z]+\]|\[IMIĘ I NAZWISKO\])[ \t]+(?:[Vv][ao]n|[Dd]e[rl]|[Dd]ella|[Bb]in|[Tt]er|D[aei]|De[rl]?|El|Al|L[ae])[ \t]+[A-ZĄĆĘŁŃÓŚŹŻ][a-ząćęłńóśźż]+/g,
     '$1',
   );
 
