@@ -2,6 +2,6 @@
 # Model spaCy instalujemy osobno (NIE z requirements):
 #   python -m spacy download pl_core_news_lg
 fastapi>=0.139.0,<1
-uvicorn[standard]>=0.50.0,<1
+uvicorn[standard]>=0.51.0,<1
 spacy>=3.8.14,<4
 pydantic>=2.13.4,<3
