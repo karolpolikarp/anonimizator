@@ -947,7 +947,6 @@ if (params.has('pdftest')) {
     });
 }
 
-$('app-version').textContent = __APP_VERSION__;
 $('app-version-top').textContent = __APP_VERSION__;
 
 // Podmień wszystkie statyczne <i class="gi" data-i="…"> z index.html na inline SVG.

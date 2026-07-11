@@ -17,6 +17,9 @@
   zastąpiony widocznym, symetrycznym uchwytem u dołu OBU okien (źródła i wyniku). Przeciągnięcie
   dowolnego z nich zmienia wysokość obu równocześnie; działa myszą, dotykiem i klawiaturą
   (strzałki ↑ ↓), a dwuklik przywraca wysokość domyślną. Wyraźny stan hover i podpowiedź.
+- **Wersja i link autora w hero.** Numer wersji przeniesiony na samą górę (obok „sprawdź
+  najnowszą"), dodany link do strony autora (karolwilczynski.com); zduplikowana wersja
+  usunięta ze stopki.
 - **Lepsze wykorzystanie przestrzeni panelu „Co maskować".** Cztery małe kategorie
   (Kontakt, Finanse, Adres i czas, Dane osobowe) stoją teraz obok siebie w jednym wspólnym
   pasie, zamiast czterech osobnych, w większości pustych rzędów. Kafelki utrzymują jednolitą
