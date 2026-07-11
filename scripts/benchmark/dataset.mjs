@@ -483,6 +483,16 @@ export function buildDataset() {
   str('Legitymował się prawem jazdy nr 05678/13/1234 podczas kontroli.', ['05678/13/1234'], ['kontroli']);
   str('Zamieszkały przy ul. Polnej 12 lok. 5 od urodzenia.', ['Polnej 12 lok. 5'], ['urodzenia']);
   str('Świadek, ur. dnia 31 XII 2010, stawił się z opiekunem.', ['31 XII 2010'], ['opiekunem']);
+  // v0.44.3 (raport finalny): kotwica pojazdowa, NRB bez PL, inicjał+nazwisko, obce nazwiska
+  str('Motocykl ZS 4567 zabezpieczono na parkingu.', ['ZS 4567'], ['zabezpieczono']);
+  str('Drugi pojazd WW 1234A odholowano.', ['WW 1234A'], ['odholowano']);
+  str('Przelew na 66 1097 1200 0012 3456 7890 1234 zaksięgowano.', ['66 1097 1200 0012 3456 7890 1234'], ['zaksięgowano']);
+  str('Zeznania złożył A. Baran do protokołu.', ['Baran'], ['protokołu']);
+  str('Stawił się Jean-Pierre Dubois z tłumaczem.', ['Jean-Pierre Dubois'], ['tłumaczem']);
+  neg('Pojazd MERCEDES odholowano na parking strzeżony.', ['MERCEDES']);
+  neg('Wnioski dowodowe stron oddalono w całości.', ['Wnioski']);
+  neg('Szkoła im. A. Mickiewicza ogłosiła nabór.', ['Mickiewicza']);
+  neg('Ciąg 10 2010 9712 0000 1234 5678 9013 ma błędną sumę kontrolną.', ['10 2010 9712 0000 1234 5678 9013']);
   // precyzja: numer porządkowy / lp. / cytowane orzecznictwo NIE są maskowane
   neg('Numer porządkowy pozycji w rejestrze 000012345 pozostaje jawny.', ['000012345']);
   neg('Lp. 123456789 w wykazie środków trwałych.', ['123456789']);

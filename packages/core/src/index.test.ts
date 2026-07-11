@@ -1026,3 +1026,55 @@ test('miasto z myślnikiem i mianownik po „zam." maskowane', () => {
   expect(r.redacted.includes('Poznaniu')).toBe(false);
   expect(r.redacted.includes('Kraków')).toBe(false);
 });
+
+// ============================================================================
+// Tura 2 — raport finalny (N1/N2/N3/B3/B9/B10 + kolejność etykiet)
+// ============================================================================
+
+test('tablice rejestracyjne w wyliczeniu z kotwicą pojazdową (N1)', () => {
+  const r = redactPII('Pojazd o nr rejestracyjnym WA 12345, drugi pojazd WW 1234A, motocykl ZS 4567, trzeci pojazd WE 123AB.');
+  expect(r.redacted.match(/\[NR-REJESTRACYJNY\]/g)?.length).toBe(4);
+  const neg = 'Pojazd MERCEDES i auto BMW 320D czekały.';
+  expect(redactPII(neg).redacted).toBe(neg);
+});
+
+test('NRB bez prefiksu PL z poprawną sumą maskowany; ze złą nie (N3)', () => {
+  expect(redactPII('Przelew na 66 1097 1200 0012 3456 7890 1234 wykonano.').redacted).toContain('[NR-KONTA]');
+  const bad = 'Ciąg 10 2010 9712 0000 1234 5678 9013 ma złą sumę.';
+  expect(redactPII(bad).redacted).toBe(bad);
+});
+
+test('wyliczenie telefonów po jednej kotwicy — wszystkie człony maskowane (B3)', () => {
+  const r = redactPII('Telefony: 512.345.678, 601 234 567 czynne.');
+  expect(r.redacted.match(/\[TELEFON\]/g)?.length).toBe(2);
+  expect(r.redacted.includes('512')).toBe(false);
+});
+
+test('inicjał + nazwisko, w tym homonim („A. Baran"); patron i wyliczenia zostają (N2)', () => {
+  const r = redactPII('Zeznania złożył A. Baran oraz J. Kowalski.', { pseudonyms: true });
+  expect(r.redacted.includes('Baran')).toBe(false);
+  expect(r.redacted.includes('Kowalski')).toBe(false);
+  const neg = 'Szkoła im. A. Mickiewicza. A. Wnioski stron. B. Uzasadnienie.';
+  expect(redactPII(neg, { pseudonyms: true }).redacted).toBe(neg);
+});
+
+test('rzeczowniki pospolite lm. na -ski nie są nazwiskami', () => {
+  const t = 'Wnioski dowodowe oddalono. Zapiski z narady. Maski ochronne wydano.';
+  expect(redactPII(t).redacted).toBe(t);
+});
+
+test('obce nazwiska wieloczłonowe: Jean-Pierre Dubois i Nguyen Van Anh (B9/B10)', () => {
+  const r = redactPII('Stawił się Jean-Pierre Dubois oraz Nguyen Van Anh.', { pseudonyms: true });
+  expect(r.redacted.includes('Dubois')).toBe(false);
+  expect(r.redacted.includes('Jean-Pierre')).toBe(false);
+  expect(r.redacted.includes('Van Anh')).toBe(false);
+  const neg = 'Dojazd do Bielsko-Biała Centrum oraz stacji Kędzierzyn-Koźle Zachód.';
+  expect(redactPII(neg).redacted).toBe(neg);
+});
+
+test('etykiety osób idą w kolejności wystąpienia w tekście', () => {
+  const r = redactPII('Świadkiem była pani Zaremba. Sprawę Kowalskiego umorzono. Znów Zaremba.', { pseudonyms: true });
+  const order = [...r.redacted.matchAll(/\[OSOBA-([A-Z]+)\]/g)].map((m) => m[1]);
+  expect(order[0]).toBe('A');
+  expect([...new Set(order)]).toEqual([...new Set(order)].sort());
+});

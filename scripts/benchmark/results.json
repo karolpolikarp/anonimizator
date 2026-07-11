@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-07-11T12:31:40.088Z",
+  "generatedAt": "2026-07-11T13:07:34.368Z",
   "seed": 20260704,
   "coreVersion": "0.27.0",
-  "casesTotal": 227,
-  "mustMaskTotal": 217,
-  "mustKeepTotal": 235,
+  "casesTotal": 236,
+  "mustMaskTotal": 222,
+  "mustKeepTotal": 244,
   "skippedLayers": [
     {
       "name": "core+spacy",
@@ -26,16 +26,16 @@
     {
       "name": "T0+T1 core",
       "desc": "redactPII() — regex + sumy kontrolne + słownik (in-process, offline)",
-      "elapsedMs": 18,
+      "elapsedMs": 19,
       "changedVsCore": null,
-      "recall": 0.9308755760368663,
-      "precision": 0.9957446808510638,
-      "f1": 0.9622180604185326,
+      "recall": 0.9324324324324325,
+      "precision": 0.9959016393442623,
+      "f1": 0.9631225228330175,
       "agg": {
-        "maskTotal": 217,
-        "maskHit": 202,
-        "keepTotal": 235,
-        "keepHit": 234
+        "maskTotal": 222,
+        "maskHit": 207,
+        "keepTotal": 244,
+        "keepHit": 243
       },
       "perCategory": {
         "osoby-podstawowe": {
@@ -69,19 +69,19 @@
           "recall": 1,
           "precision": 1,
           "f1": 1,
-          "maskTotal": 73,
-          "maskHit": 73,
-          "keepTotal": 61,
-          "keepHit": 61
+          "maskTotal": 78,
+          "maskHit": 78,
+          "keepTotal": 66,
+          "keepHit": 66
         },
         "negatywy": {
           "recall": null,
-          "precision": 0.9836065573770492,
+          "precision": 0.9846153846153847,
           "f1": null,
           "maskTotal": 0,
           "maskHit": 0,
-          "keepTotal": 61,
-          "keepHit": 60
+          "keepTotal": 65,
+          "keepHit": 64
         },
         "osoby-rzadkie-ner": {
           "recall": 0.21052631578947367,
@@ -104,7 +104,7 @@
       },
       "failures": [
         {
-          "id": "neg-43",
+          "id": "neg-47",
           "category": "negatywy",
           "text": "Pan Tadeusz to najsłynniejsza polska epopeja narodowa.",
           "leaked": [],
@@ -1131,6 +1131,31 @@
           "eaten": []
         },
         {
+          "id": "str-62",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-63",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-64",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-65",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-66",
+          "leaked": [],
+          "eaten": []
+        },
+        {
           "id": "neg-34",
           "leaked": [],
           "eaten": []
@@ -1178,9 +1203,7 @@
         {
           "id": "neg-43",
           "leaked": [],
-          "eaten": [
-            "Tadeusz"
-          ]
+          "eaten": []
         },
         {
           "id": "neg-44",
@@ -1200,7 +1223,9 @@
         {
           "id": "neg-47",
           "leaked": [],
-          "eaten": []
+          "eaten": [
+            "Tadeusz"
+          ]
         },
         {
           "id": "neg-48",
@@ -1254,6 +1279,26 @@
         },
         {
           "id": "neg-58",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-59",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-60",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-61",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-62",
           "leaked": [],
           "eaten": []
         },

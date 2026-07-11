@@ -1,5 +1,33 @@
 # Changelog
 
+## v0.44.3 — 2026-07-11
+
+**Druga tura poprawek detekcji po finalnym raporcie regresyjnym (N1–N3, B3, B9/B10).**
+
+- **Tablice rejestracyjne w wyliczeniu (N1)**: nowa kotwica POJAZDOWA — „drugi pojazd
+  WW 1234A", „motocykl ZS 4567" maskowane bez słowa „rejestracyjny". Wartość musi być
+  WIELKIMI literami i zawierać cyfrę („pojazd MERCEDES" zostaje).
+- **NRB bez prefiksu „PL" (N3)**: goły ciąg 26 cyfr z POPRAWNĄ sumą mod-97 (walidacja jak
+  IBAN po dodaniu „PL") maskowany bez etykiety — codzienna forma zapisu konta w pismach.
+- **Wyliczenie telefonów po jednej kotwicy (B3)**: „Telefony: 512.345.678, 601 234 567" —
+  kotwica działa na wszystkie człony listy, nie tylko pierwszy.
+- **Inicjał + nazwisko (N2)**: „A. Baran", „J. Kowalski" maskowane (inicjał wciągany);
+  inicjał to kotwica osobowa, więc łapane są też homonimy (Baran/Wilk). Wyliczenia
+  („A. Wnioski stron"), patroni instytucji („Szkoła im. A. Mickiewicza") i pozycje po
+  kropce zdania zostają; skróty tytułów (mec./dr/prof.…) przed inicjałem nie przeszkadzają.
+- **Obce nazwiska wieloczłonowe (B9/B10)**: „Jean-Pierre Dubois" (imię z myślnikiem,
+  człony ≤7 liter — odróżnia od „Czechowice-Dziedzice") oraz cząstki „Van/von/de/bin…"
+  po masce osoby („Nguyen Van Anh" → całość w masce).
+- **Stabilna numeracja osób**: etykiety [OSOBA-X] idą teraz w kolejności pierwszego
+  wystąpienia w tekście (wcześniej wg typu reguły — litery „skakały").
+- **Nadmaskowanie (pre-existing, wykryte przy okazji)**: rzeczowniki pospolite lm. na
+  „-ski" („Wnioski stron oddalono", „Zapiski", „Maski") nie są już maskowane jako
+  nazwiska — stoplista w surnames.ts; „im. Mickiewicza" chronione nowym strażnikiem
+  patrona (prevLowerWord nie widział „im." przez kropkę).
+- Kosmetyka: NR-KONTA z etykietą nie zjada spacji po numerze.
+
+Aplikacja web 0.44.2 → 0.44.3, rdzeń `anonimizator` 0.27.0 → 0.28.0.
+
 ## v0.44.2 — 2026-07-11
 
 **Poprawki detekcji po zewnętrznym raporcie z testów (partie 1–3).**

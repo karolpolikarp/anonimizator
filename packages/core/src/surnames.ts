@@ -192,6 +192,12 @@ export const NON_SURNAME_ADJ = new Set<string>((
   'kołobrzeski koszaliński słupski legnicki wałbrzyski jeleniogórski nowosądecki ' +
   // pospolite przymiotniki na -ski/-cki: „Niski poziom", „wąski", „bliski"
   'niski wąski płaski bliski śliski grząski ' +
+  // rzeczowniki pospolite w liczbie mnogiej o końcówce -ski (lm. od -sek/-sk/-ska):
+  // „Wnioski stron oddalono", „Zapiski z narady" — kapitalizowane na początku zdania
+  // pożerane były jako nazwiska (realny, dotkliwy fałszywy pozytyw w pismach urzędowych)
+  'wnioski zapiski odpiski przypiski wypiski dopiski naciski zaciski pociski odciski wyciski ' +
+  'uściski ściski zyski wrzaski trzaski błyski przebłyski odgłoski kioski maski paski laski ' +
+  'deski miski piaski wioski troski kreski łuski pyski obeliski spiski półmiski meniski ' +
   // wieloznaczny wyraz o końcówce nazwiskowej, który nazwiskiem nie jest (Znicz Pruszków itp.)
   'znicz'
 ).split(/\s+/).filter(Boolean));

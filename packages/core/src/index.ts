@@ -21,7 +21,7 @@
  * (np. dwa niezależne przejścia redakcji) niczego nie psuje.
  */
 
-import { normalizeSurnameKey, surnameBase, looksLikeSurname, NON_SURNAME_ADJ } from './surnames.js';
+import { normalizeSurnameKey, surnameBase, looksLikeSurname, NON_SURNAME_ADJ, HOMOGRAPH_SURNAMES } from './surnames.js';
 
 export type PiiType =
   | 'EMAIL'
@@ -308,6 +308,10 @@ const prevLowerWord = (text: string, offset: number): string | undefined =>
     .slice(Math.max(0, offset - 40), offset)
     .match(/([\p{Ll}]+)\s*$/u)?.[1]
     ?.toLowerCase();
+/** Czy tuż przed pozycją stoi „im." (patron instytucji: „Szkoła im. A. Mickiewicza"),
+ *  ewentualnie z inicjałem imienia? prevLowerWord tego nie widzi (kropka po „im"). */
+const precededByPatron = (t: string, offset: number): boolean =>
+  /\bim\.[ \t]+(?:[A-ZĄĆĘŁŃÓŚŹŻ]\.[ \t]*)?$/.test(t.slice(Math.max(0, offset - 12), offset));
 /** Kody walut — „PLN 123456" to kwota, nie dowód (wyjątek w kroku DOWÓD bez kontekstu). */
 const CURRENCY_CODES = new Set([
   'PLN', 'EUR', 'USD', 'GBP', 'CHF', 'CZK', 'SEK', 'NOK', 'DKK', 'JPY', 'UAH', 'RUB',
@@ -791,7 +795,7 @@ export function redactPII(input: string, options?: RedactOptions): RedactionResu
   // 3) NR KONTA (NRB) zakotwiczony słowem „konto/rachunek/IBAN" + 26 cyfr (z opcjonalnymi spacjami).
   if (on('NR-KONTA')) {
     text = text.replace(
-      /\b(konto|konta|rachunek|rachunku|rachunek bankowy|nr konta|numer konta|iban)\b([\s:.-]*)((?:\d[ ]?){26})(?!\d)/gi,
+      /\b(konto|konta|rachunek|rachunku|rachunek bankowy|nr konta|numer konta|iban)\b([\s:.-]*)((?:\d[ ]?){25}\d)(?![ ]?\d)/gi,
       (_m, kw, sep) => {
         bump('NR-KONTA');
         return `${kw}${sep}${M['NR-KONTA']}`;
@@ -807,6 +811,16 @@ export function redactPII(input: string, options?: RedactOptions): RedactionResu
         return `${kw}${sep}${M['NR-KONTA']}`;
       },
     );
+    // (c) NRB BEZ prefiksu „PL" i BEZ etykiety — 26 cyfr z POPRAWNĄ sumą (walidacja mod-97
+    //     po dodaniu „PL", NRB = polski IBAN bez prefiksu). Codzienna forma zapisu konta
+    //     w polskich pismach; suma kontrolna tnie FP na przypadkowych długich ciągach.
+    text = text.replace(/(?<!\d[ ]?)(?:\d[ ]?){25}\d(?![ ]?\d)/g, (m) => {
+      if (isValidIban('PL' + m.replace(/ /g, ''))) {
+        bump('NR-KONTA');
+        return M['NR-KONTA'];
+      }
+      return m;
+    });
   }
 
   // 4) PESEL — 11 cyfr + suma kontrolna, nie po „art./poz.".
@@ -906,11 +920,14 @@ export function redactPII(input: string, options?: RedactOptions): RedactionResu
     //     przymiotnik-wypełniacz („telefon kontaktowy") oraz goły prefiks kraju „48" bez plusa
     //     („kom. 48 512 345 678") — prefiks maskujemy razem z numerem (maskuj całość).
     text = text.replace(
-      /\b(tel\.?|telefon\w{0,4}|kom\.?|komórk[aiwy]|fax|faks|nr tel\.?)((?:\s+(?:kontaktow\w+|stacjonarn\w+|służbow\w+|komórkow\w+|domow\w+))?[\s:.=-]*)((?:\+?48[\s-]+)?(?:[\s\-().]{0,3}\d){9})(?!\.?\d)/gi,
-      (m, kw: string, sep: string, num: string) => {
-        if (!hasNineDigits(num.replace(/^\+?48[\s-]+/, ''))) return m;
+      // Po kotwicy bywa WYLICZENIE („Telefony: 512.345.678, 601 234 567") — kotwica działa
+      // na wszystkie człony listy rozdzielone przecinkami, nie tylko pierwszy.
+      /\b(tel\.?|telefon\w{0,4}|kom\.?|komórk[aiwy]|fax|faks|nr tel\.?)((?:\s+(?:kontaktow\w+|stacjonarn\w+|służbow\w+|komórkow\w+|domow\w+))?[\s:.=-]*)((?:\+?48[\s-]+)?(?:[\s\-().]{0,3}\d){9}(?:\s*,\s*(?:\+?48[\s-]+)?(?:[\s\-().]{0,3}\d){9})*)(?!\.?\d)/gi,
+      (m, kw: string, sep: string, nums: string) => {
+        const parts = nums.split(/\s*,\s*/);
+        if (!parts.every((p) => hasNineDigits(p.replace(/^\+?48[\s-]+/, '')))) return m;
         bump('TELEFON');
-        return `${kw}${sep}${M.TELEFON}`;
+        return `${kw}${sep}${parts.map(() => M.TELEFON).join(', ')}`;
       },
     );
 
@@ -1020,6 +1037,16 @@ export function redactPII(input: string, options?: RedactOptions): RedactionResu
       (_m, ctx: string) => {
         bump('NR-REJESTRACYJNY');
         return `${ctx}${M['NR-REJESTRACYJNY']}`;
+      },
+    );
+    // Kotwica POJAZDOWA — wyliczenia pojazdów bez słowa „rejestracyjny": „drugi pojazd
+    // WW 1234A", „motocykl ZS 4567". Wartość WIELKIMI literami (celowo bez flagi `i`)
+    // i z ≥1 CYFRĄ w drugiej części — inaczej „pojazd MERCEDES" stałby się tablicą.
+    text = text.replace(
+      /\b([Pp]ojazd\w*|[Ss]amoch[oó]d\w*|[Mm]otocykl\w*|[Mm]otorower\w*|[Cc]iągnik\w*|[Pp]rzyczep\w*|[Aa]uto)((?:\s+(?:marki|typu)\s+[A-ZĄĆĘŁŃÓŚŹŻ][\w-]*)?[\s:=.-]*)((?!BMW\b)[A-Z]{2,3}[\s-]?(?=[A-Z0-9]*\d)[A-Z0-9]{4,5})\b/g,
+      (_m, kw: string, sep: string) => {
+        bump('NR-REJESTRACYJNY');
+        return `${kw}${sep}${M['NR-REJESTRACYJNY']}`;
       },
     );
   }
@@ -1353,11 +1380,57 @@ export function redactPII(input: string, options?: RedactOptions): RedactionResu
       (m, offset: number) => {
         if (LEGAL_ENTITY_WORDS.has(m.toLowerCase())) return m;
         if (!surnameBase(m)) return m;
-        // „choroba Kowalskiego", „ulica Kwiatkowska" — kontekst nie-osobowy → nie maskuj
+        // „choroba Kowalskiego", „ulica Kwiatkowska", „im. Mickiewicza" — kontekst nie-osobowy
+        if (precededByPatron(text, offset)) return m;
         const prev = prevLowerWord(text, offset);
         if (prev && NON_PERSON_CONTEXT.has(prev)) return m;
         bump('IMIE');
         return personMask(m);
+      },
+    );
+  }
+
+  // (c1a) INICJAŁ + nazwisko („A. Baran", „J. Kowalski"). Inicjał to kotwica OSOBOWA, więc
+  // maskujemy także homonimy rzeczowników (Baran/Wilk/Lis), które w trybie samodzielnym są
+  // chronione. Nie na początku linii (punkt wyliczenia „A. Wnioski stron") i nie po „im."
+  // (patron instytucji: „Szkoła im. A. Mickiewicza" — zostaje). Inicjał wciągany do maski.
+  if (on('IMIE')) {
+    text = text.replace(
+      // Lookbehind: inicjał NIE po kropce zdania/skrótu („Szkoła im. A. Mickiewicza" —
+      // patron zostaje; „…stron. A. Wnioski" — wyliczenie zostaje), CHYBA ŻE ta kropka
+      // należy do skrótu tytułu przed inicjałem („mec. J. Kowalski", „dr A. Baran").
+      new RegExp(
+        `(?<!(?:^|\\n)[ \\t]*)(?<!(?<!\\b(?:[Mm]ec|[Pp]rof|[Dd]r|[Mm]gr|[Ii]nż|hab|[Aa]dw|[Kk]s|płk|gen|kpt|mjr|por|sierż|lek|med|[Ss]ędz))[.!?:;][ \\t]+)\\b[${PL_UP}]\\.[ \\t]+([${PL_UP}][${PL_LO}]+(?:-[${PL_UP}][${PL_LO}]+)?)`,
+        'g',
+      ),
+      (m, w2: string, offset: number) => {
+        const wl = w2.toLowerCase();
+        if (LEGAL_ENTITY_WORDS.has(wl) || NON_SURNAME_ADJ.has(wl) || TITLE_WORDS.has(wl) || ROLE_WORDS.has(wl)) return m;
+        if (precededByPatron(text, offset)) return m;
+        const prev = prevLowerWord(text, offset);
+        if (prev && NON_PERSON_CONTEXT.has(prev)) return m;
+        if (!surnameBase(w2) && !looksLikeSurname(w2) && !HOMOGRAPH_SURNAMES.has(normalizeSurnameKey(w2))) return m;
+        bump('IMIE');
+        return personMask(w2);
+      },
+    );
+  }
+
+  // (c1b) OBCE imię DWUCZŁONOWE z myślnikiem + nazwisko („Jean-Pierre Dubois", „Anne-Marie
+  // Fischer"). Człony imienia krótkie (≤7 liter — odróżnia od miast „Czechowice-Dziedzice");
+  // całość nie może być znaną miejscowością z myślnikiem („Bielsko-Biała Centrum" zostaje).
+  if (on('IMIE')) {
+    text = text.replace(
+      new RegExp(
+        `\\b([${PL_UP}][${PL_LO}]{1,6}-[${PL_UP}][${PL_LO}]{1,6})[ \\t]+([${PL_UP}][${PL_LO}]+(?:-[${PL_UP}][${PL_LO}]+)?)\\b`,
+        'g',
+      ),
+      (m, first: string, w2: string) => {
+        const wl = w2.toLowerCase();
+        if (POLISH_CITIES.has(first.toLowerCase()) || MULTIWORD_CITIES.has(first.toLowerCase())) return m;
+        if (LEGAL_ENTITY_WORDS.has(wl) || NON_SURNAME_ADJ.has(wl) || TITLE_WORDS.has(wl) || ROLE_WORDS.has(wl)) return m;
+        bump('IMIE');
+        return personMask(w2);
       },
     );
   }
@@ -1379,6 +1452,8 @@ export function redactPII(input: string, options?: RedactOptions): RedactionResu
         // Okno 40 znaków przed dopasowaniem wystarcza (unikamy O(n²) na długim tekście).
         if (PRECEDED_BY_CAP.test(text.slice(Math.max(0, offset - 40), offset))) return m;
         // eponim/ulica po wyrazie z małej litery („choroba Leśniowskiego", „ulica Puławska")
+        // oraz patron instytucji („Szkoła im. Mickiewicza", „im. A. Mickiewicza")
+        if (precededByPatron(text, offset)) return m;
         const prev = prevLowerWord(text, offset);
         if (prev && NON_PERSON_CONTEXT.has(prev)) return m;
         bump('IMIE');
@@ -1391,6 +1466,24 @@ export function redactPII(input: string, options?: RedactOptions): RedactionResu
   // do maski — inicjał + nazwisko potrafi identyfikować osobę (maskuj całość, nie fragment).
   // (nie na początku linii — tam samotna wielka litera z kropką to punkt wyliczenia „A. …")
   text = text.replace(/(?<!(?:^|\n)[ \t]*)\b[A-ZĄĆĘŁŃÓŚŹŻ]\.[ \t]*(\[OSOBA-[A-Z]+\]|\[IMIĘ I NAZWISKO\])/g, '$1');
+
+  // DOMKNIĘCIE: cząstka obcego nazwiska wieloczłonowego po masce osoby („[OSOBA-F] Van Anh",
+  // „[OSOBA-A] von Habsburg") — cząstka + następny człon należą do tego samego nazwiska.
+  text = text.replace(
+    /(\[OSOBA-[A-Z]+\]|\[IMIĘ I NAZWISKO\])[ \t]+(?:[Vv][ao]n|[Dd][aei]|[Dd]e[rl]|[Dd]ella|[Ee]l|[Aa]l|[Bb]in|[Tt]er|[Ll][ae])[ \t]+[A-ZĄĆĘŁŃÓŚŹŻ][a-ząćęłńóśźż]+/g,
+    '$1',
+  );
+
+  // STABILNA NUMERACJA: etykiety osób wg kolejności PIERWSZEGO wystąpienia w tekście
+  // (reguły biegną typami, nie pozycją — bez tego litery „skakały": E przed C).
+  {
+    const seen: string[] = [];
+    for (const mm of text.matchAll(/\[OSOBA-([A-Z]+)\]/g)) {
+      if (!seen.includes(mm[1])) seen.push(mm[1]);
+    }
+    const remap = new Map(seen.map((l, i) => [l, indexToLetters(i)]));
+    text = text.replace(/\[OSOBA-([A-Z]+)\]/g, (_m, l: string) => `[OSOBA-${remap.get(l)}]`);
+  }
 
   const found: PiiFinding[] = [...counts.entries()].map(([type, count]) => ({ type, count }));
   return { redacted: text, found };
