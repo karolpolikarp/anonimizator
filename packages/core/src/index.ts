@@ -943,9 +943,11 @@ export function redactPII(input: string, options?: RedactOptions): RedactionResu
 
   // 9d) PRAWO JAZDY — TYLKO z kontekstem („prawo jazdy"/„nr prawa jazdy"), bo polski numer blankietu
   //     jest zmienny; kontekst tnie FP. Wartość musi zawierać cyfrę (żeby nie zjeść „kategorii B").
+  //     Numer maskujemy W CAŁOŚCI, także z wewnętrznymi separatorami „/"/„-" (np. „12345/67/8901"),
+  //     bo maskujemy całą informację, nie jej fragment.
   if (on('PRAWO-JAZDY')) {
     text = text.replace(
-      /\b((?:prawo\s+jazdy|prawa\s+jazdy|nr\s+prawa\s+jazdy|numer\s+prawa\s+jazdy)(?:\s+(?:nr\.?|numer|seria))*[\s:=.-]*)((?=[A-Za-z0-9]*\d)[A-Za-z0-9]{5,15})\b/gi,
+      /\b((?:prawo\s+jazdy|prawa\s+jazdy|nr\s+prawa\s+jazdy|numer\s+prawa\s+jazdy)(?:\s+(?:nr\.?|numer|seria))*[\s:=.-]*)((?=[A-Za-z0-9/-]*\d)[A-Za-z0-9]{4,15}(?:[/-][A-Za-z0-9]{1,6}){0,3})/gi,
       (_m, ctx: string) => {
         bump('PRAWO-JAZDY');
         return `${ctx}${M['PRAWO-JAZDY']}`;

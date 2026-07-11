@@ -2,8 +2,13 @@
 
 ## v0.44.1 — 2026-07-11
 
-**Poprawki interfejsu po dodaniu nowych typów PII (tylko warstwa web).**
+**Poprawki interfejsu + pełne maskowanie numeru prawa jazdy.**
 
+- **Numer prawa jazdy maskowany W CAŁOŚCI.** Format z wewnętrznymi separatorami (np.
+  `12345/67/8901`) był maskowany tylko do pierwszego separatora (`[PRAWO-JAZDY]/67/8901`) —
+  fragment numeru wyciekał. Teraz wzorzec obejmuje separatory `/` i `-`, więc cały numer jest
+  zastępowany jednym znacznikiem. Zasada: maskujemy całą informację, nie jej fragment.
+  (Rdzeń `anonimizator` 0.26.0 → 0.26.1.)
 - **Kolorowe znaczniki dla nowych typów w wyniku.** `[PRAWO-JAZDY]`, `[NR-REJESTRACYJNY]`,
   `[VIN]`, `[IP]`, `[MAC]`, `[TOKEN]` były renderowane jako zwykły tekst — teraz dostają
   kolorowy znacznik kategorii „Identyfikatory" (jak PESEL/NIP) wraz z tooltipem metody wykrycia.
@@ -13,7 +18,7 @@
   pasie, zamiast czterech osobnych, w większości pustych rzędów. Kafelki utrzymują jednolitą
   szerokość w całym panelu. „Identyfikatory" (najliczniejsze) zostają pełną szerokością.
 
-Aplikacja web 0.44.0 → 0.44.1 (rdzeń `anonimizator` bez zmian, 0.26.0).
+Aplikacja web 0.44.0 → 0.44.1, rdzeń `anonimizator` 0.26.0 → 0.26.1.
 
 ## v0.44.0 — 2026-07-11
 

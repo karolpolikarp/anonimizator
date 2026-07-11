@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-07-11T09:56:18.131Z",
+  "generatedAt": "2026-07-11T10:35:50.809Z",
   "seed": 20260704,
-  "coreVersion": "0.26.0",
-  "casesTotal": 211,
-  "mustMaskTotal": 203,
-  "mustKeepTotal": 221,
+  "coreVersion": "0.26.1",
+  "casesTotal": 212,
+  "mustMaskTotal": 204,
+  "mustKeepTotal": 222,
   "skippedLayers": [
     {
       "name": "core+spacy",
@@ -26,16 +26,16 @@
     {
       "name": "T0+T1 core",
       "desc": "redactPII() — regex + sumy kontrolne + słownik (in-process, offline)",
-      "elapsedMs": 16,
+      "elapsedMs": 19,
       "changedVsCore": null,
-      "recall": 0.9261083743842364,
-      "precision": 0.9909502262443439,
-      "f1": 0.9574327074007325,
+      "recall": 0.9264705882352942,
+      "precision": 0.990990990990991,
+      "f1": 0.9576452705036965,
       "agg": {
-        "maskTotal": 203,
-        "maskHit": 188,
-        "keepTotal": 221,
-        "keepHit": 219
+        "maskTotal": 204,
+        "maskHit": 189,
+        "keepTotal": 222,
+        "keepHit": 220
       },
       "perCategory": {
         "osoby-podstawowe": {
@@ -69,10 +69,10 @@
           "recall": 1,
           "precision": 1,
           "f1": 1,
-          "maskTotal": 59,
-          "maskHit": 59,
-          "keepTotal": 51,
-          "keepHit": 51
+          "maskTotal": 60,
+          "maskHit": 60,
+          "keepTotal": 52,
+          "keepHit": 52
         },
         "negatywy": {
           "recall": null,
@@ -1079,6 +1079,11 @@
         },
         {
           "id": "str-49",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-50",
           "leaked": [],
           "eaten": []
         },

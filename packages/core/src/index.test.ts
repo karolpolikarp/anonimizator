@@ -781,6 +781,15 @@ test('prawo jazdy maskowane z kontekstem; „kategorii B" bez cyfry NIE', () => 
   expect(redactPII('Prawo jazdy:\nKR1234567').redacted).toContain('[PRAWO-JAZDY]');
   expect(redactPII('Prawo jazdy kategorii B').redacted).toContain('kategorii');
 });
+test('prawo jazdy ze slashami maskowane W CAŁOŚCI (bez wycieku fragmentu)', () => {
+  const r = redactPII('Prawo jazdy: 12345/67/8901');
+  expect(r.redacted).toContain('[PRAWO-JAZDY]');
+  expect(r.redacted).not.toMatch(/\d/); // żaden fragment numeru nie zostaje
+  // wartość po numerze nie jest pożerana
+  const r2 = redactPII('Prawo jazdy nr KR1234567 wydane w 2020 roku.');
+  expect(r2.redacted).toContain('[PRAWO-JAZDY]');
+  expect(r2.redacted).toContain('wydane');
+});
 test('nr rejestracyjny maskowany z kontekstem', () => {
   const r = redactPII('Nr rejestracyjny:\nWI1234K');
   expect(r.redacted).toContain('[NR-REJESTRACYJNY]');

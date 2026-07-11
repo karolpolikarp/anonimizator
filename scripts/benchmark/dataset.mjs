@@ -463,6 +463,8 @@ export function buildDataset() {
   str('MAC karty sieciowej 00:1A:2B:3C:4D:5E jest unikalny.', ['00:1A:2B:3C:4D:5E'], ['unikalny']);
   str('Numer VIN WAUZZZ8V4JA123456 widnieje w dowodzie rejestracyjnym.', ['WAUZZZ8V4JA123456'], ['dowodzie']);
   str('Prawo jazdy nr KR1234567 wydane w 2020 roku.', ['KR1234567'], ['wydane']);
+  // numer prawa jazdy ze slashami maskowany W CAŁOŚCI (nie fragment)
+  str('Prawo jazdy: 12345/67/8901 (kat. B).', ['12345/67/8901'], ['kat']);
   str('Pojazd o nr rejestracyjnym WI1234K, marka Audi.', ['WI1234K'], ['Audi']);
   // precyzja: numer wersji oprogramowania to NIE adres IP
   neg('Aktualizacja do wersji 1.2.3.4 usuwa błędy krytyczne.', ['1.2.3.4']);
