@@ -105,6 +105,9 @@ _SINGLE_WORD_STOP = set(
 
 _PATRON_BEFORE = re.compile(r"\b(?:im|ul|al|pl|os)\.\s+(?:[A-ZĄĆĘŁŃÓŚŹŻ]\.\s*)?$")
 
+# Znacznik XML/HTML (lustro TAG_SPAN z packages/core/src/ner-postprocess.ts).
+_TAG_RE = re.compile(r"<[^<>\n]{1,80}>")
+
 
 def _keep_span(text: str, s: int, e: int) -> bool:
     """Czy span z modelu przechodzi filtr precyzji (True = maskuj)."""
@@ -168,7 +171,7 @@ elif BACKEND == "spacy":
 else:
     raise RuntimeError(f"Nieznany PII_NER_BACKEND '{BACKEND}' (dozwolone: spacy, herbert)")
 
-app = FastAPI(title="Anonimizator NER", version="2.0.0")
+app = FastAPI(title="Anonimizator NER", version="2.1.0")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=CORS_ORIGINS,
@@ -199,7 +202,15 @@ def redact(req: RedactRequest, authorization: str = Header(default="")):
     if not text:
         return {"redacted": text, "found": []}
 
-    spans = [(s, e) for s, e in detect_persons(text) if _keep_span(text, s, e)]
+    # Znaczniki XML/HTML są NIETYKALNE — model potrafił otagować „Customer" w „</Customer>"
+    # jako osobę i maska rozrywała strukturę dokumentu (wartości elementów osobowych maskuje
+    # rdzeń kotwicami strukturalnymi, zanim tekst trafi do usługi).
+    tags = [(m.start(), m.end()) for m in _TAG_RE.finditer(text)]
+    spans = [
+        (s, e)
+        for s, e in detect_persons(text)
+        if _keep_span(text, s, e) and not any(s < te and e > ts for ts, te in tags)
+    ]
     if not spans:
         return {"redacted": text, "found": []}
 

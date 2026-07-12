@@ -1,5 +1,59 @@
 # Changelog
 
+## v0.45.0 — 2026-07-12
+
+**Struktura XML/JSON, ochrona URL-i, nowy typ LOGIN, tolerancja OCR, domknięcie telefonu
+z kropkami i tablic w wyliczeniu (raport testów: XML/JSON/OCR + mikrotest N1/B3).**
+
+- **Nowy typ `LOGIN`** (`[LOGIN]`): kotwica „login/username/nazwa użytkownika" + wartość
+  (także w NASTĘPNEJ linii i małymi literami: „Login użytkownika:\ntkaminski"); wariant
+  w cudzysłowie po „użytkownik/login/konto" („wylogowanie użytkownika «tkaminski»");
+  złapana wartość maskowana też w pozostałych wystąpieniach w dokumencie.
+  Identyfikatory systemowe („USR-005182") i etykiety po pustym polu zostają.
+- **URL-e chronione i maskowane WEWNĄTRZ**: adres jest wyjmowany sentinelem przed wszystkimi
+  przebiegami (wcześniej detektor nazwisk rozbijał URL — „[IMIĘ I NAZWISKO]]"), a wartości
+  parametrów osobowych (`?user=`, `?email=` — też `%40`, `?name=`, `?tel=`, `?token=`…)
+  maskowane wg typu. Struktura adresu (domena, `id=`) zostaje; URL bez PII nietknięty.
+- **Struktura XML/JSON**: tagi `<Name>/<Surname>/<Phone>/<Street>/<City>…` i klucze
+  `"firstName"/"lastName"/"city"/"street"…` (EN i PL) to kotwice strukturalne — maskowana
+  sama wartość, tagi/cudzysłowy/przecinki zostają (wynik JSON dalej się parsuje). Generyczny
+  `<Name>` bramkowany słownikiem („Produkt X200" zostaje); nazwisko dostaje spójną etykietę
+  `[OSOBA-X]`.
+- **Telefon z kropkami — domknięcie (B3)**: „+48.512.345.678" (kropki w trybie prefiksowym),
+  kotwica „kontakt(owy)", wyliczenie po kotwicy akceptuje „oraz"/„i" i wypełniacz
+  („oraz stacjonarny 22.501.23.45"); tryb kotwicowy biegnie PRZED prefiksowym, żeby placeholder
+  nie przerywał łańcucha listy. Kropkowy bez żadnej kotwicy nadal niemaskowany (numery
+  seryjne/wersje/kwoty — świadoma polityka).
+- **Tablice w wyliczeniu — domknięcie (N1)**: człony po przecinku/„oraz"/„i" dziedziczą
+  kotwicę pierwszej tablicy („pojazdy: WW 1234A, ZS 4567, WE 123AB…"); nowe kotwice
+  „parking/zaparkowan…" z przerwą do 3 słów; bezpiecznik: ścisły format (druga część od cyfry)
+  + walidacja pierwszej litery wyróżnika wojewódzkiego. „Rozporządzenie (WE) nr 1234/2009"
+  i „dyrektywa WE 123" zostają. Naprawiona idempotencja: kotwica „rej…" nie zjada już
+  końcówki „…cyjnym" przy drugim przebiegu (wartość tablicy musi zawierać cyfrę).
+- **Tolerancja błędów OCR**: kotwice z homoglifem („teI:" → telefon, „uI." → ulica), nazwa
+  ulicy z 0/1 w środku („Lip0wa 15"), pary WERSALIKAMI z homoglifami 0→O/1→l walidowane
+  słownikiem/morfologią („J0AN K0WALSKI" → maska; „SN-44A8-9912-XXA", „CZĘŚĆ IV" zostają).
+  Przy okazji: czyste WERSALIKI „JAN KOWALSKI" w prozie też maskowane (oba słowniki wymagane).
+- **Miasto po adresie z przyimkiem/nową linią**: „przy [ADRES] w Gdańsku" →
+  „przy [ADRES] w [MIEJSCOWOŚĆ]" (bramka słownikowa); blok adresowy „[ADRES]\nWarszawa"
+  też domknięty. Goła proza („spotkanie w Gdańsku") nadal nietknięta.
+- **Audyt adwersarialny nowych reguł (obszar URL/LOGIN) — 6 poprawek**: parametry we
+  FRAGMENCIE URL-a („callback#access_token=…" → `[TOKEN]`, klucze po „#"); login
+  w guillemetach («tkaminski») i w cudzysłowie po dwukropku („Login: „jkowalski"");
+  kotwica „Login administratora/operatora/serwisowy/techniczny"; strażnik pustego
+  „Login:" przed etykietą DWUWYRAZOWĄ („System operacyjny: …" — wcześniej „System"
+  stawał się loginem i propagował maskę po całym dokumencie); goły „konto" usunięty
+  z kotwic cudzysłowowych („konto «Firmowe»" to produkt, wymagane „konto użytkownika").
+- **Warstwa NER nie rozrywa znaczników XML/HTML**: model tagował „Customer" w
+  „</Customer>" jako osobę — znaczniki `<…>` są teraz nietykalne w obu ścieżkach
+  (`ner-postprocess.ts` dla ONNX/przeglądarki i `services/ner/app.py` dla usług HTTP).
+  Pełny benchmark 4 warstw po przebudowie obrazów: core F1 96,7%, +spacy 99,4%,
+  +fastpdn 99,2%, +onnx 99,0% (precision-proxy 99,6% we wszystkich warstwach).
+- Scenariusz testów do dokończenia (5 obszarów audytu + testy ręczne UI):
+  `docs/SCENARIUSZ-TESTOW-v0.45.md`.
+
+Aplikacja web 0.44.4 → 0.45.0, rdzeń `anonimizator` 0.28.1 → 0.29.0, usługa NER 2.0.1 → 2.1.0.
+
 ## v0.44.4 — 2026-07-11
 
 **Audyt adwersarialny reguł z v0.44.3 — poprawki precyzji + filtr precyzji w usłudze NER.**

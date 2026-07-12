@@ -1112,3 +1112,176 @@ test('rozszerzona stoplista -ski/-cki (przyciski, klocki, kluski…)', () => {
   const t = 'Przyciski zamontowano. Klocki hamulcowe. Kluski śląskie. Odpryski lakieru. Uzyski energii.';
   expect(redactPII(t, { pseudonyms: true }).redacted).toBe(t);
 });
+
+// ============================================================================
+// v0.45.0 — XML/JSON, URL, LOGIN, OCR, telefon z kropkami, tablice w wyliczeniu
+// ============================================================================
+
+// ── Struktura XML ──
+test('XML: tagi Name/Surname/Street/City to kotwice strukturalne; tagi zostają', () => {
+  const t = '<Customer>\n<Name>Jan</Name>\n<Surname>Kowalski</Surname>\n<Phone>+48 501 234 567</Phone>\n<Email>jan@example.com</Email>\n<Street>Leśna 15</Street>\n<City>Warszawa</City>\n</Customer>';
+  const r = redactPII(t, { pseudonyms: true });
+  expect(r.redacted).toContain('<Name>[IMIĘ I NAZWISKO]</Name>');
+  expect(r.redacted).toContain('<Surname>[OSOBA-A]</Surname>');
+  expect(r.redacted).toContain('<Phone>[TELEFON]</Phone>');
+  expect(r.redacted).toContain('<Email>[EMAIL]</Email>');
+  expect(r.redacted).toContain('<Street>[ADRES]</Street>');
+  expect(r.redacted).toContain('<City>[MIEJSCOWOŚĆ]</City>');
+  // idempotencja: drugi przebieg niczego nie psuje
+  expect(redactPII(r.redacted, { pseudonyms: true }).redacted).toBe(r.redacted);
+});
+test('XML: generyczny <Name> z nazwą produktu/firmy NIE jest osobą', () => {
+  const t = '<Name>Produkt X200</Name> oraz <Name>Acme</Name> w katalogu.';
+  expect(redactPII(t).redacted).toBe(t);
+});
+
+// ── Struktura JSON ──
+test('JSON: klucze firstName/lastName/city/street maskują wartość; wynik dalej się parsuje', () => {
+  const t = '{\n  "customer": {\n    "firstName": "Jan",\n    "lastName": "Kowalski",\n    "email": "jan@example.com",\n    "phone": "+48 501 234 567",\n    "city": "Warszawa",\n    "street": "Lipowa 12"\n  }\n}';
+  const r = redactPII(t, { pseudonyms: true });
+  const parsed = JSON.parse(r.redacted); // cudzysłowy i przecinki nietknięte
+  expect(parsed.customer.firstName).toBe('[IMIĘ I NAZWISKO]');
+  expect(parsed.customer.lastName).toBe('[OSOBA-A]');
+  expect(parsed.customer.city).toBe('[MIEJSCOWOŚĆ]');
+  expect(parsed.customer.street).toBe('[ADRES]');
+  expect(r.redacted.includes('Lipowa')).toBe(false);
+  expect(redactPII(r.redacted, { pseudonyms: true }).redacted).toBe(r.redacted);
+});
+test('JSON: klucze nieosobowe i wartości nie-PII zostają', () => {
+  const t = '{ "status": "Aktywny", "name": "Acme Corp", "city": "b/d" }';
+  expect(redactPII(t).redacted).toBe(t);
+});
+
+// ── URL: ochrona + maskowanie wewnątrz ──
+test('URL: parametry osobowe maskowane wewnątrz, struktura adresu zostaje', () => {
+  const t = 'Zgłoszenie: https://portal.example.com/ticket?id=123456789&user=tomasz.kaminski&email=jan%40example.com dostępne.';
+  const r = redactPII(t);
+  expect(r.redacted).toContain('https://portal.example.com/ticket?id=123456789');
+  expect(r.redacted).toContain('user=[LOGIN]');
+  expect(r.redacted).toContain('email=[EMAIL]');
+  expect(r.redacted.includes('tomasz.kaminski')).toBe(false);
+  expect(r.redacted.includes('jan%40example.com')).toBe(false);
+  expect(redactPII(r.redacted).redacted).toBe(r.redacted);
+});
+test('URL bez danych osobowych zostaje nietknięty (też z kapitalizowaną ścieżką)', () => {
+  const t = 'Repozytorium https://github.com/apache/kafka oraz cennik www.example.com/Cennik-Uslugi.';
+  expect(redactPII(t, { pseudonyms: true }).redacted).toBe(t);
+});
+test('URL: detektory nazwisk/telefonów nie rozbijają adresu (ochrona sentinelami)', () => {
+  const t = 'Profil https://intranet.firma.pl/osoby/Jan-Kowalski?tab=dane w systemie.';
+  const r = redactPII(t, { pseudonyms: true });
+  // adres pozostaje JEDNYM spójnym URL-em — bez rozerwania maską w środku ścieżki
+  expect(r.redacted).toContain('https://intranet.firma.pl/osoby/Jan-Kowalski?tab=dane');
+});
+
+// ── LOGIN ──
+test('login po kotwicy (też w następnej linii) + powtórzenia w dokumencie', () => {
+  const t = 'Login użytkownika:\ntkaminski\n\nNastąpiło poprawne wylogowanie użytkownika "tkaminski" o 16:02.';
+  const r = redactPII(t);
+  expect(r.redacted.match(/\[LOGIN\]/g)?.length).toBe(2);
+  expect(r.redacted.includes('tkaminski')).toBe(false);
+  expect(r.redacted).toContain('o 16:02');
+});
+test('login: identyfikatory systemowe i puste pola zostają', () => {
+  const t = 'Identyfikator w systemie:\nUSR-005182\n\nLogin:\nStatus: aktywny';
+  const r = redactPII(t).redacted;
+  expect(r).toContain('USR-005182');
+  expect(r).toContain('Status: aktywny'); // etykieta po pustym „Login:" nie jest wartością
+});
+test('login respektuje options.types', () => {
+  const t = 'Login: tkaminski';
+  expect(redactPII(t, { types: [] }).redacted).toBe(t);
+  expect(redactPII(t, { types: ['LOGIN'] }).redacted).toContain('[LOGIN]');
+});
+
+// ── Telefon z kropkami (mikrotest A) ──
+test('telefon: kotwica „Kontakt" + wyliczenie z „oraz", wypełniaczem i prefiksem „+48."', () => {
+  const t = 'Kontakt: 512.345.678, +48.512.345.678 oraz stacjonarny 22.501.23.45.';
+  const r = redactPII(t);
+  expect(r.redacted.match(/\[TELEFON\]/g)?.length).toBe(3);
+  expect(r.redacted).not.toMatch(/\d{3}/);
+});
+test('telefon: człon po „oraz" w wyliczeniu z kotwicą „tel." maskowany', () => {
+  const r = redactPII('tel. 512 345 678, 601-234-567 oraz 512.345.678.');
+  expect(r.redacted.match(/\[TELEFON\]/g)?.length).toBe(3);
+});
+test('telefon: pułapki kropkowe (data, wersja, kwota) zostają', () => {
+  const t = 'Data 12.05.1990 i wersja 10.2.3 nie są telefonem. Kwota 1.234.567 zł też nie.';
+  expect(redactPII(t).redacted).toBe(t);
+});
+
+// ── Tablice rejestracyjne w wyliczeniu (mikrotest B) ──
+test('tablice: wyliczenie po jednej kotwicy pojazdowej — wszystkie człony', () => {
+  const t = 'Zabezpieczono pojazdy: WW 1234A, ZS 4567, WE 123AB, PO 5AB67, KR 8XY90, DW 12345, WGM 1234.';
+  const r = redactPII(t);
+  expect(r.redacted.match(/\[NR-REJESTRACYJNY\]/g)?.length).toBe(7);
+  expect(r.redacted).not.toMatch(/WW|ZS|WE|PO|KR|DW|WGM/);
+});
+test('tablice: kotwica „parking" z przerwą i kontynuacją „oraz"', () => {
+  const r = redactPII('Na parkingu stały też GD 707GG oraz PZE 5U678.');
+  expect(r.redacted.match(/\[NR-REJESTRACYJNY\]/g)?.length).toBe(2);
+});
+test('tablice: pułapki prawne — rozporządzenie (WE) i dyrektywa zostają', () => {
+  const t = 'Rozporządzenie (WE) nr 1234/2009 oraz dyrektywa WE 123 to akty prawne, nie tablice.';
+  expect(redactPII(t).redacted).toBe(t);
+});
+test('tablice: idempotencja drugiego przebiegu (kotwica nie zjada „…cyjnym")', () => {
+  const r1 = redactPII('Kontrola: pojazd o nr rejestracyjnym WA 12345.').redacted;
+  expect(redactPII(r1).redacted).toBe(r1);
+});
+
+// ── Miasto po adresie z przyimkiem / nową linią ──
+test('miasto po [ADRES] z przyimkiem „w" maskowane; proza bez adresu zostaje', () => {
+  const r = redactPII('Biuro przy ul. Morskiej 12 w Gdańsku czynne.');
+  expect(r.redacted).toContain('[ADRES] w [MIEJSCOWOŚĆ]');
+  const neg = 'Spotkanie projektowe odbyło się w Gdańsku.';
+  expect(redactPII(neg).redacted).toBe(neg);
+});
+
+// ── Błędy OCR ──
+test('OCR: para WERSALIKAMI z homoglifami („J0AN K0WALSKI") maskowana słownikowo', () => {
+  const r = redactPII('Zgłoszenie od J0AN K0WALSKI przyjęto.', { pseudonyms: true });
+  expect(r.redacted.includes('K0WALSKI')).toBe(false);
+  expect(r.redacted.includes('J0AN')).toBe(false);
+});
+test('OCR: kotwice z homoglifem — „teI:" (telefon) i „uI." (ulica z „Lip0wa")', () => {
+  const r = redactPII('teI:\n501234567\n\nuI. Lip0wa 15\n\nWarszawa');
+  expect(r.redacted).toContain('[TELEFON]');
+  expect(r.redacted).toContain('[ADRES]');
+  expect(r.redacted).toContain('[MIEJSCOWOŚĆ]'); // miasto w bloku adresowym pod [ADRES]
+  expect(r.redacted.includes('Lip0wa')).toBe(false);
+});
+test('WERSALIKI: para słownikowa maskowana, nagłówki i identyfikatory zostają', () => {
+  const r = redactPII('Poszkodowany JAN KOWALSKI złożył zeznania.', { pseudonyms: true });
+  expect(r.redacted.includes('KOWALSKI')).toBe(false);
+  const neg = 'SĄD OKRĘGOWY oddalił. CZĘŚĆ IV. WERSJA KOŃCOWA. BALTIC SOLUTIONS Sp. z o.o. Numer seryjny SN-44A8-9912-XXA oraz LT-8844-PL i USR-005182.';
+  expect(redactPII(neg, { pseudonyms: true }).redacted).toBe(neg);
+});
+
+// Poprawki po audycie adwersarialnym v0.45.0 (obszar URL/LOGIN)
+test('URL: JWT i parametry we FRAGMENCIE (#access_token=…) maskowane', () => {
+  const t = 'Przekierowanie https://app.firma.pl/callback#access_token=eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJqa293YWxza2kifQ.SfKxwRJSMeKKFQT zapisano w logu.';
+  const r = redactPII(t);
+  expect(r.redacted).toContain('#access_token=[TOKEN]');
+  expect(r.redacted.includes('eyJ')).toBe(false);
+  expect(r.redacted).toContain('https://app.firma.pl/callback');
+});
+test('login w cudzysłowie po dwukropku i w guillemetach maskowany', () => {
+  const r1 = redactPII('Login: „jkowalski”, hasło osobno.');
+  expect(r1.redacted).toContain('„[LOGIN]”');
+  expect(r1.redacted).toContain('hasło osobno');
+  const r2 = redactPII('Wylogowanie użytkownika «tkaminski» o 14:32.');
+  expect(r2.redacted).toContain('«[LOGIN]»');
+});
+test('kotwica „Login administratora/serwisowy" łapie wartość', () => {
+  expect(redactPII('Login administratora: adm_piotrn').redacted).toContain('[LOGIN]');
+  expect(redactPII('Login serwisowy: srv_backup').redacted).toContain('[LOGIN]');
+});
+test('puste „Login:" przed etykietą dwuwyrazową nie maskuje i nie propaguje', () => {
+  const t = 'Login:\nSystem operacyjny: Windows 11 Pro\nUwagi: System uruchamia się poprawnie.';
+  expect(redactPII(t).redacted).toBe(t);
+});
+test('nazwa konta w cudzysłowie („konto „Firmowe”") nie jest loginem', () => {
+  const t = 'Środki zaksięgowano na konto „Firmowe”.';
+  expect(redactPII(t).redacted).toBe(t);
+});

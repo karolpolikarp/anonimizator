@@ -49,6 +49,10 @@ const NON_LETTER_G = /\P{L}/gu;
 const WORD_CHAR = /[\p{L}-]/u;
 // Istniejące placeholdery rdzenia ([PESEL], [IMIĘ I NAZWISKO], [OSOBA-A]…) — NIE tykać (idempotencja).
 const MASK_SPAN = /\[[^\][\n]*\]/gu;
+// Znaczniki XML/HTML — jak placeholdery: NIETYKALNE. Model potrafił otagować „Customer"
+// w „</Customer>" jako osobę i maska rozrywała strukturę dokumentu; wartości elementów
+// osobowych maskuje RDZEŃ kotwicami strukturalnymi, zanim warstwa NER zobaczy tekst.
+const TAG_SPAN = /<[^<>\n]{1,80}>/gu;
 
 // Częste polskie rzeczowniki pospolite z wielkiej litery na początku zdania (kontekst urzędowy/
 // prawny), które model NER bywa fałszywie taguje jako osobę. Bramka „capitalized ⇒ akceptuj"
@@ -223,8 +227,11 @@ export function applyNerPersons(
   }
   flush();
 
-  // Zakresy istniejących placeholderów — kandydat nachodzący na maskę jest ODRZUCANY (idempotencja).
-  const maskRanges = [...text.matchAll(MASK_SPAN)].map((m) => [m.index ?? 0, (m.index ?? 0) + m[0].length]);
+  // Zakresy istniejących placeholderów I znaczników XML/HTML — kandydat nachodzący na nie
+  // jest ODRZUCANY (idempotencja + nienaruszalność struktury dokumentu).
+  const maskRanges = [...text.matchAll(MASK_SPAN), ...text.matchAll(TAG_SPAN)].map(
+    (m) => [m.index ?? 0, (m.index ?? 0) + m[0].length],
+  );
   const inMask = (s: number, e: number) => maskRanges.some(([ms, me]) => s < me && e > ms);
 
   // 2) Selekcja + lokalizacja. Skan kursorowy zamiast globalnego indexOf-od-0 (naprawia duplikaty).

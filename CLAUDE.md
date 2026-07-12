@@ -48,8 +48,10 @@ Release (`.github/workflows/release.yml`, tag `v*`): dwa artefakty — `Anonimiz
 - **Sumy kontrolne** (PESEL/NIP/REGON/IBAN/dowód) tną fałszywe trafienia. Ale przy **silnej etykiecie**
   („PESEL:", „NIP", „REGON", „konto/rachunek/IBAN") maskujemy MIMO złej sumy (numer bywa z literówką).
 - **Kotwice kontekstowe** dla typów bez sumy (paszport, KRS, prawo jazdy, nr rejestracyjny, VIN, data ur.).
-- **Kolejność przebiegów ma znaczenie**: e-mail → identyfikatory techniczne (token/MAC/IP/VIN) →
+- **Kolejność przebiegów ma znaczenie**: ochrona URL-i (sentinel + maskowanie parametrów wewnątrz)
+  → e-mail → identyfikatory techniczne (token/MAC/IP/VIN) → pola formularza/XML/JSON/login →
   najdłuższe ciągi cyfr (IBAN 26 → PESEL 11 → NIP 10 → REGON) → krótsze (telefon 9, kod 5). MAC PRZED IPv6.
+  W telefonie tryb KOTWICOWY przed prefiksowym „+48" (placeholder nie może przerwać łańcucha wyliczenia).
 - **Idempotencja**: placeholdery nie zawierają cyfr ani „@", więc ponowny przebieg ich nie pożre.
 - Nowy typ PII = dodać do `PiiType`, `MASK`, `HUMAN_LABEL` (index.ts), do `MASK_GROUPS` (apps/web/main.ts),
   do tabeli w README, oraz testy (index.test.ts) i przypadki benchmarku (dataset.mjs).

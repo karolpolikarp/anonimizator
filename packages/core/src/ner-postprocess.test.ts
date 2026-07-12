@@ -315,3 +315,17 @@ test('defaultIsHomograph — homonimy true (też w odmianie), zwykłe nazwiska f
   expect(defaultIsHomograph('Kowalski')).toBe(false);
   expect(defaultIsHomograph('Gzowski')).toBe(false);
 });
+
+// ── Znaczniki XML/HTML nietykalne ───────────────────────────────────────────
+
+test('kandydat wewnątrz znacznika XML nie jest maskowany (struktura zostaje)', () => {
+  const text = `<Customer><Surname>${MASK}</Surname></Customer>`;
+  const r = applyNerPersons(text, [person('Customer')]);
+  expect(r.redacted).toBe(text); // „Customer" w tagu — nie osoba, tag nierozerwany
+});
+
+test('osoba POZA znacznikiem maskowana mimo obecności tagów w tekście', () => {
+  const text = '<Note>notatka</Note> Zeznał Malinowski wczoraj.';
+  const r = applyNerPersons(text, [person('Malinowski')]);
+  expect(r.redacted).toBe(`<Note>notatka</Note> Zeznał ${MASK} wczoraj.`);
+});

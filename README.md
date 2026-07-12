@@ -114,18 +114,22 @@ przebieg po zredagowanym tekście niczego nie psuje.
 | Nr paszportu | kontekst „paszport" + 2 litery + 7 cyfr | `[NR-PASZPORTU]` |
 | Numer KRS | kontekst „KRS" + 10 cyfr (też z zerami wiodącymi) | `[KRS]` |
 | Nr prawa jazdy | kontekst „prawo jazdy" + numer (z cyfrą) | `[PRAWO-JAZDY]` |
-| Nr rejestracyjny | kontekst „rejestracyjny/tablica" + tablica (np. WI1234K) | `[NR-REJESTRACYJNY]` |
+| Nr rejestracyjny | kontekst „rejestracyjny/tablica/pojazd/parking" + tablica (np. WI1234K); wyliczenia po przecinku i „oraz/i" z walidacją wyróżnika wojewódzkiego | `[NR-REJESTRACYJNY]` |
 | VIN | 17 znaków bez I/O/Q; kontekst „VIN/nadwozia" lub wyraźny układ VIN | `[VIN]` |
 | Adres IP | IPv4 (oktety 0–255) oraz IPv6 (numery wersji „1.2.3.4" pomijane) | `[IP]` |
 | Adres MAC | 6 par hex (00:1A:2B:3C:4D:5E) | `[MAC]` |
 | Token / JWT | `eyJ…` (base64) — może dawać dostęp | `[TOKEN]` |
-| E-mail | wzorzec adresu | `[EMAIL]` |
-| Telefon | 9 cyfr, opcjonalnie +48, także w nawiasach „+48 (501) 234-567" | `[TELEFON]` |
+| Login | kontekst „login/username/nazwa użytkownika" + wartość (też w cudzysłowie po „użytkownik") | `[LOGIN]` |
+| URL | całe adresy chronione przed innymi detektorami; wewnątrz maskowane wartości parametrów osobowych (`?user=`, `?email=`, `?token=`…) | wg typu |
+| E-mail | wzorzec adresu (w URL-ach także forma `%40`) | `[EMAIL]` |
+| Telefon | 9 cyfr, opcjonalnie +48 (też „+48.512.345.678"), nawiasy, kropki z kotwicą; wyliczenia po przecinku i „oraz/i" | `[TELEFON]` |
 | Kod pocztowy | XX-XXX | `[KOD-POCZTOWY]` |
 | Data urodzenia | data z kontekstem „ur./urodzony" — cyfrowa i słowna („5 maja 1985") | `[DATA-URODZENIA]` |
 | Adres | ul./al./os./pl. + nazwa + numer (też „3 Maja", „gen./ks./św.") | `[ADRES]` |
 | Miejscowość | w adresie (po kodzie, przed/po adresie) i przy zamieszkaniu („zamieszkały w Krakowie"); **nie** w prozie/instytucji | `[MIEJSCOWOŚĆ]` |
 | Pola formularza | „Nazwisko / Imię / Data urodzenia / Ulica / Miejscowość" z wartością w tej samej lub następnej linii (też WERSALIKAMI) | wg typu |
+| Pola XML/JSON | tag `<Surname>` / klucz `"lastName"` (EN i PL) jako kotwica — maskowana sama wartość, struktura zostaje (JSON dalej się parsuje) | wg typu |
+| Błędy OCR | homoglify 0→O / 1→l: pary WERSALIKAMI walidowane słownikiem („J0AN K0WALSKI"), kotwice „teI:", „uI. Lip0wa 15" | wg typu |
 | Imię i nazwisko | słownik imion + nazwisk (z odmianą), **morfologia nazwisk** (-ski/-cki/-icz/-czyk), kolejność odwrócona (nagłówki e-maili), wyzwalacze kontekstu | `[IMIĘ I NAZWISKO]` |
 
 ## Ograniczenia (przeczytaj przed użyciem)

@@ -379,7 +379,9 @@ export function buildDataset() {
   str('Adres do doręczeń: 00-950 Warszawa, skrytka 21.', ['00-950', 'Warszawa'], ['skrytka 21']);
   str('Przesyłkę nadano z kodu 31-042.', ['31-042'], ['nadano']);
   // adresy
-  str('Zamieszkały przy ul. Polnej 12/3 w Krakowie.', ['ul. Polnej 12/3'], ['Krakowie']);
+  // v0.45: miasto po adresie z przyimkiem („przy [ADRES] w Krakowie") jest maskowane —
+  // wcześniej zostawało jawne (zmiana polityki po raporcie testów: adres zamieszkania w całości)
+  str('Zamieszkały przy ul. Polnej 12/3 w Krakowie.', ['ul. Polnej 12/3', 'Krakowie'], ['Zamieszkały']);
   str('Biuro mieści się przy al. Jerozolimskich 44.', ['al. Jerozolimskich 44'], ['Biuro']);
   str('Nowy lokal: os. Piastów 3/12, obok szkoły.', ['os. Piastów 3/12'], ['szkoły']);
   str('Spotkanie odbędzie się na pl. Zbawiciela 5.', ['pl. Zbawiciela 5'], ['Spotkanie']);
@@ -577,6 +579,23 @@ export function buildDataset() {
   osd('umowę serwisową parafował Melnyk', ['Melnyk'], ['umowę']);
   osd('protokół podpisał mecenas Schulz', ['Schulz'], ['protokół']);
   osd('do akt dołączono zeznania świadka Petrova', ['Petrova'], ['akt']);
+
+  // v0.45: struktura XML/JSON, URL z parametrami osobowymi, login, OCR, telefon z kropkami
+  // w wyliczeniu, tablice w wyliczeniu bez powtórzonej kotwicy
+  str('<Customer><Name>Jan</Name><Surname>Kowalski</Surname><City>Warszawa</City><Street>Leśna 15</Street></Customer>', ['Jan', 'Kowalski', 'Warszawa', 'Leśna 15'], ['<Customer>', '</Customer>']);
+  str('{ "firstName": "Jan", "lastName": "Kowalski", "city": "Warszawa", "street": "Lipowa 12" }', ['Jan', 'Kowalski', 'Warszawa', 'Lipowa 12'], ['firstName', 'lastName']);
+  neg('<Name>Produkt X200</Name> dodano do katalogu ofert.', ['Produkt X200']);
+  str('Zgłoszenie https://portal.example.com/ticket?id=987001234&user=tomasz.kaminski w kolejce.', ['user=tomasz.kaminski'], ['portal.example.com', 'id=987001234']);
+  neg('Repozytorium https://github.com/apache/kafka jest publiczne.', ['github.com/apache/kafka']);
+  str('Login użytkownika: tkaminski (konto domenowe).', ['tkaminski'], ['konto domenowe']);
+  neg('Identyfikator w systemie: USR-005182 pozostaje jawny.', ['USR-005182']);
+  str('Kontakt: 512.345.678, +48.512.345.678 oraz stacjonarny 22.501.23.45.', ['512.345.678', '+48.512.345.678', '22.501.23.45'], ['stacjonarny']);
+  neg('Kwota 1.234.567 zł oraz wersja 10.2.3 z dnia 12.05.1990.', ['1.234.567', '10.2.3', '12.05.1990']);
+  str('Zabezpieczono pojazdy: WW 1234A, ZS 4567, WE 123AB oraz KR 8XY90.', ['WW 1234A', 'ZS 4567', 'WE 123AB', 'KR 8XY90'], ['Zabezpieczono']);
+  neg('Rozporządzenie (WE) nr 1234/2009 oraz dyrektywa WE 123 obowiązują.', ['(WE) nr 1234/2009', 'WE 123']);
+  str('Zgłosił się J0AN K0WALSKI, zamieszkały uI. Lip0wa 15.', ['J0AN K0WALSKI', 'Lip0wa 15'], ['Zgłosił']);
+  str('Biuro przy ul. Morskiej 12 w Gdańsku czynne od 8:00.', ['Morskiej 12', 'Gdańsku'], ['czynne']);
+  neg('Spotkanie zespołu odbyło się w Gdańsku przy kawie.', ['Gdańsku']);
 
   // ── Kontrola spójności zbioru ──
   const ids = new Set();
