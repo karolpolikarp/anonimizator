@@ -1,5 +1,6 @@
 /**
- * Anonimizator — twarda, deterministyczna redakcja polskich danych osobowych (PII).
+ * Rdzeń „Parawan" (pakiet npm `anonimizator`) — twarda, deterministyczna redakcja
+ * polskich danych osobowych (PII).
  *
  * Cel: USUNĄĆ dane osobowe z tekstu, zanim trafi gdziekolwiek dalej (LLM, baza danych,
  * logi, e-mail, cache). To NIE jest „ostrzeżenie" — to redakcja: każde wykryte PII

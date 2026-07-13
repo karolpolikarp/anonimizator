@@ -1,6 +1,6 @@
 ---
 name: Nierozpoznane dane osobowe
-about: Anonimizator nie zamaskował czegoś, co powinien
+about: Parawan nie zamaskował czegoś, co powinien
 title: "[PII] "
 labels: bug
 ---
@@ -17,6 +17,4 @@ labels: bug
 
 **Co powinno zostać zamaskowane, a nie zostało:**
 
-**Wersja:** (z Releases, np. v0.3.2 / npm / kod z main)
-
-**Czy lokalny NER był włączony?** tak / nie
+**Wersja:** (z nagłówka aplikacji, np. v0.46.0 / npm / kod z main)

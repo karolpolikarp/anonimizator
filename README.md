@@ -1,170 +1,204 @@
-# Anonimizator
+<div align="center">
+
+<img src="docs/parawan-banner.svg" alt="Parawan — Dane za parawanem, lokalny anonimizator polskich danych osobowych" width="820">
+
+<br>
+
+**Usuwa dane osobowe z tekstu — zanim udostępnisz go poza urząd, wkleisz do czatu AI albo wyślesz mailem.**
+Wszystko dzieje się na Twoim komputerze. Nic nie trafia do internetu.
+
+<br>
 
 [![CI](https://github.com/karolpolikarp/anonimizator/actions/workflows/ci.yml/badge.svg)](https://github.com/karolpolikarp/anonimizator/actions/workflows/ci.yml)
-[![Release](https://img.shields.io/github/v/release/karolpolikarp/anonimizator)](https://github.com/karolpolikarp/anonimizator/releases)
-[![Licencja Apache 2.0](https://img.shields.io/badge/licencja-Apache%202.0-blue.svg)](./LICENSE)
+[![Wersja](https://img.shields.io/github/v/release/karolpolikarp/anonimizator?style=flat-square&color=0B3D2E&label=wersja)](https://github.com/karolpolikarp/anonimizator/releases/latest)
+[![Licencja Apache 2.0](https://img.shields.io/badge/licencja-Apache%202.0-0B3D2E?style=flat-square)](./LICENSE)
 
-Lokalny anonimizator polskich danych osobowych (PII). Zamienia PESEL, NIP, REGON, KRS, numery kont,
-numery dowodów i paszportów, prawo jazdy, nr rejestracyjny, VIN, adres IP/MAC, token, e-maile,
-telefony, adresy, miejscowości, daty urodzenia oraz imiona
-i nazwiska na neutralne placeholdery — **zanim** tekst trafi do czatu z modelem językowym, e-maila,
-zgłoszenia czy bazy danych.
+![100% offline](https://img.shields.io/badge/aplikacja-100%25%20offline-0B3D2E?style=flat-square)
+![bez AI](https://img.shields.io/badge/detekcja-bez%20AI%20%C2%B7%20tryb%20urz%C4%99dowy-B9791F?style=flat-square)
+![jeden plik](https://img.shields.io/badge/dystrybucja-jeden%20plik%20%C2%B7%20file%3A%2F%2F-0B3D2E?style=flat-square)
+![zero zależności](https://img.shields.io/badge/zale%C5%BCno%C5%9Bci-zero-0B3D2E?style=flat-square)
+![zgodność RODO](https://img.shields.io/badge/zgodno%C5%9B%C4%87-RODO%20%C2%B7%20minimalizacja-0B3D2E?style=flat-square)
+![po polsku](https://img.shields.io/badge/j%C4%99zyk-polski-B9791F?style=flat-square)
 
-**Nikt niczego nie serwuje centralnie i nie przetwarza Twoich danych.** Pobierasz aplikację
-z tego repozytorium i uruchamiasz na własnym komputerze — cała anonimizacja odbywa się
-lokalnie, w Twojej przeglądarce. Możesz rozłączyć internet i sprawdzić.
+</div>
 
-![Aplikacja Anonimizator — tekst źródłowy po lewej, zredagowany wynik z podświetlonymi maskami po prawej](docs/screenshot.png)
+---
 
-## Jak to działa i dlaczego jest bezpieczne — w skrócie, bez żargonu
+**Parawan** to lokalny anonimizator polskich danych osobowych (PII). Zamienia PESEL, NIP, REGON, KRS,
+numery kont, numery dowodów i paszportów, prawo jazdy, nr rejestracyjny, VIN, adres IP/MAC, token,
+e-maile, telefony, adresy, miejscowości, daty urodzenia oraz imiona i nazwiska na neutralne
+etykiety — na przykład `Jan Kowalski` → `[IMIĘ I NAZWISKO]`, `44051401359` → `[PESEL]`.
+
+> [!IMPORTANT]
+> **Nikt nie serwuje niczego centralnie i nie przetwarza Twoich danych.** Pobierasz jeden plik
+> i otwierasz go na własnym komputerze — cała anonimizacja dzieje się lokalnie, w Twojej
+> przeglądarce. **Możesz rozłączyć internet i sprawdzić, że działa tak samo.**
+
+<div align="center">
+
+<img src="docs/screenshot.png" alt="Aplikacja Parawan — po lewej tekst źródłowy, po prawej wynik z kolorowymi znacznikami zamaskowanych danych" width="880">
+
+<sub>Po lewej wklejasz tekst, po prawej od razu masz wersję z zamaskowanymi danymi. Każda kategoria ma swój kolor.</sub>
+
+</div>
+
+## ⬇️ Pobierz i użyj (30 sekund)
+
+> [!TIP]
+> Nie musisz nic instalować ani znać się na komputerach. To jeden plik, który otwierasz jak zdjęcie.
+
+1. Wejdź w [**najnowsze wydanie (Releases)**](https://github.com/karolpolikarp/anonimizator/releases/latest)
+   i pobierz **`Parawan.html`** (jeden plik — nic nie trzeba rozpakowywać).
+2. Otwórz go **podwójnym kliknięciem** — uruchomi się w przeglądarce, prosto z dysku:
+   bez serwera, bez instalacji, bez internetu.
+3. **Wklej tekst** albo **upuść plik** (`.txt`, `.docx`, `.pdf`) — po prawej dostajesz wersję
+   zredagowaną do skopiowania. Word i PDF są czytane w całości lokalnie, jak wszystko tutaj.
+
+> [!NOTE]
+> W nagłówku aplikacji jest numer wersji z linkiem „sprawdź najnowszą" — jeśli kiedyś coś nie
+> działa, najpierw porównaj numer i pobierz świeży plik. Obok w wydaniu jest też `JAK-UZYC.txt`
+> z tą samą instrukcją do wydrukowania lub rozesłania.
+
+Działa też na komputerach **z blokadami firmowymi/urzędowymi** — bo to zwykły dokument HTML,
+a nie program do zainstalowania (`.exe`, `.bat`, serwer). To jest cała idea Parawana.
+
+## 🟢 Jak to działa (w uproszczeniu)
 
 > Ta sekcja jest dla **każdego**, także bez wiedzy technicznej. Reszta README jest bardziej techniczna.
 
-**Co to robi.** Wklejasz tekst, a program znajduje w nim dane osobowe (imię i nazwisko, PESEL, NIP,
-adres, miejscowość, e-mail, telefon, numer konta, numer dowodu, KRS itd.) i zamienia je na neutralne
-etykiety, na przykład `Jan Kowalski` → `[IMIĘ I NAZWISKO]`, `44051401359` → `[PESEL]`. Dzięki temu
-możesz spokojnie wysłać treść dalej — do czatu z AI, e-maila, urzędu — nie ujawniając, kogo dotyczy.
+**Co to robi.** Znajduje w tekście dane osobowe i zamienia je na neutralne etykiety, np.
+`Jan Kowalski` → `[IMIĘ I NAZWISKO]`, `44051401359` → `[PESEL]`. Dzięki temu możesz spokojnie
+wysłać treść dalej — do urzędu, e-maila, czatu z AI — nie ujawniając, kogo dotyczy.
 
-**Gdzie trafiają Twoje dane? Nigdzie.** To jest najważniejsze. Aplikacja to **jeden plik**, który
-otwierasz na **własnym komputerze**. Cała praca dzieje się w Twojej przeglądarce, u Ciebie. Program
-**nie wysyła** tekstu na żaden serwer, do internetu, do autora ani do nikogo. Nie ma logowania, konta
-ani chmury. **Możesz odłączyć internet (wyłączyć Wi‑Fi / wyjąć kabel) i aplikacja nadal będzie
-działać** — to najprostszy dowód, że nic nie wychodzi na zewnątrz.
+**Jak rozpoznaje dane (bez „sztucznej inteligencji").** To **deterministyczne reguły** — te same
+dane zawsze dają ten sam wynik, nic nie „zgaduje" modelem:
 
-**Skąd pewność, że tak jest naprawdę.**
-1. **Sprawdź sam** — odłącz internet i użyj aplikacji; zadziała tak samo.
-2. **Kod jest otwarty** (licencja Apache 2.0) — każdy może go przeczytać albo poprosić o sprawdzenie
-   znajomego informatyka. Nic nie jest ukryte.
-3. **Plik jest samodzielny** — nie dociąga niczego w tle podczas pracy.
+- 🟤 **PESEL, NIP, REGON, numer konta (IBAN), numer dowodu** mają *cyfrę/sumę kontrolną* — wbudowany
+  w numer sprawdzian poprawności. Parawan go **przelicza**, więc przypadkowy ciąg cyfr (numer sprawy,
+  sygnatura) **nie** zostanie pomylony z PESEL-em. → *mało fałszywych trafień.*
+- 🔵 **E-mail** ma znak `@`, **telefon** to 9 cyfr, **kod pocztowy** to `XX-XXX` — rozpoznawane po wzorze.
+- 🟣 **Imiona i nazwiska** — po słowniku polskich imion i nazwisk, po końcówkach (`-ski`, `-cki`,
+  `-icz`) oraz po kontekście („Pan…", „zamieszkały w…", nagłówki formularzy).
+- 📍 **Miejscowość** maskuje w kontekście adresu („ul. Kwiatowa 5, **Warszawa**"), ale **nie**
+  w zwykłym zdaniu („spotkanie w Łodzi") ani w nazwie instytucji („Sąd Okręgowy w Katowicach") —
+  żeby nie zasłaniać za dużo.
 
-**Jak program rozpoznaje dane (w uproszczeniu).** Większość danych ma stały wzór, który da się
-sprawdzić matematycznie lub po układzie znaków — dlatego trafień „na ślepo" jest mało:
-- **PESEL, NIP, REGON, numer konta (IBAN), numer dowodu** mają tzw. *cyfrę/sumę kontrolną* —
-  wbudowany w numer sprawdzian poprawności. Program go **przelicza**, więc przypadkowy ciąg cyfr
-  (np. numer sprawy albo sygnatura) **nie** zostanie pomylony z PESEL‑em.
-- **E‑mail** ma znak `@`, **telefon** to 9 cyfr, **kod pocztowy** to `XX‑XXX` — rozpoznawane po wzorze.
-- **Imiona i nazwiska** rozpoznaje po słowniku polskich imion i nazwisk, po typowych końcówkach
-  (np. `‑ski`, `‑cki`, `‑icz`) oraz po kontekście („Pan…", „zamieszkały w…", nagłówki formularzy).
-- **Miejscowość** maskuje w kontekście adresu i zamieszkania („ul. Kwiatowa 5, **Warszawa**",
-  „zamieszkały w **Krakowie**"), ale **nie** w zwykłym zdaniu („spotkanie w Łodzi") ani w nazwie
-  instytucji („Sąd Okręgowy w Katowicach") — żeby nie zasłaniać za dużo.
+**Co możesz sam ustawić.** W panelu „Co maskować" włączasz i wyłączasz poszczególne rodzaje danych.
+Opcja „Rozróżniaj osoby" nadaje tej samej osobie stałą etykietę (`[OSOBA-A]`, `[OSOBA-B]`) —
+przydatne w umowach i pismach, gdzie trzeba wiedzieć, kto jest kim, bez podawania nazwisk.
 
-**Czego program może nie złapać.** To narzędzie **pomocnicze, nie gwarancja**. Najtrudniejsze są
-np. obce nazwiska bez polskiej końcówki i spoza słownika. Dlatego **zawsze przejrzyj wynik przed
-wysłaniem** — masz go od razu obok, z podświetleniem; strzałkami `‹ ›` przejdziesz po kolei przez
-zamaskowane fragmenty, a najechanie kursorem pokaże powód każdej maski.
-
-**Co możesz sam ustawić.** W panelu „Co maskować" włączasz i wyłączasz poszczególne rodzaje danych
-(pogrupowane w kategorie: Identyfikatory, Kontakt, Finanse, Adres i czas, Dane osobowe). Opcja
-„Rozróżniaj osoby" nadaje tej samej osobie stałą etykietę (`[OSOBA‑A]`, `[OSOBA‑B]`) — przydatne
-w umowach i pismach, gdzie trzeba wiedzieć, kto jest kim, bez podawania nazwisk.
-
-**Bezpieczeństwo także wtedy, gdy coś nie działa.** Cała detekcja to reguły, słowniki i sumy
-kontrolne działające lokalnie — nie ma zewnętrznych usług, które mogłyby paść i odsłonić dane.
-Opcjonalny dodatek AI (osobny projekt, niżej) może co najwyżej zamaskować *więcej*, nigdy
-*odsłonić* — i nie jest częścią tego pliku.
-
-## Pobierz i używaj (jeden plik, bez instalacji)
-
-1. Wejdź w [**najnowsze wydanie (Releases)**](https://github.com/karolpolikarp/anonimizator/releases/latest)
-   i pobierz **`Anonimizator.html`** (jeden plik — nic nie trzeba rozpakowywać).
-2. Otwórz go **podwójnym kliknięciem** — uruchomi się w przeglądarce, prosto z dysku:
-   bez serwera, bez instalacji, bez internetu.
-3. Wklej tekst albo upuść plik (`.txt`, `.docx`, `.pdf`) — po prawej dostajesz wersję
-   zredagowaną do skopiowania. Pliki Word i PDF są czytane w całości lokalnie, jak wszystko tutaj.
-
-> W nagłówku aplikacji widnieje numer wersji z linkiem „sprawdź najnowszą" — jeśli
-> kiedyś coś nie działa, najpierw porównaj numer i pobierz świeży plik.
-
-Obok znajdziesz też `JAK-UZYC.txt` z tą samą instrukcją do wydrukowania lub rozesłania.
-Alternatywnie sklonuj repo i odpal z kodu (sekcja „Dla programistów" niżej).
-
-## Formy użycia — jeden silnik
-
-- **Aplikacja w przeglądarce** (`apps/web`) — patrz wyżej; 100% offline.
-- **Biblioteka npm** (`packages/core`, pakiet `anonimizator`) — zero zależności, działa w Node,
-  Deno, Bun i przeglądarce.
-- **CLI** — `anonimizator plik.txt`, także stdin → stdout do potoków.
-- **Opcjonalny dodatek AI** — osobny projekt [anonimizator-ai](https://github.com/karolpolikarp/anonimizator-ai)
-  (local-only) podnosi wykrywanie rzadkich i obcych nazwisk (szczegóły niżej).
-
-```
+```text
 Nazywam się Jan Kowalski, PESEL 44051401359, ul. Polna 12/3, tel. 600 700 800.
-                                    │
+                                    │  za parawan…
                                     ▼
 Nazywam się [IMIĘ I NAZWISKO], PESEL [PESEL], [ADRES], tel. [TELEFON].
 ```
 
-## Dlaczego mało fałszywych trafień
+## 🔒 Prywatność w praktyce — jak sprawdzić, że nic nie wychodzi
 
-Tam, gdzie format ma **sumę kontrolną** (PESEL, NIP, REGON, IBAN, nr dowodu), anonimizator ją
-**weryfikuje** — przypadkowy ciąg 11 cyfr (sygnatura akt, numer sprawy) nie zostanie uznany za
-PESEL. Dodatkowo strażnik kontekstu rozpoznaje odwołania do przepisów („art. 123 456 789",
-„poz. …", „Dz.U. …") i nie maskuje ich jako telefonów. Redakcja jest **idempotentna** — ponowny
-przebieg po zredagowanym tekście niczego nie psuje.
+> [!IMPORTANT]
+> **Gdzie trafiają Twoje dane? Nigdzie.** Aplikacja to jeden plik na Twoim komputerze. Cała praca
+> dzieje się w przeglądarce. Nie ma logowania, konta ani chmury.
 
-## Co wykrywa
+**Czego Parawan NIE robi** (świadomie):
+
+| ❌ Nie robi tego | ✅ Zamiast tego |
+|---|---|
+| nie wysyła tekstu na serwer ani do internetu | wszystko liczy lokalnie, w przeglądarce |
+| nie ma konta, logowania ani chmury | otwierasz plik i od razu działasz |
+| nie zbiera analityki ani „telemetrii" | zero śledzenia, zero ciasteczek |
+| nie używa modeli AI (w tym pliku) | wyłącznie reguły + słowniki + sumy kontrolne |
+| nie dociąga niczego w tle podczas pracy | plik jest samowystarczalny (fonty, kod — wszystko w środku) |
+
+**Skąd pewność, że tak jest naprawdę:**
+
+1. **Sprawdź sam** — odłącz internet (wyłącz Wi-Fi / wyjmij kabel) i użyj aplikacji; zadziała tak samo.
+2. **Kod jest otwarty** (Apache 2.0) — każdy może go przeczytać albo poprosić o sprawdzenie
+   znajomego informatyka. Nic nie jest ukryte.
+3. **Plik jest samodzielny** — cały kod, fonty i słowniki są w jednym `Parawan.html`, bez pobierania.
+
+## 🎨 Kolory znaczników
+
+Każda kategoria danych ma swój kolor — ten sam w wyniku, w podsumowaniu i w tabeli niżej:
+
+![Osoby](https://img.shields.io/badge/Osoby-%E2%97%8F-5B3FA8?style=flat-square)
+![Kontakt](https://img.shields.io/badge/Kontakt-%E2%97%8F-0C7288?style=flat-square)
+![Identyfikatory](https://img.shields.io/badge/Identyfikatory-%E2%97%8F-8A5F00?style=flat-square)
+![Finanse](https://img.shields.io/badge/Finanse-%E2%97%8F-127049?style=flat-square)
+![Adres i czas](https://img.shields.io/badge/Adres%20i%20czas-%E2%97%8F-2F5FC0?style=flat-square)
+
+## 📋 Co wykrywa
+
+Ponad 20 typów danych w 5 kategoriach — każdy z **walidacją** (suma kontrolna) albo **kotwicą
+kontekstową**, dlatego trafień „na ślepo" jest mało.
 
 | Dane | Metoda | Placeholder |
 |---|---|---|
-| PESEL | 11 cyfr + suma kontrolna (lub przy etykiecie „PESEL" mimo złej sumy) | `[PESEL]` |
-| NIP | 10 cyfr (też z myślnikami) + suma kontrolna (lub przy etykiecie „NIP") | `[NIP]` |
-| REGON | 9/14 cyfr + suma kontrolna (lub przy etykiecie „REGON") | `[REGON]` |
-| IBAN / nr konta | mod 97 lub kontekst „konto/rachunek/IBAN" (też format IBAN mimo złej sumy) | `[NR-KONTA]` |
-| Nr dowodu | 3 litery + 6 cyfr (+ suma kontrolna bez kontekstu) | `[NR-DOWODU]` |
-| Nr paszportu | kontekst „paszport" + 2 litery + 7 cyfr | `[NR-PASZPORTU]` |
-| Numer KRS | kontekst „KRS" + 10 cyfr (też z zerami wiodącymi) | `[KRS]` |
-| Nr prawa jazdy | kontekst „prawo jazdy" + numer (z cyfrą) | `[PRAWO-JAZDY]` |
-| Nr rejestracyjny | kontekst „rejestracyjny/tablica/pojazd/parking" + tablica (np. WI1234K); wyliczenia po przecinku i „oraz/i" z walidacją wyróżnika wojewódzkiego | `[NR-REJESTRACYJNY]` |
-| VIN | 17 znaków bez I/O/Q; kontekst „VIN/nadwozia" lub wyraźny układ VIN | `[VIN]` |
-| Adres IP | IPv4 (oktety 0–255) oraz IPv6 (numery wersji „1.2.3.4" pomijane) | `[IP]` |
-| Adres MAC | 6 par hex (00:1A:2B:3C:4D:5E) | `[MAC]` |
-| Token / JWT | `eyJ…` (base64) — może dawać dostęp | `[TOKEN]` |
-| Login | kontekst „login/username/nazwa użytkownika" + wartość (też w cudzysłowie po „użytkownik") | `[LOGIN]` |
-| URL | całe adresy chronione przed innymi detektorami; wewnątrz maskowane wartości parametrów osobowych (`?user=`, `?email=`, `?token=`…) | wg typu |
-| E-mail | wzorzec adresu (w URL-ach także forma `%40`) | `[EMAIL]` |
-| Telefon | 9 cyfr, opcjonalnie +48 (też „+48.512.345.678"), nawiasy, kropki z kotwicą; wyliczenia po przecinku i „oraz/i" | `[TELEFON]` |
-| Kod pocztowy | XX-XXX | `[KOD-POCZTOWY]` |
-| Data urodzenia | data z kontekstem „ur./urodzony" — cyfrowa i słowna („5 maja 1985") | `[DATA-URODZENIA]` |
-| Adres | ul./al./os./pl. + nazwa + numer (też „3 Maja", „gen./ks./św.") | `[ADRES]` |
-| Miejscowość | w adresie (po kodzie, przed/po adresie) i przy zamieszkaniu („zamieszkały w Krakowie"); **nie** w prozie/instytucji | `[MIEJSCOWOŚĆ]` |
-| Pola formularza | „Nazwisko / Imię / Data urodzenia / Ulica / Miejscowość" z wartością w tej samej lub następnej linii (też WERSALIKAMI) | wg typu |
-| Pola XML/JSON | tag `<Surname>` / klucz `"lastName"` (EN i PL) jako kotwica — maskowana sama wartość, struktura zostaje (JSON dalej się parsuje) | wg typu |
-| Błędy OCR | homoglify 0→O / 1→l: pary WERSALIKAMI walidowane słownikiem („J0AN K0WALSKI"), kotwice „teI:", „uI. Lip0wa 15" | wg typu |
-| Imię i nazwisko | słownik imion + nazwisk (z odmianą), **morfologia nazwisk** (-ski/-cki/-icz/-czyk), kolejność odwrócona (nagłówki e-maili), wyzwalacze kontekstu | `[IMIĘ I NAZWISKO]` |
+| 🟤 PESEL | 11 cyfr + suma kontrolna (lub przy etykiecie „PESEL" mimo złej sumy) | `[PESEL]` |
+| 🟤 NIP | 10 cyfr (też z myślnikami) + suma kontrolna (lub przy etykiecie „NIP") | `[NIP]` |
+| 🟤 REGON | 9/14 cyfr + suma kontrolna (lub przy etykiecie „REGON") | `[REGON]` |
+| 🟢 IBAN / nr konta | mod 97 lub kontekst „konto/rachunek/IBAN" (też format IBAN mimo złej sumy) | `[NR-KONTA]` |
+| 🟤 Nr dowodu | 3 litery + 6 cyfr (+ suma kontrolna bez kontekstu) | `[NR-DOWODU]` |
+| 🟤 Nr paszportu | kontekst „paszport" + 2 litery + 7 cyfr | `[NR-PASZPORTU]` |
+| 🟤 Numer KRS | kontekst „KRS" + 10 cyfr (też z zerami wiodącymi) | `[KRS]` |
+| 🟤 Nr prawa jazdy | kontekst „prawo jazdy" + numer (z cyfrą) | `[PRAWO-JAZDY]` |
+| 🟤 Nr rejestracyjny | kontekst „rejestracyjny/tablica/pojazd" + tablica (np. WI1234K); wyliczenia po przecinku i „oraz/i" z walidacją wyróżnika wojewódzkiego | `[NR-REJESTRACYJNY]` |
+| 🟤 VIN | 17 znaków bez I/O/Q; kontekst „VIN/nadwozia" lub wyraźny układ VIN | `[VIN]` |
+| 🟤 Adres IP | IPv4 (oktety 0–255) oraz IPv6 (numery wersji „1.2.3.4" pomijane) | `[IP]` |
+| 🟤 Adres MAC | 6 par hex (00:1A:2B:3C:4D:5E) | `[MAC]` |
+| 🟤 Token / JWT | `eyJ…` (base64) — może dawać dostęp | `[TOKEN]` |
+| 🟤 Login | kontekst „login/username/nazwa użytkownika" + wartość (też w cudzysłowie) | `[LOGIN]` |
+| 🔗 URL | całe adresy chronione; wewnątrz maskowane wartości parametrów osobowych (`?user=`, `?email=`, `?token=`…) | wg typu |
+| 🔵 E-mail | wzorzec adresu (w URL-ach także forma `%40`) | `[EMAIL]` |
+| 🔵 Telefon | 9 cyfr, opcjonalnie +48 (też „+48.512.345.678"), nawiasy, kropki z kotwicą; wyliczenia po przecinku i „oraz/i" | `[TELEFON]` |
+| 🔵 Kod pocztowy | XX-XXX | `[KOD-POCZTOWY]` |
+| 🔵 Data urodzenia | data z kontekstem „ur./urodzony" — cyfrowa i słowna („5 maja 1985") | `[DATA-URODZENIA]` |
+| 🔵 Adres | ul./al./os./pl. + nazwa + numer (też „3 Maja", „gen./ks./św.") | `[ADRES]` |
+| 🔵 Miejscowość | w adresie i przy zamieszkaniu; **nie** w prozie/instytucji | `[MIEJSCOWOŚĆ]` |
+| 🟣 Imię i nazwisko | słownik imion + nazwisk (z odmianą), **morfologia** (-ski/-cki/-icz/-czyk), kolejność odwrócona, wyzwalacze kontekstu | `[IMIĘ I NAZWISKO]` |
+| 🧩 Pola formularza / XML / JSON | „Nazwisko:", tag `<Surname>`, klucz `"lastName"` jako kotwica — maskowana sama wartość, struktura zostaje | wg typu |
+| 🔎 Błędy OCR | homoglify 0→O / 1→l walidowane słownikiem („J0AN K0WALSKI", „uI. Lip0wa 15") | wg typu |
 
-## Ograniczenia (przeczytaj przed użyciem)
+## ⚠️ Ograniczenia (koniecznie przeczytaj)
 
-Wykrywanie **imion i nazwisk warstwą podstawową jest heurystyczne**. Warstwa łapie nazwiska ze
-słownika (z odmianą), nazwiska o charakterystycznym polskim sufiksie **morfologicznie**
-(-ski/-cki/-dzki, -icz/-wicz, -czyk — także rzadkie i odmienione, np. „Gzowskiego", „Bąkiewiczowi"),
-pary imię+nazwisko i kolejność odwróconą oraz wyzwalacze kontekstu. Poza zasięgiem warstwy offline
-zostają głównie **nazwiska bez polskiego sufiksu, spoza słownika i bez kontekstu** (np. obce:
-„Nguyen", „Grynberg"). Domyka je opcjonalny dodatek AI (osobny projekt, niżej). Zasada pozostaje:
-to narzędzie pomocnicze — **zawsze przejrzyj wynik przed udostępnieniem**.
+> [!WARNING]
+> To narzędzie **pomocnicze, nie gwarancja**. **Zawsze przejrzyj wynik przed udostępnieniem.**
+> Wynik masz od razu obok, z podświetleniem — strzałkami `‹ ›` przejdziesz po kolei przez
+> zamaskowane fragmenty, a najechanie kursorem pokaże powód każdej maski.
 
-Benchmark warstwy offline (deterministyczny zbiór, `docs/BENCHMARK.md`): **recall 100%,
-precyzja‑proxy 99,4%** (rdzeń, bez NER).
+Wykrywanie **imion i nazwisk warstwą podstawową jest heurystyczne**. Łapie nazwiska ze słownika
+(z odmianą), nazwiska o charakterystycznym polskim sufiksie **morfologicznie** (-ski/-cki/-dzki,
+-icz/-wicz, -czyk — także rzadkie i odmienione, np. „Gzowskiego", „Bąkiewiczowi"), pary imię+nazwisko
+i kolejność odwróconą oraz wyzwalacze kontekstu. Poza zasięgiem warstwy offline zostają głównie
+**nazwiska bez polskiego sufiksu, spoza słownika i bez kontekstu** (np. obce: „Nguyen", „Grynberg").
+Domyka je opcjonalny dodatek AI (osobny projekt, niżej).
 
-## Rozszerzenie AI (osobny dodatek, local-only)
+> [!NOTE]
+> Benchmark warstwy offline (deterministyczny zbiór, [`docs/BENCHMARK.md`](docs/BENCHMARK.md)):
+> **recall 100%, precyzja-proxy 99,4%** (rdzeń, bez NER).
 
-Nazwiska **bez polskiego sufiksu, spoza słownika i bez kontekstu** (np. obce „Nguyen",
-„Grynberg" w gołym zdaniu) są poza zasięgiem warstwy offline. Domyka je **opcjonalny dodatek
-AI**, który mieszka w osobnym repozytorium:
-[**anonimizator-ai**](https://github.com/karolpolikarp/anonimizator-ai).
+## 🤖 Rozszerzenie AI (osobny dodatek, tylko lokalnie)
 
-- Warstwa NER (spaCy/HerBERT/ONNX FastPDN) i eksperymentalny lokalny LLM (Ollama/Bielik),
-  wszystko **w całości na Twoim komputerze** — tekst nie opuszcza maszyny.
-- Wpina się w ten rdzeń przez npm (`anonimizator/ner`, `anonimizator/ner-postprocess`,
-  `anonimizator/llm` — te wejścia biblioteki zostają tutaj dostępne dla budujących na rdzeniu).
+Nazwiska **bez polskiego sufiksu, spoza słownika i bez kontekstu** domyka **opcjonalny dodatek AI**
+w osobnym repozytorium: [**anonimizator-ai**](https://github.com/karolpolikarp/anonimizator-ai).
+
+- Warstwa NER (spaCy/HerBERT/ONNX) i eksperymentalny lokalny LLM — wszystko **na Twoim komputerze**.
 - Architektura **fail-safe**: AI dostaje tekst już po redakcji strukturalnej i może jedynie
-  zamaskować *więcej*, nigdy odsłonić. Ten plik HTML działa bez niego.
+  zamaskować *więcej*, nigdy odsłonić. **Ten plik `Parawan.html` działa bez niego.**
+- Po co osobno: AI wymaga mini-serwera i pobrania modelu (~125 MB) — to łamie obietnicę „jeden plik,
+  zero instalacji", która jest wartością główną Parawana.
 
-Po co osobno: warstwa AI wymaga mini-serwera lokalnego i pobrania modelu (~125 MB) — to łamie
-obietnicę „jeden plik, zero instalacji", która jest wartością głównego produktu. Dlatego AI jest
-świadomie oddzielnym, opcjonalnym dodatkiem.
+---
 
-## Użycie — biblioteka
+<details>
+<summary><b>👩‍💻 Dla programistów — biblioteka, CLI, build</b> (kliknij, aby rozwinąć)</summary>
+
+<br>
+
+Silnik to pakiet npm `anonimizator` (nazwa techniczna pakietu; marka produktu to **Parawan**).
+Zero zależności — działa w Node, Deno, Bun i przeglądarce.
+
+### Biblioteka
 
 ```bash
 npm install anonimizator
@@ -184,88 +218,81 @@ describeFindings(found);           // ['PESEL']
 Opcjonalny drugi parametr pozwala wybrać typy i podmienić placeholdery:
 
 ```ts
-// maskuj tylko PESEL i e-mail
-redactPII(tekst, { types: ['PESEL', 'EMAIL'] });
-
-// własny placeholder (bez cyfr i „@" — inaczej łamiesz idempotencję)
-redactPII(tekst, { masks: { PESEL: '[UKRYTO]' } });
+redactPII(tekst, { types: ['PESEL', 'EMAIL'] });        // maskuj tylko PESEL i e-mail
+redactPII(tekst, { masks: { PESEL: '[UKRYTO]' } });     // własny placeholder (bez cyfr i „@")
 
 // spójna pseudonimizacja: ta sama osoba → ta sama etykieta (także w odmianie)
 redactPII('Kowalski pozwał Nowaka. Kowalskiemu zależy na ugodzie.', { pseudonyms: true });
 // → '[OSOBA-A] pozwał [OSOBA-B]. [OSOBA-A] zależy na ugodzie.'
-// (w CLI: flaga --osoby; w aplikacji: „Rozróżniaj osoby" w panelu „Co maskować")
 ```
 
 Eksportowane są też walidatory sum kontrolnych: `isValidPesel`, `isValidNip`, `isValidRegon9`,
 `isValidRegon14`, `isValidIban`, `isValidDowod`.
 
-**Ważne:** `found` zawiera wyłącznie typ i liczbę wystąpień — **nigdy oryginalne wartości**,
-więc można go bezpiecznie logować.
+> `found` zawiera wyłącznie typ i liczbę wystąpień — **nigdy oryginalne wartości** — więc można go
+> bezpiecznie logować.
 
-## Użycie — CLI
+### CLI
 
 ```bash
 npx anonimizator dokument.txt                  # wynik na stdout, statystyki na stderr
 npx anonimizator dokument.txt --out czysty.txt
 type dokument.txt | npx anonimizator           # Windows
-cat dokument.txt | npx anonimizator            # Linux/macOS
+cat  dokument.txt | npx anonimizator           # Linux/macOS
 ```
 
-## Dla programistów
+### Uruchomienie z kodu
 
 ```bash
 npm install
 npm run dev        # http://localhost:5173 (hot reload)
-npm run build      # statyczne pliki w apps/web/dist — działają też otwarte prosto z dysku (file://)
+npm run build      # apps/web/dist/index.html — działa też otwarty prosto z dysku (file://)
 npm test
 ```
 
-Aplikacja nie ma backendu, analityki ani żadnych zapytań sieciowych — cała logika wykonuje
-się w przeglądarce, a plik HTML nie łączy się z niczym (możesz wyłączyć internet i sprawdzić).
+Aplikacja nie ma backendu, analityki ani żadnych zapytań sieciowych — cała logika wykonuje się
+w przeglądarce, a plik HTML nie łączy się z niczym.
 
-## Struktura repozytorium
+### Struktura repozytorium
 
 ```
 packages/core/    # silnik redakcji (TS, zero zależności) + CLI + testy (Vitest)
-apps/web/         # statyczna aplikacja (Vite, bez frameworka), działa z file://
+apps/web/         # aplikacja (Vite, bez frameworka) → jeden samowystarczalny HTML, działa z file://
 ```
 
-Warstwa AI (NER/LLM) jest osobnym dodatkiem:
-[anonimizator-ai](https://github.com/karolpolikarp/anonimizator-ai). Rdzeń nadal eksportuje
+Warstwa AI (NER/LLM) jest osobnym dodatkiem
+([anonimizator-ai](https://github.com/karolpolikarp/anonimizator-ai)). Rdzeń nadal eksportuje
 wejścia `anonimizator/ner`, `anonimizator/ner-postprocess`, `anonimizator/llm` — to szew, w który
 wpina się dodatek.
 
-## Testy
+</details>
 
-```bash
-npm test          # sumy kontrolne, maskowanie, fałszywe trafienia, idempotencja,
-                  # opcje types/masks, circuit breaker
-```
+## 🐛 Znalazłeś błąd? Pomóż ulepszyć Parawana
 
-## Roadmapa
+- **Coś nie zostało zamaskowane** (a powinno) → [zgłoś nierozpoznane PII](https://github.com/karolpolikarp/anonimizator/issues/new?template=nierozpoznane-pii.md)
+- **Zamaskowało za dużo** (coś, co nie jest daną osobową) → [zgłoś fałszywe trafienie](https://github.com/karolpolikarp/anonimizator/issues/new?template=falszywe-trafienie.md)
 
-- [x] Konfigurowalne placeholdery i wybór typów do maskowania (v0.2.0).
-- [x] Obsługa plików DOCX w aplikacji webowej — ekstrakcja tekstu lokalnie (v0.3.0).
-- [x] Obsługa plików PDF — pdf.js w buildzie single-file, w pełni offline (v0.4.0).
-      PDF-y bez warstwy tekstu (skany) dostają jasny komunikat — OCR nie jest wspierany.
+W zgłoszeniu **nie podawaj prawdziwych danych osobowych** — wystarczy przykład o tym samym kształcie
+(np. `Nguyen` zamiast prawdziwego nazwiska). PR-y mile widziane.
 
-## Pochodzenie
+## 📜 Pochodzenie
 
 Silnik redakcji został wydzielony z produkcyjnego kodu [JakiePrawo.pl](https://jakieprawo.pl),
-gdzie maskuje dane osobowe w pytaniach użytkowników, zanim trafią do modelu językowego
-(zgodność z RODO). Reguły i testy regresji pochodzą z realnych przypadków.
+gdzie maskuje dane osobowe w pytaniach użytkowników, zanim trafią do modelu językowego (zgodność
+z RODO — zasada minimalizacji danych). Reguły i testy regresji pochodzą z realnych przypadków.
 
-## English (summary)
+## 🇬🇧 English (summary)
 
-**Anonimizator** is a local-first redactor for Polish PII (personal data): PESEL, NIP, REGON,
-IBAN and national ID numbers are validated against their checksums (very few false positives);
-e-mails, phones, addresses and person names are matched heuristically. Ships as a
-zero-dependency npm library + CLI (`anonimizator`), and a single-file offline web app (grab
-`Anonimizator.html` from Releases and just double-click it — nothing ever leaves your machine).
-An optional local-only AI add-on for rare/foreign surnames lives in a separate repo:
+**Parawan** is a local-first redactor for Polish PII: PESEL, NIP, REGON, IBAN and national ID numbers
+are validated against their checksums (very few false positives); e-mails, phones, addresses and
+person names are matched heuristically — **no AI, deterministic rules only**. Ships as a
+zero-dependency npm library + CLI (`anonimizator`) and a **single-file offline web app** (grab
+`Parawan.html` from Releases and just double-click it — nothing ever leaves your machine). An optional
+local-only AI add-on for rare/foreign surnames lives in a separate repo:
 [anonimizator-ai](https://github.com/karolpolikarp/anonimizator-ai). Apache 2.0 licensed.
 
-## Licencja
+## ⚖️ Licencja
 
-Apache 2.0 — patrz [LICENSE](./LICENSE) i [NOTICE](./NOTICE). Wydania do v0.45.0 włącznie
-były publikowane na licencji MIT.
+Apache 2.0 — patrz [LICENSE](./LICENSE) i [NOTICE](./NOTICE). Wydania do v0.45.0 włącznie były
+publikowane na licencji MIT. Fonty marki (Archivo, IBM Plex Mono) — SIL OFL 1.1, patrz
+[`apps/web/src/fonts/LICENSE-FONTS.md`](apps/web/src/fonts/LICENSE-FONTS.md).

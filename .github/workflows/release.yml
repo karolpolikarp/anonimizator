@@ -27,11 +27,13 @@ jobs:
         run: npm run build -w anonimizator-web
       - name: Przygotuj artefakt (plik + instrukcja)
         run: |
-          cp apps/web/dist/index.html Anonimizator.html
+          cp apps/web/dist/index.html Parawan.html
           cat > JAK-UZYC.txt <<'EOF'
-          ANONIMIZATOR — jak zacząć (30 sekund)
+          PARAWAN — jak zacząć (30 sekund)
 
-          1. Otwórz plik Anonimizator.html podwójnym kliknięciem (uruchomi się w przeglądarce).
+          „Dane za parawanem" — lokalny anonimizator polskich danych osobowych.
+
+          1. Otwórz plik Parawan.html podwójnym kliknięciem (uruchomi się w przeglądarce).
           2. Wklej tekst albo upuść plik (.txt, .docx lub .pdf) na lewe pole.
           3. Po prawej masz wersję z zamaskowanymi danymi — kliknij „Kopiuj".
 
@@ -47,14 +49,15 @@ jobs:
       - uses: softprops/action-gh-release@v3
         with:
           files: |
-            Anonimizator.html
+            Parawan.html
             JAK-UZYC.txt
           body: |
-            ### `Anonimizator.html` — jeden plik, zero instalacji
+            ### `Parawan.html` — jeden plik, zero instalacji
 
-            Pobierz i otwórz podwójnym kliknięciem — działa nawet na komputerach z blokadami
-            firmowymi (nie wymaga `.bat` ani serwera). Anonimizacja regułami, słownikami i sumami
-            kontrolnymi, w całości offline (możesz wyłączyć internet i sprawdzić).
+            **Parawan** — „Dane za parawanem". Pobierz i otwórz podwójnym kliknięciem — działa nawet
+            na komputerach z blokadami firmowymi/urzędowymi (nie wymaga `.bat` ani serwera).
+            Anonimizacja regułami, słownikami i sumami kontrolnymi, w całości offline, **bez AI**
+            (możesz wyłączyć internet i sprawdzić).
 
             Potrzebujesz wyższego wykrywania rzadkich/obcych nazwisk? Opcjonalny dodatek
             (local-only): [anonimizator-ai](https://github.com/karolpolikarp/anonimizator-ai).

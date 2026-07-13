@@ -1,6 +1,6 @@
 ---
 name: Fałszywe trafienie
-about: Anonimizator zamaskował coś, co nie jest daną osobową
+about: Parawan zamaskował coś, co nie jest daną osobową
 title: "[FP] "
 labels: bug
 ---

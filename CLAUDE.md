@@ -1,14 +1,17 @@
 # CLAUDE.md — przewodnik po repozytorium anonimizator
 
+Marka produktu: **Parawan** („Dane za parawanem"). Repo/pakiet npm/CLI dalej nazywają się
+`anonimizator` (identyfikator techniczny — patrz pamięć `marka-parawan-i-fonty-lokalne`).
 Lokalny anonimizator polskich danych osobowych (PII). **Wszystko działa lokalnie**, tekst nigdy nie
 opuszcza komputera. Zasada nadrzędna: **precyzja > nadmaskowanie** (nadmaskowanie gorsze niż drobny
 wyciek) — patrz pamięć `anonimizacja-precyzja-nad-nadmaskowaniem`.
 
 ## JEDEN produkt: samowystarczalny HTML (patrz pamięć `dwie-edycje-html-i-ai`)
 
-To repo produkuje **jeden plik `Anonimizator.html`** — `file://`, zero instalacji, WYŁĄCZNIE
+To repo produkuje **jeden plik `Parawan.html`** — `file://`, zero instalacji, WYŁĄCZNIE
 deterministyka (reguły + słowniki + sumy kontrolne). To jest fosa: przechodzi przez blokady
-firmowe/urzędowe (dokument, nie program). Warstwa AI (NER/LLM) mieszka w OSOBNYM repo-dodatku
+firmowe/urzędowe (dokument, nie program). Fonty marki są wbudowane lokalnie (woff2 → `data:`),
+NIGDY zewnętrzny `<link>`. Warstwa AI (NER/LLM) mieszka w OSOBNYM repo-dodatku
 **[anonimizator-ai](https://github.com/karolpolikarp/anonimizator-ai)** — nie dokładać jej tutaj.
 
 ## Struktura (monorepo, npm workspaces)
@@ -37,7 +40,7 @@ node scripts/benchmark/run.mjs --check            # BRAMKA regresji rdzenia (uż
 ```
 
 CI (`.github/workflows/ci.yml`): build+test core → tsc web → test web → build web → bramka benchmarku.
-Release (`.github/workflows/release.yml`, tag `v*`): jeden artefakt — `Anonimizator.html` + `JAK-UZYC.txt`.
+Release (`.github/workflows/release.yml`, tag `v*`): jeden artefakt — `Parawan.html` + `JAK-UZYC.txt`.
 
 ## Konwencje detekcji (index.ts)
 

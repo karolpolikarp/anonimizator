@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 280" width="1200" height="280" role="img" aria-label="Parawan — Dane za parawanem, lokalny anonimizator polskich danych osobowych">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#F3F1EA"/>
+      <stop offset="1" stop-color="#EAE7DE"/>
+    </linearGradient>
+  </defs>
+  <rect x="1" y="1" width="1198" height="278" rx="26" fill="url(#bg)" stroke="#E1DED3" stroke-width="2"/>
+  <!-- kafelek ikony (ciemna zieleń) -->
+  <rect x="60" y="64" width="152" height="152" rx="34" fill="#0B3D2E"/>
+  <!-- znak ParawanMark (parawan-harmonijka z góry) w kolorach jasnych -->
+  <svg x="86" y="94" width="100" height="92" viewBox="14 48 292 235" preserveAspectRatio="xMidYMid meet">
+    <polygon points="30,74 95,112 95,270 30,232" fill="#F4F6F1"/>
+    <polygon points="95,112 160,74 160,232 95,270" fill="#8FB6A0"/>
+    <polygon points="160,74 225,112 225,270 160,232" fill="#F4F6F1"/>
+    <polygon points="225,112 290,74 290,232 225,270" fill="#8FB6A0"/>
+    <path d="M30 74 L95 112 L160 74 L225 112 L290 74" fill="none" stroke="#F4F6F1" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/>
+    <line x1="30" y1="56" x2="30" y2="232" stroke="#F4F6F1" stroke-width="14" stroke-linecap="round"/>
+    <line x1="95" y1="94" x2="95" y2="270" stroke="#F4F6F1" stroke-width="14" stroke-linecap="round"/>
+    <line x1="160" y1="56" x2="160" y2="232" stroke="#F4F6F1" stroke-width="14" stroke-linecap="round"/>
+    <line x1="225" y1="94" x2="225" y2="270" stroke="#F4F6F1" stroke-width="14" stroke-linecap="round"/>
+    <line x1="290" y1="56" x2="290" y2="232" stroke="#F4F6F1" stroke-width="14" stroke-linecap="round"/>
+  </svg>
+  <!-- wordmark + tagline -->
+  <text x="258" y="132" font-family="'Archivo', 'Arial Black', Arial, sans-serif" font-size="76" font-weight="900" letter-spacing="-2" fill="#0B3D2E">PARAWAN</text>
+  <text x="262" y="176" font-family="'Archivo', Arial, sans-serif" font-size="22" font-weight="600" fill="#3D4A42">Dane za parawanem — lokalny anonimizator polskich danych osobowych</text>
+  <text x="262" y="214" font-family="'IBM Plex Mono', 'Courier New', monospace" font-size="15" letter-spacing="1.5" fill="#6B7A70">100% OFFLINE  ·  BEZ AI  ·  APACHE 2.0  ·  PO POLSKU  ·  JEDEN PLIK</text>
+  <!-- akcent bursztynowy -->
+  <rect x="262" y="230" width="150" height="4" rx="2" fill="#B9791F"/>
+</svg>

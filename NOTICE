@@ -1,7 +1,12 @@
-Anonimizator — lokalny anonimizator polskich danych osobowych (PII)
+Parawan — lokalny anonimizator polskich danych osobowych (PII)
 Copyright 2026 Karol Polikarp Wilczyński
 
 This product is licensed under the Apache License, Version 2.0
 (http://www.apache.org/licenses/LICENSE-2.0).
 
 Wcześniejsze wydania (do v0.45.0 włącznie) były publikowane na licencji MIT.
+Marka „Parawan" od v0.46.0; pakiet npm / CLI / repozytorium: „anonimizator".
+
+Fonty marki (osadzone w aplikacji web, apps/web/src/fonts/):
+- Archivo — Copyright Omnibus-Type — SIL Open Font License 1.1
+- IBM Plex Mono — Copyright IBM Corp. — SIL Open Font License 1.1

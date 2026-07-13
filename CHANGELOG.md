@@ -23,9 +23,14 @@ detekcji** (rdzeń nietknięty, bramka benchmarku bez regresji: recall 94% / pre
 - **Bez zmian:** cała mechanika (maskowanie na bieżąco, przeglądanie znaczników, Porównanie,
   wczytywanie DOCX/PDF, „Co maskować", tabela „Co wykrywa"). Kolory kategorii PII te same
   (osoby lekko przyciemnione do `#5B3FA8`).
+- **Rebranding wszędzie:** artefakt release `Anonimizator.html` → **`Parawan.html`**, nowy
+  `JAK-UZYC.txt` i treść wydania; przebudowane README (baner SVG `docs/parawan-banner.svg`,
+  więcej znaczników shields, alerty GitHub, sekcje transparentności, przyjazny język, techniczne
+  części w zwijanych `<details>`), nowy zrzut `docs/screenshot.png`; zaktualizowane `NOTICE`,
+  `CLAUDE.md`, szablony zgłoszeń. **Nazwa pakietu npm / CLI / repozytorium pozostaje `anonimizator`**
+  (identyfikator techniczny — zmiana złamałaby importy i instalacje).
 
-Aplikacja web 0.45.2 → 0.46.0. Rdzeń `anonimizator` bez zmian (0.29.1). Nazwa artefaktu
-release (`Anonimizator.html`) i pakietu npm (`anonimizator`) pozostają — repozytorium bez zmian.
+Aplikacja web 0.45.2 → 0.46.0. Rdzeń `anonimizator` bez zmian (0.29.1).
 
 ## v0.45.2 — 2026-07-13
 
