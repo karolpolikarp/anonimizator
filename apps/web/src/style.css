@@ -361,33 +361,32 @@ select.field { font-family: var(--sans); line-height: normal; cursor: pointer; }
 .ver-link:hover { color: var(--acc); border-color: var(--acc-line); text-decoration: none; }
 /* ikona strony autora (favicon karolwilczynski.com) przy linku „autor" — w jednej linii z tekstem */
 .site-fav { width: 14px; height: 14px; border-radius: 3px; margin-right: 6px; flex: none; }
-/* badge'e hero — zwarty blok wyrównany do prawej (2×2), nie rozwleczony rząd */
-.badges { display: flex; gap: 8px; flex-wrap: wrap; list-style: none; max-width: 305px; justify-content: flex-end; }
-/* badge'e hero — monospace, wersaliki, zieleń marki (kolory 5 kategorii zarezerwowane dla PII). */
-.badge {
+/* pasek cech pod leadem — czyste pigułki z „✓", jeden rząd (zamiast bloku 4 badge'y) */
+.feat-strip { display: flex; gap: 8px; flex-wrap: wrap; list-style: none; }
+.feat-strip li {
   display: inline-flex; align-items: center; gap: 7px;
-  height: 30px; padding: 0 13px; border-radius: 999px;
-  font-family: var(--mono); font-size: 11px; font-weight: 600;
-  letter-spacing: .08em; text-transform: uppercase; cursor: default;
-  color: var(--acc); border: 1px solid var(--line); background: var(--bg);
+  font-size: 12.5px; font-weight: 600; cursor: default;
+  color: var(--acc); background: var(--card-2); border: 1px solid var(--line);
+  border-radius: 999px; padding: 6px 14px;
 }
-/* wariant wypełniony — „bez AI · tryb urzędowy" (zaznaczenie deterministyki) */
-.badge-solid { color: #f4f6f1; background: var(--acc); border-color: var(--acc); }
-.badge .gi { width: 16px; height: 16px; }
+.feat-strip li::before { content: "✓"; font-size: 11px; font-weight: 800; color: var(--fin); }
+.feat-strip .feat-solid { color: #f4f6f1; background: var(--acc); border-color: var(--acc); }
+.feat-strip .feat-solid::before { color: #a9c6b4; }
 
-.hero-b { display: flex; align-items: center; gap: 16px; }
-.hero-lead { font-size: 17px; color: var(--text); flex: 1; }
+.hero-b { display: flex; flex-direction: column; align-items: flex-start; gap: 13px; }
+.hero-lead { font-size: 18px; color: var(--text); }
 .hero-lead strong { color: var(--acc); }
+/* callout prywatności w prawej części nagłówka — mocny akcent zaufania, dopasowany do treści */
 .privacy {
-  margin-left: auto; display: flex; align-items: center; gap: 12px;
-  padding: 13px 16px; border-radius: var(--r-ctl);
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 16px; border-radius: var(--r-ctl);
   border: 1px solid var(--acc-line); background: var(--acc-soft);
-  color: var(--acc); max-width: 44ch;
+  color: var(--acc); width: 340px; max-width: 40vw;
 }
-.privacy .gi { width: 28px; height: 28px; flex: none; }
-.privacy-t { display: flex; flex-direction: column; gap: 2px; }
+.privacy .gi { width: 30px; height: 30px; flex: none; }
+.privacy-t { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
 .privacy-t b { font-size: 14px; font-weight: 700; line-height: 1.25; }
-.privacy-t span { font-size: 12.5px; color: var(--mut-2); line-height: 1.35; }
+.privacy-t span { font-size: 12px; color: var(--mut-2); line-height: 1.35; }
 
 /* ============ KROKI 1–4 ============ */
 /* Układ jak w makiecie: ikona + „Krok N" w jednym rzędzie, tytuł i opis pod spodem.
@@ -440,14 +439,16 @@ select.field { font-family: var(--sans); line-height: normal; cursor: pointer; }
 /* strefy WEJŚCIE / WYJŚCIE — wyeksponowane etykiety z akcentem, kotwiczą przepływ animacji */
 .demo-zone {
   position: absolute; top: 18px; z-index: 5;
+  display: inline-flex; align-items: center; gap: 8px;
   font-family: var(--mono); font-size: 11px; font-weight: 700;
-  letter-spacing: .12em; text-transform: uppercase;
+  letter-spacing: .1em; text-transform: uppercase;
+  padding: 7px 14px; border-radius: 999px;
 }
-.demo-zone::after { content: ""; display: block; height: 3px; width: 44px; border-radius: 2px; margin-top: 7px; }
-.demo-zone-in  { left: 26px; color: var(--mut-2); }
-.demo-zone-in::after { background: var(--acc); }
-.demo-zone-out { right: 26px; text-align: right; color: var(--gold); }
-.demo-zone-out::after { background: var(--gold); margin-left: auto; }
+.demo-zone::before { content: ""; width: 8px; height: 8px; border-radius: 50%; flex: none; }
+.demo-zone-in  { left: 24px; color: var(--acc); background: var(--acc-soft); border: 1px solid var(--acc-line); }
+.demo-zone-in::before { background: var(--acc); }
+.demo-zone-out { right: 24px; color: var(--gold); background: rgba(185,121,31,.10); border: 1px solid rgba(185,121,31,.35); }
+.demo-zone-out::before { background: var(--gold); }
 .demo-doc { position: absolute; top: 94px; left: 50%; width: 176px; margin-left: -88px; z-index: 1; will-change: transform, opacity; }
 .demo-in  { animation: demoIn 7s ease-in-out infinite; }
 .demo-out { animation: demoOut 7s ease-in-out infinite; }
@@ -814,7 +815,10 @@ table .pii { cursor: default; }
 @media (max-width: 1080px) {
   .g3 { grid-column: span 6; }
   .g4, .g5, .g6, .g7 { grid-column: span 12; }
-  .privacy { max-width: none; }
+  /* hero: na węższych ekranach callout prywatności spływa pod lockup marki */
+  .hero .card-h { flex-wrap: wrap; }
+  .hero .card-sp { display: none; }
+  .privacy { margin-left: 0; width: auto; max-width: none; }
   .table-wrap { overflow-x: auto; }
   /* Demo: na wąsko chowamy ruchome karty; zostają strefy Wejście/Wyjście, znak i puls „anonimizacja…". */
   .demo-stage { height: 230px; }
@@ -839,15 +843,9 @@ table .pii { cursor: default; }
   /* kolumna „Kategoria" duplikuje kolor+ikonę — chowamy, tabela mieści tokeny */
   th:nth-child(2), td:nth-child(2) { display: none; }
 }
-/* telefony: nagłówki kart zawijają się, badge'e w równym kwartecie 2×2 */
+/* telefony: nagłówki kart zawijają się */
 @media (max-width: 480px) {
   .card-h { flex-wrap: wrap; min-height: 0; }
   .grid > .card { min-width: 0; }
-  .badges {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    width: 100%;
-  }
-  .badge { justify-content: center; }
   .card-sp { display: none; }
 }

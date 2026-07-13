@@ -1,5 +1,19 @@
 # Changelog
 
+## v0.46.4 — 2026-07-13
+
+**Kompozycja hero i strefy demo.**
+
+- **Hero na nowo**: callout prywatności („Twój tekst nie opuszcza przeglądarki") przeniesiony do
+  prawej części nagłówka jako mocny akcent zaufania (dopasowany do treści, nic nie „zwisa").
+  Cztery cechy zamiast bloku 2×2 badge'ów to teraz czysty **pasek pigułek z „✓"** pod leadem
+  (100% offline · bezpieczne · open source · reguły + sumy kontrolne). Lead powiększony.
+- **Demo — strefy Wejście/Wyjście** uwydatnione jako pigułki z kolorową kropką (WEJŚCIE zielona,
+  WYJŚCIE bursztynowa), wyraźnie kotwiczące przepływ animacji.
+- Responsywność: na węższych ekranach callout prywatności spływa pod lockup marki.
+
+Aplikacja web 0.46.3 → 0.46.4. Rdzeń bez zmian.
+
 ## v0.46.3 — 2026-07-13
 
 **Pass polerski przed finałem: hero-lockup, demo, box prywatności, ikony, tła pól.**
