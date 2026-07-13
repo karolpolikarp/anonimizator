@@ -13,8 +13,11 @@
   przełączniki obecne (Identyfikatory ×14, Kontakt ×2, Finanse ×1, Adres i czas ×4, Osoby ×1).
 - **Animacja „Jak to działa"** przepisana na współrzędne WZGLĘDEM ŚRODKA (left:50% + translateX):
   karta wejścia płynnie wchodzi z lewej za wyśrodkowany parawan, karta wyjścia wyłania się zza
-  niego i odjeżdża w prawo — spójnie niezależnie od szerokości karty (koniec „wiszenia" w sztywnym
+  niego i odjeżdża w prawo, spójnie niezależnie od szerokości karty (koniec „wiszenia" w sztywnym
   punkcie).
+- **Teksty**: ogólne ujęcie zamiast celowania w urzędników (czat AI / asystent zamiast „poza urząd",
+  badge „reguły + sumy kontrolne" zamiast „bez AI · tryb urzędowy"); ograniczone nadmiarowe myślniki
+  („—") w UI, README i wydaniu (przecinki / dwukropki / nawiasy).
 
 Aplikacja web 0.46.0 → 0.46.1. Rdzeń bez zmian.
 

@@ -66,7 +66,7 @@ const MASK_TIP: Record<string, string> = {
   VIN: 'Identyfikatory · 17 znaków bez I/O/Q; kontekst „VIN" lub układ VIN',
   IP: 'Identyfikatory · adres IPv4 (oktety 0–255) lub IPv6',
   MAC: 'Identyfikatory · 6 par hex (00:1A:2B:3C:4D:5E)',
-  TOKEN: 'Identyfikatory · token/JWT (eyJ…) — może dawać dostęp',
+  TOKEN: 'Identyfikatory · token/JWT (eyJ…), może dawać dostęp',
   LOGIN: 'Identyfikatory · kontekst „login/username" + wartość (też w URL i XML/JSON)',
   'NR-KONTA': 'Finanse · IBAN (mod 97) lub kontekst „konto/rachunek”',
   EMAIL: 'Kontakt · wzorzec adresu e-mail',
@@ -109,7 +109,7 @@ const MASK_GROUPS: MaskGroup[] = [
   { key: 'vin', label: 'VIN', types: ['VIN'], cat: 'ident', icon: 'dane-id', code: '[VIN]', tip: '17 znaków bez I/O/Q; kontekst „VIN/nadwozia" lub wyraźny układ VIN' },
   { key: 'ip', label: 'Adres IP', types: ['IP'], cat: 'ident', icon: 'dane-id', code: '[IP]', tip: 'IPv4 (oktety 0–255) oraz IPv6' },
   { key: 'mac', label: 'Adres MAC', types: ['MAC'], cat: 'ident', icon: 'dane-id', code: '[MAC]', tip: '6 par hex (00:1A:2B:3C:4D:5E)' },
-  { key: 'token', label: 'Token / JWT', types: ['TOKEN'], cat: 'ident', icon: 'login', code: '[TOKEN]', tip: 'Token JWT (eyJ…) — może dawać dostęp' },
+  { key: 'token', label: 'Token / JWT', types: ['TOKEN'], cat: 'ident', icon: 'login', code: '[TOKEN]', tip: 'Token JWT (eyJ…), może dawać dostęp' },
   { key: 'login', label: 'Login / nazwa użytkownika', types: ['LOGIN'], cat: 'ident', icon: 'login', code: '[LOGIN]', tip: 'Kontekst „login/username/nazwa użytkownika" + wartość; także w parametrach URL (?user=…) i kluczach XML/JSON' },
   { key: 'konto', label: 'IBAN / nr konta', types: ['IBAN', 'NR-KONTA'], cat: 'fin', icon: 'iban', code: '[NR-KONTA]', tip: 'Walidacja mod 97 lub kontekst „konto/rachunek”' },
   { key: 'email', label: 'E-mail', types: ['EMAIL'], cat: 'contact', icon: 'login', code: '[EMAIL]', tip: 'Wzorzec adresu e-mail' },
@@ -418,7 +418,7 @@ function makeGrip(): HTMLElement {
   g.tabIndex = 0;
   g.setAttribute('role', 'separator');
   g.setAttribute('aria-orientation', 'horizontal');
-  g.setAttribute('aria-label', 'Zmień wysokość okien — przeciągnij lub użyj strzałek ↑ ↓');
+  g.setAttribute('aria-label', 'Zmień wysokość okien: przeciągnij lub użyj strzałek ↑ ↓');
   g.setAttribute('aria-valuemin', String(MIN_ED_H));
   g.dataset.tip = 'Przeciągnij, aby zmienić wysokość obu okien · strzałki ↑ ↓ · dwuklik = reset';
   g.innerHTML = '<span class="ed-grip-bar"></span>';

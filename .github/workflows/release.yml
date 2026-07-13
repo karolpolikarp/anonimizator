@@ -29,18 +29,18 @@ jobs:
         run: |
           cp apps/web/dist/index.html Parawan.html
           cat > JAK-UZYC.txt <<'EOF'
-          PARAWAN — jak zacząć (30 sekund)
+          PARAWAN: jak zacząć (30 sekund)
 
-          „Dane za parawanem" — lokalny anonimizator polskich danych osobowych.
+          „Dane za parawanem", lokalny anonimizator polskich danych osobowych.
 
           1. Otwórz plik Parawan.html podwójnym kliknięciem (uruchomi się w przeglądarce).
           2. Wklej tekst albo upuść plik (.txt, .docx lub .pdf) na lewe pole.
-          3. Po prawej masz wersję z zamaskowanymi danymi — kliknij „Kopiuj".
+          3. Po prawej masz wersję z zamaskowanymi danymi, kliknij „Kopiuj".
 
           Wszystko dzieje się na Twoim komputerze. Aplikacja nie łączy się
-          z internetem — możesz wyłączyć Wi-Fi i sprawdzić.
+          z internetem, możesz wyłączyć Wi-Fi i sprawdzić.
 
-          Uwaga: automat bywa niepełny (zwłaszcza rzadkie nazwiska) — zawsze przejrzyj
+          Uwaga: automat bywa niepełny (zwłaszcza rzadkie nazwiska), zawsze przejrzyj
           wynik, zanim go komuś wyślesz.
 
           Kod źródłowy:
@@ -52,9 +52,9 @@ jobs:
             Parawan.html
             JAK-UZYC.txt
           body: |
-            ### `Parawan.html` — jeden plik, zero instalacji
+            ### `Parawan.html`: jeden plik, zero instalacji
 
-            **Parawan** — „Dane za parawanem". Pobierz i otwórz podwójnym kliknięciem — działa nawet
+            **Parawan**, „Dane za parawanem". Pobierz i otwórz podwójnym kliknięciem, działa nawet
             na komputerach z blokadami firmowymi (nie wymaga `.bat` ani serwera).
             Anonimizacja regułami, słownikami i sumami kontrolnymi, w całości offline, **bez AI**
             (możesz wyłączyć internet i sprawdzić).
