@@ -1,5 +1,22 @@
 # Changelog
 
+## v0.46.2 — 2026-07-13
+
+**Zmiana nazwy repozytorium na `parawan`, dopracowanie marki i faviconów.**
+
+- **Repozytorium GitHub: `anonimizator` → `parawan`** (stara nazwa przekierowuje). Zaktualizowane
+  wszystkie odniesienia URL w README, aplikacji, `release.yml`, szablonach i `packages/core`.
+  Pakiet npm / CLI dalej `anonimizator`.
+- **Baner README**: znak marki w kolorach marki (ciemna zieleń na jasnym kafelku) zamiast
+  odwróconych (jasny na ciemnym). Tagline skrócony do „Lokalny anonimizator polskich danych
+  osobowych" (bez „Dane za parawanem").
+- **Favicon aplikacji**: prawdziwy znak-harmonijka (ParawanMark) zamiast uproszczonego zygzaka.
+  Przy linku „autor" dodana ikona strony `karolwilczynski.com` (osadzona jako `data:`, offline).
+- **Hero**: pod-tytuł skrócony do „Lokalny anonimizator polskich danych osobowych".
+- **README**: badge „dystrybucja: jeden plik HTML" (zamiast `file://`), usunięty badge „zgodność RODO".
+
+Aplikacja web 0.46.1 → 0.46.2. Rdzeń bez zmian.
+
 ## v0.46.1 — 2026-07-13
 
 **Dopracowanie UI po v0.46.0 — usunięty panel, czytelniejsze „Co maskować", płynniejsze demo.**

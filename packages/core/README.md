@@ -37,6 +37,6 @@ import { redactPIIFull } from 'anonimizator/ner';
 const { redacted } = await redactPIIFull(tekst, { url: 'http://127.0.0.1:8090' });
 ```
 
-Pełna dokumentacja: <https://github.com/karolpolikarp/anonimizator>
+Pełna dokumentacja: <https://github.com/karolpolikarp/parawan>
 
 Licencja: MIT

@@ -44,7 +44,7 @@ jobs:
           wynik, zanim go komuś wyślesz.
 
           Kod źródłowy:
-          https://github.com/karolpolikarp/anonimizator
+          https://github.com/karolpolikarp/parawan
           EOF
       - uses: softprops/action-gh-release@v3
         with:
