@@ -247,6 +247,10 @@ export function buildDataset() {
   osp('Na spotkanie przyszedł Marek Mazur z dokumentami.', ['Marek', 'Mazur'], ['dokumentami']);
   osp('Ewa Lewandowska odebrała przesyłkę osobiście.', ['Ewa', 'Lewandowska'], ['przesyłkę']);
   osp('hej, pisze do was Jakub Dąbrowski, mam pytanie o umowę', ['Jakub', 'Dąbrowski'], ['umowę']);
+  // v0.46.x: IMIĘ+NAZWISKO małymi literami (niechlujny zapis) — imię ze słownika + nazwisko morfologiczne
+  osp('imię i nazwisko: jan kowalski', ['jan', 'kowalski'], []);
+  osp('od anna nowak dostałem pismo', ['anna', 'nowak'], ['dostałem', 'pismo']);
+  osp('pełnomocnik: anna kowalska-nowak', ['anna', 'kowalska-nowak'], ['pełnomocnik']);
   // formy żeńskie
   osp('Anna Kowalska wygrała sprawę w drugiej instancji.', ['Anna', 'Kowalska'], ['instancji']);
   osp('Agnieszka Wiśniewska złożyła reklamację w sklepie.', ['Agnieszka', 'Wiśniewska'], ['reklamację']);
@@ -600,6 +604,14 @@ export function buildDataset() {
   neg('Powiat: Pruszkowski, województwo mazowieckie pozostają jawne.', ['Pruszkowski', 'mazowieckie']);
   str('Załącznik: Umowa_Kredytowa_Adam_Kowalski.pdf w aktach.', ['Adam_Kowalski'], ['Umowa_Kredytowa', '.pdf']);
   str('Zgłosił się Jan KowaIski po odbiór dokumentów.', ['Jan KowaIski'], ['odbiór']);
+  // v0.46.x: kod pocztowy BEZ myślnika przy kotwicy adresowej (ulica → miasto); 5 cyfr luzem zostają
+  str('Adres korespondencyjny: ul. Krótka 5, 65048 Zielona Góra.', ['Krótka 5', '65048', 'Zielona Góra'], ['korespondencyjny']);
+  neg('Kwota 50000 Euro oraz faktura 12345 Netto do rozliczenia.', ['50000', '12345', 'Euro', 'Netto']);
+  // e-mail z polską diakrytyką w części lokalnej — maskuj W CAŁOŚCI (bez wycieku fragmentu nazwiska)
+  str('Kontakt: piotr.wiśniewski@poczta.pl w sprawie umowy.', ['piotr.wiśniewski@poczta.pl'], ['sprawie']);
+  // proza małymi literami — sąsiedztwa mylące, ale zero nadmaskowania (krok 13a4 wymaga imienia+nazwiska)
+  neg('polski rynek pracy zmienia się, a wąski segment rośnie.', ['polski', 'wąski']);
+  neg('mam ochotę na kawę, ala woli herbatę, ola pije wodę.', ['ochotę', 'ala', 'ola']);
 
   // ── Kontrola spójności zbioru ──
   const ids = new Set();

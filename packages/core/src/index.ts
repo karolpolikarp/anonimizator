@@ -279,6 +279,17 @@ const RE_NAME_SEQ = new RegExp(`(?<![${PL_UP}${PL_LO}-])${CAP_WORD}(?:[ \\t]+${C
 const RE_PAIR = new RegExp(`(?<![${PL_UP}${PL_LO}-])(${CAP_WORD})[ \\t]+(${CAP_WORD})(?![${PL_UP}${PL_LO}])`, 'g');
 const RE_SOLO_DICT = new RegExp(`(?<![${PL_UP}${PL_LO}-])[${PL_UP}][${PL_LO}]+(?![${PL_LO}${PL_UP}-])`, 'g');
 const RE_SOLO_MORPH = new RegExp(`(?<![${PL_UP}${PL_LO}-])${CAP_WORD}(?![${PL_UP}${PL_LO}])`, 'g');
+// Ciąg wyrazów MAŁYMI literami — niechlujny zapis (czaty, e-maile, formularze bez wielkich liter).
+// Sam wzorzec jest szeroki (łapie całe zdania); PRECYZJĘ daje walidacja w callbacku (a4), która
+// szuka W CIĄGU sąsiedztwa „imię (słownik) + nazwisko (morfologia/słownik)" i maskuje TYLKO tę parę.
+// Skan całego ciągu (zamiast sztywnej pary) rozwiązuje konsumpcję sąsiadów: „od jan kowalski",
+// „z marek górski" — wiodący przyimek nie zjada imienia. Lewa granica odcina fragmenty
+// e-maili/URL-i/domen (poprzedzający znak nie może być literą, myślnikiem, „@", kropką ani „/").
+const LO_WORD = `[${PL_LO}]+(?:-[${PL_LO}]+)?`;
+const RE_LOWER_RUN = new RegExp(
+  `(?<![${PL_UP}${PL_LO}@./-])${LO_WORD}(?:[ \\t]+${LO_WORD}){1,6}(?![${PL_UP}${PL_LO}-])`,
+  'g',
+);
 const RE_SURNAME_OBLIQUE =
   /(?:sk|ck|dzk)(?:iego|iej|iemu|im|imi|ich|ą)$|icz(?:a|owi|em|owie|ami|ach)$|czyk(?:a|owi|iem|ami|ach|owie)$/;
 
@@ -593,9 +604,12 @@ function isFirstNameLike(word: string): boolean {
 
 // ── URL: ochrona + maskowanie WEWNĄTRZ ────────────────────────────────────────
 // E-mail — wzorzec współdzielony przez krok 1 i maskowanie wewnątrz URL-i.
-const RE_EMAIL = /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g;
+// Część lokalna i domena DOPUSZCZAJĄ polskie litery (ąćęłńóśźż…): adres „piotr.wiśniewski@…" musi
+// zostać zamaskowany W CAŁOŚCI. Bez tego klasa ASCII zatrzymywała się na „ś" i zostawiała jawny
+// fragment nazwiska („piotr.wiś") przed [EMAIL] — wyciek (patrz „maskuj całość, nie fragment").
+const RE_EMAIL = /[A-Za-z0-9ąćęłńóśźżĄĆĘŁŃÓŚŹŻ._%+-]+@[A-Za-z0-9ąćęłńóśźżĄĆĘŁŃÓŚŹŻ.-]+\.[A-Za-z]{2,}/g;
 // E-mail zakodowany w URL-u („%40" zamiast „@") — poza URL-em nie występuje.
-const RE_EMAIL_URLENC = /[A-Za-z0-9._%+-]+%40[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g;
+const RE_EMAIL_URLENC = /[A-Za-z0-9ąćęłńóśźżĄĆĘŁŃÓŚŹŻ._%+-]+%40[A-Za-z0-9ąćęłńóśźżĄĆĘŁŃÓŚŹŻ.-]+\.[A-Za-z]{2,}/g;
 /**
  * Parametry query URL-a o kluczach OSOBOWYCH — klucz to mocna kotwica, maskujemy samą
  * wartość wg typu (?user=[LOGIN]&email=[EMAIL]), struktura URL-a zostaje. Klasa wartości
@@ -1396,7 +1410,9 @@ export function redactPII(input: string, options?: RedactOptions): RedactionResu
           `(?:(?:\\d+|gen|płk|ppłk|mjr|kpt|por|ks|św|bp|abp|kard|marsz|prof|dr|inż|hr)\\.?\\s+|[A-ZĄĆĘŁŃÓŚŹŻ]\\.\\s+){0,2}` +
           // numer lokalu także po „m."/„lok." („Długa 5 m. 7", „Polna 3 lok. 5"), nie tylko po „/"
           // nazwa ulicy dopuszcza homoglify OCR 0/1 w środku („Lip0wa 15" — kotwica „ul." broni precyzji)
-          `[${PL_UP}][${PL_LO}${PL_UP}01.-]*(?:\\s+[${PL_UP}0-9][${PL_LO}${PL_UP}0-9.-]*){0,3}\\s+\\d+[A-Za-z]?(?:\\s*(?:/|m\\.?|lok\\.?)\\s*\\d+[A-Za-z]?)?`,
+          // separatory WEWNĄTRZ ulicy to [ \t]+ (BEZ \n) — inaczej „ul. Krótka 5\n65048 Miasto"
+          // wciągało kod pocztowy z następnego wiersza jako część ulicy, a miejscowość wyciekała
+          `[${PL_UP}][${PL_LO}${PL_UP}01.-]*(?:[ \\t]+[${PL_UP}0-9][${PL_LO}${PL_UP}0-9.-]*){0,3}[ \\t]+\\d+[A-Za-z]?(?:\\s*(?:/|m\\.?|lok\\.?)\\s*\\d+[A-Za-z]?)?`,
         'g',
       ),
       () => {
@@ -1421,6 +1437,24 @@ export function redactPII(input: string, options?: RedactOptions): RedactionResu
       (_m, _street: string, sep: string, kod: string) => {
         bump('ADRES');
         return `${M.ADRES}${sep}${kod}`;
+      },
+    );
+  }
+
+  // 10b) KOD POCZTOWY BEZ MYŚLNIKA („65048" zamiast „65-048"). Pięć cyfr luzem to liczba
+  // WIELOZNACZNA (kwota, identyfikator, ilość) — maskowanie jej samej łamałoby „precyzja >
+  // nadmaskowanie". Dlatego maskujemy TYLKO przy mocnej kotwicy adresowej: tuż po zamaskowanym
+  // [ADRES] (ulica poprzedza kod: „…, 65048 Zielona Góra" / „ul. Krótka 5\n65048 Zielona Góra")
+  // i BEZPOŚREDNIO przed miejscowością (wyraz z wielkiej). Kod staje się placeholderem, a miasto
+  // dokłada krok 12c (kotwiczy na [KOD-POCZTOWY]). „50000 Euro", „Faktura 12345 Netto" nie stoją
+  // po [ADRES], więc zostają nietknięte (zero nadmaskowania).
+  if (on('KOD-POCZTOWY')) {
+    const ADR = escapeRe(M.ADRES);
+    text = text.replace(
+      new RegExp(`(${ADR}\\s*,?\\s*)(?<!\\d)\\d{5}(?!\\d)(?=[ \\t]+${CAP_CITY})`, 'g'),
+      (_m, pre: string) => {
+        bump('KOD-POCZTOWY');
+        return `${pre}${M['KOD-POCZTOWY']}`;
       },
     );
   }
@@ -1645,6 +1679,38 @@ export function redactPII(input: string, options?: RedactOptions): RedactionResu
         return personMask(w1); // klucz tożsamości = nazwisko (pierwsze słowo)
       },
     );
+
+    // (a4) IMIĘ + NAZWISKO MAŁYMI literami — niechlujny zapis (czaty, e-maile, formularze bez wielkich
+    // liter). Reguły a0–a3 wymagają wielkich liter, więc „jan kowalski" / „anna kowalska-nowak" wyciekały.
+    // Wysoka precyzja: w ciągu małych wyrazów maskujemy TYLKO sąsiedztwo, gdzie PIERWSZY wyraz to imię
+    // ZE SŁOWNIKA (isFirstNameLike), a DRUGI to nazwisko wg morfologii/słownika (SURNAME_SUFFIX/surnameBase,
+    // też dwuczłonowe po myślniku). Reszta wyrazów ciągu zostaje. Bez potwierdzenia leksykalnego OBU
+    // członów nic nie maskujemy (inaczej „mam ochotę na kawę", „ala ma kota" itd.).
+    const surnameLikeLo = (w: string): boolean =>
+      !NON_SURNAME_ADJ.has(w) &&
+      !LEGAL_ENTITY_WORDS.has(w) &&
+      (looksLikeSurname(w) ||
+        !!surnameBase(w) ||
+        (w.includes('-') && w.split('-').some((p) => looksLikeSurname(p) || !!surnameBase(p))));
+    text = text.replace(RE_LOWER_RUN, (m) => {
+      const words = m.split(/([ \t]+)/); // zachowaj separatory (indeksy parzyste = wyrazy)
+      let changed = false;
+      for (let i = 0; i + 2 < words.length; i += 2) {
+        const w1 = words[i];
+        const w2 = words[i + 2];
+        if (!w1 || !w2) continue;
+        const w1l = w1.toLowerCase();
+        if (TITLE_WORDS.has(w1l) || ROLE_WORDS.has(w1l) || LEGAL_ENTITY_WORDS.has(w1l)) continue;
+        if (!isFirstNameLike(w1) || !surnameLikeLo(w2.toLowerCase())) continue;
+        bump('IMIE');
+        words[i] = personMask(w2); // cała para „imię nazwisko" → jedna maska (klucz = nazwisko)
+        words[i + 1] = '';
+        words[i + 2] = '';
+        changed = true;
+        i += 2; // pomiń zamaskowane nazwisko (kolejna para nie zaczyna się od niego)
+      }
+      return changed ? words.join('') : m;
+    });
   }
 
   // (b) wyzwalacze kontekstu — łapią nazwiska spoza listy imion.

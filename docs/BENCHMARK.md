@@ -2,7 +2,7 @@
 
 - **Data uruchomienia:** 2026-07-13
 - **Wersja rdzenia (`anonimizator`):** 0.29.1
-- **Zbiór ewaluacyjny:** 260 syntetycznych zdań (deterministyczny, seed `20260704`), 248 elementów do zamaskowania (mustMask), 280 elementów do zachowania (mustKeep)
+- **Zbiór ewaluacyjny:** 268 syntetycznych zdań (deterministyczny, seed `20260704`), 258 elementów do zamaskowania (mustMask), 294 elementów do zachowania (mustKeep)
 - **Reprodukcja:** `npm run build -w anonimizator && node scripts/benchmark/run.mjs`
 
 ## Metodologia
@@ -20,7 +20,7 @@ Wszystkie identyfikatory w zbiorze mają **poprawne sumy kontrolne** policzone w
 (PESEL, NIP, REGON, IBAN mod-97, nr dowodu), a negatywy zawierają m.in. ciągi o celowo
 **błędnych** sumach kontrolnych — silnik ma je zostawić w spokoju.
 
-Liczności kategorii: osoby-podstawowe — 23, osoby-odmiana — 32, osoby-rzadkie — 24, strukturalne — 78, negatywy — 74, osoby-rzadkie-ner — 19, osoby-slownik — 10.
+Liczności kategorii: osoby-podstawowe — 26, osoby-odmiana — 32, osoby-rzadkie — 24, strukturalne — 80, negatywy — 77, osoby-rzadkie-ner — 19, osoby-slownik — 10.
 
 ### Warstwy
 
@@ -33,7 +33,7 @@ Liczności kategorii: osoby-podstawowe — 23, osoby-odmiana — 32, osoby-rzadk
 
 | Warstwa | Recall (łącznie) | Precision-proxy (łącznie) | F1 | Porażki (przypadki) | Czas | Wynik ≠ core |
 |---|---|---|---|---|---|---|
-| T0+T1 core | 94.0% (233/248) | 99.6% (279/280) | 96.7% | 16 | 0.0 s | — |
+| T0+T1 core | 94.2% (243/258) | 99.7% (293/294) | 96.8% | 16 | 0.0 s | — |
 
 F1 liczone jako średnia harmoniczna recall i precision-proxy (łącznie po wszystkich kategoriach
 z oboma rodzajami elementów; kategoria „negatywy" nie ma recall, więc nie wchodzi do składowej recall).
@@ -54,7 +54,7 @@ z oboma rodzajami elementów; kategoria „negatywy" nie ma recall, więc nie wc
 
 | Warstwa | osoby-podstawowe | osoby-odmiana | osoby-rzadkie | strukturalne | negatywy | osoby-rzadkie-ner | osoby-slownik |
 |---|---|---|---|---|---|---|---|
-| T0+T1 core | 100.0% | 100.0% | 100.0% | 100.0% | 98.8% | 100.0% | 100.0% |
+| T0+T1 core | 100.0% | 100.0% | 100.0% | 100.0% | 98.9% | 100.0% | 100.0% |
 
 („—" = brak elementów danego rodzaju w kategorii, np. negatywy nie mają mustMask.)
 

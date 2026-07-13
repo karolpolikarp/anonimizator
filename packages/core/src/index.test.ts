@@ -633,6 +633,53 @@ test('małe litery NIE są nazwiskiem (kowalski jako przymiotnik)', () => {
   const q = 'zawód kowalski wymaga siły';
   expect(redactPII(q).redacted).toBe(q);
 });
+// ── IMIĘ + NAZWISKO małymi literami (krok 13a4) — imię ze słownika + nazwisko morfologiczne ──
+test('para małymi literami: imię ze słownika + nazwisko (jan kowalski)', () => {
+  const r = redactPII('jan kowalski');
+  expect(r.redacted).toBe('[IMIĘ I NAZWISKO]');
+});
+test('para małymi literami: nazwisko dwuczłonowe (anna kowalska-nowak)', () => {
+  const r = redactPII('anna kowalska-nowak');
+  expect(r.redacted).toBe('[IMIĘ I NAZWISKO]');
+});
+test('para małymi literami po przyimku (od jan kowalski dostałem list)', () => {
+  const r = redactPII('od jan kowalski dostałem list');
+  expect(r.redacted).toBe('od [IMIĘ I NAZWISKO] dostałem list');
+});
+test('dwie osoby małymi literami w jednym ciągu', () => {
+  const r = redactPII('do anna nowak i piotr wiśniewski');
+  expect(r.redacted).toBe('do [IMIĘ I NAZWISKO] i [IMIĘ I NAZWISKO]');
+});
+test('proza małymi literami NIE jest nadmaskowana', () => {
+  for (const p of [
+    'mam ochotę na kawę ale ala woli herbatę',
+    'polski rynek pracy zmienia się szybko',
+    'to był ciężki tydzień pełen spotkań',
+    'zielona góra świeci jasno nad miastem',
+    'jan polski dokument leżał na biurku',
+  ]) {
+    expect(redactPII(p).redacted).toBe(p);
+  }
+});
+// ── E-mail z polską diakrytyką w części lokalnej — maskuj W CAŁOŚCI (bez wycieku fragmentu) ──
+test('e-mail z „ś" w części lokalnej maskowany w całości', () => {
+  const r = redactPII('e-mail: piotr.wiśniewski-nowak@poczta.pl');
+  expect(r.redacted).toBe('e-mail: [EMAIL]');
+});
+// ── Kod pocztowy BEZ myślnika przy kotwicy adresowej (krok 10b) ──
+test('kod pocztowy bez myślnika po adresie (65048 Zielona Góra)', () => {
+  const r = redactPII('ul. Krótka 5, 65048 Zielona Góra');
+  expect(r.redacted).toBe('[ADRES], [KOD-POCZTOWY] [MIEJSCOWOŚĆ]');
+});
+test('kod pocztowy bez myślnika w nowej linii adresu', () => {
+  const r = redactPII('ul. Krótka 5\n65048 Zielona Góra');
+  expect(r.redacted).toBe('[ADRES]\n[KOD-POCZTOWY] [MIEJSCOWOŚĆ]');
+});
+test('5 cyfr BEZ kotwicy adresowej NIE są kodem pocztowym', () => {
+  for (const q of ['Kwota 50000 Euro do zapłaty', 'Faktura 12345 Netto']) {
+    expect(redactPII(q).redacted).toBe(q);
+  }
+});
 test('krok 13c nie psuje idempotencji', () => {
   const once = redactPII('Sprawę Kowalskiego i Wiśniewskiej umorzono').redacted;
   expect(redactPII(once).redacted).toBe(once);

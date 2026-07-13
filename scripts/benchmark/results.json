@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-07-13T09:13:43.481Z",
+  "generatedAt": "2026-07-13T17:35:38.429Z",
   "seed": 20260704,
   "coreVersion": "0.29.1",
-  "casesTotal": 260,
-  "mustMaskTotal": 248,
-  "mustKeepTotal": 280,
+  "casesTotal": 268,
+  "mustMaskTotal": 258,
+  "mustKeepTotal": 294,
   "skippedLayers": [
     {
       "name": "core+spacy",
@@ -26,26 +26,26 @@
     {
       "name": "T0+T1 core",
       "desc": "redactPII() — regex + sumy kontrolne + słownik (in-process, offline)",
-      "elapsedMs": 33,
+      "elapsedMs": 28,
       "changedVsCore": null,
-      "recall": 0.9395161290322581,
-      "precision": 0.9964285714285714,
-      "f1": 0.967135800999762,
+      "recall": 0.9418604651162791,
+      "precision": 0.9965986394557823,
+      "f1": 0.9684567044805353,
       "agg": {
-        "maskTotal": 248,
-        "maskHit": 233,
-        "keepTotal": 280,
-        "keepHit": 279
+        "maskTotal": 258,
+        "maskHit": 243,
+        "keepTotal": 294,
+        "keepHit": 293
       },
       "perCategory": {
         "osoby-podstawowe": {
           "recall": 1,
           "precision": 1,
           "f1": 1,
-          "maskTotal": 44,
-          "maskHit": 44,
-          "keepTotal": 25,
-          "keepHit": 25
+          "maskTotal": 50,
+          "maskHit": 50,
+          "keepTotal": 28,
+          "keepHit": 28
         },
         "osoby-odmiana": {
           "recall": 1,
@@ -69,19 +69,19 @@
           "recall": 1,
           "precision": 1,
           "f1": 1,
-          "maskTotal": 104,
-          "maskHit": 104,
-          "keepTotal": 82,
-          "keepHit": 82
+          "maskTotal": 108,
+          "maskHit": 108,
+          "keepTotal": 84,
+          "keepHit": 84
         },
         "negatywy": {
           "recall": null,
-          "precision": 0.9882352941176471,
+          "precision": 0.9893617021276596,
           "f1": null,
           "maskTotal": 0,
           "maskHit": 0,
-          "keepTotal": 85,
-          "keepHit": 84
+          "keepTotal": 94,
+          "keepHit": 93
         },
         "osoby-rzadkie-ner": {
           "recall": 0.21052631578947367,
@@ -377,6 +377,21 @@
         },
         {
           "id": "os-p-23",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-p-24",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-p-25",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-p-26",
           "leaked": [],
           "eaten": []
         },
@@ -1594,6 +1609,31 @@
         },
         {
           "id": "str-78",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-79",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-75",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-80",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-76",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-77",
           "leaked": [],
           "eaten": []
         }

@@ -1,5 +1,24 @@
 # Changelog
 
+## v0.46.8 — 2026-07-13
+
+**Detekcja rdzenia: imię i nazwisko małymi literami, e-mail z polską diakrytyką, kod pocztowy bez myślnika.**
+
+- **Imię + nazwisko MAŁYMI literami** („jan kowalski", „anna kowalska-nowak", „od anna nowak…") —
+  niechlujny zapis z czatów/e-maili/formularzy. Wysoka precyzja: pierwszy wyraz musi być imieniem
+  ZE SŁOWNIKA, drugi nazwiskiem wg morfologii/słownika (też dwuczłonowym po myślniku). Skan całego
+  ciągu małych wyrazów rozwiązuje konsumpcję sąsiadów (wiodący przyimek nie zjada imienia).
+  Zero nadmaskowania w prozie — „mam ochotę na kawę", „polski rynek", „ala ma kota" zostają.
+- **E-mail z polską literą w części lokalnej** („piotr.wiśniewski@…") maskowany W CAŁOŚCI — wcześniej
+  klasa ASCII zatrzymywała się na „ś" i zostawiała jawny fragment nazwiska („piotr.wiś") przed `[EMAIL]`.
+- **Kod pocztowy BEZ myślnika** („65048 Zielona Góra") — maskowany TYLKO przy kotwicy adresowej
+  (tuż po zamaskowanym `[ADRES]` i przed miejscowością). Pięć cyfr luzem („50000 Euro", „faktura 12345")
+  pozostaje jawne (precyzja > nadmaskowanie). Ulica nie sięga już następnego wiersza (kod z nowej linii
+  nie jest wciągany do adresu, miejscowość nie wycieka).
+- Testy rdzenia 275 → 284; benchmark 94,0 → 94,2% recall / 99,6 → 99,7% precyzja / F1 96,8%.
+
+Rdzeń `anonimizator` 0.29.1 → 0.29.2, aplikacja web 0.46.7 → 0.46.8.
+
 ## v0.46.7 — 2026-07-13
 
 **Spójność edytorów, proporcje hero.**
