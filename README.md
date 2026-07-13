@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/karolpolikarp/anonimizator/actions/workflows/ci.yml/badge.svg)](https://github.com/karolpolikarp/anonimizator/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/karolpolikarp/anonimizator)](https://github.com/karolpolikarp/anonimizator/releases)
-[![Licencja MIT](https://img.shields.io/badge/licencja-MIT-blue.svg)](./LICENSE)
+[![Licencja Apache 2.0](https://img.shields.io/badge/licencja-Apache%202.0-blue.svg)](./LICENSE)
 
 Lokalny anonimizator polskich danych osobowych (PII). Zamienia PESEL, NIP, REGON, KRS, numery kont,
 numery dowodów i paszportów, prawo jazdy, nr rejestracyjny, VIN, adres IP/MAC, token, e-maile,
@@ -33,7 +33,7 @@ działać** — to najprostszy dowód, że nic nie wychodzi na zewnątrz.
 
 **Skąd pewność, że tak jest naprawdę.**
 1. **Sprawdź sam** — odłącz internet i użyj aplikacji; zadziała tak samo.
-2. **Kod jest otwarty** (licencja MIT) — każdy może go przeczytać albo poprosić o sprawdzenie
+2. **Kod jest otwarty** (licencja Apache 2.0) — każdy może go przeczytać albo poprosić o sprawdzenie
    znajomego informatyka. Nic nie jest ukryte.
 3. **Plik jest samodzielny** — nie dociąga niczego w tle podczas pracy.
 
@@ -324,8 +324,9 @@ IBAN and national ID numbers are validated against their checksums (very few fal
 e-mails, phones, addresses and person names are matched heuristically, with an optional
 self-hosted spaCy NER service for rare surnames. Ships as a zero-dependency npm library +
 CLI (`anonimizator`), and a single-file offline web app (grab `Anonimizator.html`
-from Releases and just double-click it — nothing ever leaves your machine). MIT licensed.
+from Releases and just double-click it — nothing ever leaves your machine). Apache 2.0 licensed.
 
 ## Licencja
 
-MIT
+Apache 2.0 — patrz [LICENSE](./LICENSE) i [NOTICE](./NOTICE). Wydania do v0.45.0 włącznie
+były publikowane na licencji MIT.

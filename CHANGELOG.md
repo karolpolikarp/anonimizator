@@ -1,5 +1,32 @@
 # Changelog
 
+## v0.45.1 — 2026-07-13
+
+**Zmiana licencji na Apache 2.0 + poprawki precyzji po II raporcie testera.**
+
+- **Licencja MIT → Apache License 2.0**: nowy `LICENSE` (pełny tekst), `NOTICE`
+  (copyright + informacja o wcześniejszych wydaniach MIT), pole `license` w pakiecie
+  rdzenia, badge i sekcja w README, plakietka i stopka aplikacji web.
+- **Pola administracyjne nie są osobą**: „Powiat: Pruszkowski", „Województwo:
+  Mazowieckie" (także wartość w następnej linii) — przymiotnik odmiejscowy po
+  etykiecie administracyjnej przestał dostawać maskę `[OSOBA-X]` (strażnik
+  `precededByAdminLabel` + jednostki administracyjne w NON_PERSON_CONTEXT).
+- **Koniec ucinania masek w pół słowa (maskuj całość)**: prawa granica
+  `(?![wielka|mała litera])` we wszystkich regułach osobowych — token mieszany
+  („KowaIski" z OCR-owym I zamiast l, „McDonald") nie jest już dopasowywany do połowy
+  („[OSOBA-A]Iski"/„[OSOBA-A]aIski" — wyciek fragmentu nazwiska).
+- **Nowa reguła (c4)**: homoglif OCR WEWNĄTRZ słowa kapitalizowanego — „Jan KowaIski",
+  „Anna NowaIska", „K0walski" maskowane w całości po normalizacji I/1→l, 0→o
+  i walidacji słownikiem/morfologią („McIntosh" zostaje).
+- **Imię przed maską wciągane do maski** — także złączone podkreśleniem, jak w nazwach
+  plików: „Umowa_Kredytowa_Adam_[OSOBA-C].pdf" → „Umowa_Kredytowa_[OSOBA-C].pdf"
+  (wyciek imienia obok maski łamał zasadę „maskuj całość").
+- Scenariusz testów uzupełniony o nowe przypadki „enterprise" z II raportu (alias,
+  hostname/nazwa komputera, drukarka UNC, loginy w ścieżkach URL — GitHub/GitLab/
+  LinkedIn/SharePoint, granularność masek `[IMIĘ]`/`[NAZWISKO]` w JSON/XML).
+
+Aplikacja web 0.45.0 → 0.45.1, rdzeń `anonimizator` 0.29.0 → 0.29.1.
+
 ## v0.45.0 — 2026-07-12
 
 **Struktura XML/JSON, ochrona URL-i, nowy typ LOGIN, tolerancja OCR, domknięcie telefonu

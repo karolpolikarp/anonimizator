@@ -1285,3 +1285,27 @@ test('nazwa konta w cudzysłowie („konto „Firmowe”") nie jest loginem', ()
   const t = 'Środki zaksięgowano na konto „Firmowe”.';
   expect(redactPII(t).redacted).toBe(t);
 });
+
+// Poprawki po II raporcie testera (v0.45.1)
+test('pola administracyjne: „Powiat: Pruszkowski" / „Województwo" nie są osobą', () => {
+  const t = 'Powiat:\nPruszkowski\nWojewództwo:\nMazowieckie';
+  expect(redactPII(t, { pseudonyms: true }).redacted).toBe(t);
+  const t2 = 'Powiat: Pruszkowski, województwo mazowieckie.';
+  expect(redactPII(t2, { pseudonyms: true }).redacted).toBe(t2);
+});
+test('imię przed maską w nazwie pliku wciągane do maski (maskuj całość)', () => {
+  const r = redactPII('Załącznik: Umowa_Kredytowa_Adam_Kowalski.pdf oraz skan_Jan_Nowak.jpg', { pseudonyms: true });
+  expect(r.redacted.includes('Adam')).toBe(false);
+  expect(r.redacted.includes('Jan_')).toBe(false);
+  expect(r.redacted).toContain('Umowa_Kredytowa_[OSOBA-');
+  expect(r.redacted).toContain('.pdf');
+});
+test('OCR: wielkie I w środku nazwiska („KowaIski") — całe słowo w masce, bez ucięcia', () => {
+  const r = redactPII('Zgłosił się Jan KowaIski z dokumentami. Pani Anna NowaIska też.', { pseudonyms: true });
+  expect(r.redacted.includes('Iski')).toBe(false);
+  expect(r.redacted.includes('Iska')).toBe(false);
+  expect(r.redacted.includes('Kowa')).toBe(false);
+  // token mieszany nienazwiskowy zostaje (bramka słownikowa)
+  const neg = 'Urządzenie McIntosh IIe działa poprawnie.';
+  expect(redactPII(neg, { pseudonyms: true }).redacted).toBe(neg);
+});

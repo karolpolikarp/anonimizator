@@ -269,11 +269,15 @@ const PRECEDED_BY_CAP = new RegExp(`[${PL_UP}][${PL_LO}]+\\s+$`);
 const CAP_WORD = `[${PL_UP}][${PL_LO}]+(?:-[${PL_UP}][${PL_LO}]+)?`;
 // Separatory między członami nazwy to [ \t]+ (BEZ \n) — nazwisko na końcu wiersza NIE może
 // skleić się z pierwszym wyrazem następnej linii (psuło układ i wciągało etykiety formularzy).
-const RE_SPOUSES = new RegExp(`(?<![${PL_UP}${PL_LO}-])(${CAP_WORD})[ \\t]+(?:i|oraz)[ \\t]+(${CAP_WORD})[ \\t]+(${CAP_WORD})`, 'g');
-const RE_NAME_SEQ = new RegExp(`(?<![${PL_UP}${PL_LO}-])${CAP_WORD}(?:[ \\t]+${CAP_WORD}){1,3}`, 'g');
-const RE_PAIR = new RegExp(`(?<![${PL_UP}${PL_LO}-])(${CAP_WORD})[ \\t]+(${CAP_WORD})`, 'g');
-const RE_SOLO_DICT = new RegExp(`(?<![${PL_UP}${PL_LO}-])[${PL_UP}][${PL_LO}]+(?![${PL_LO}-])`, 'g');
-const RE_SOLO_MORPH = new RegExp(`(?<![${PL_UP}${PL_LO}-])${CAP_WORD}`, 'g');
+// Prawa granica `(?![PL_UP PL_LO])` na KOŃCU każdego wzorca: bez niej token mieszany
+// („KowaIski" z OCR-owym I zamiast l, „McDonald") był dopasowywany DO POŁOWY — wprost
+// („Jan Kowa|Iski") albo po backtrackingu („Jan Kow|aIski") — i maska ucinała słowo
+// („[OSOBA-A]Iski" — wyciek fragmentu nazwiska; maskuj całość, nie fragment).
+const RE_SPOUSES = new RegExp(`(?<![${PL_UP}${PL_LO}-])(${CAP_WORD})[ \\t]+(?:i|oraz)[ \\t]+(${CAP_WORD})[ \\t]+(${CAP_WORD})(?![${PL_UP}${PL_LO}])`, 'g');
+const RE_NAME_SEQ = new RegExp(`(?<![${PL_UP}${PL_LO}-])${CAP_WORD}(?:[ \\t]+${CAP_WORD}){1,3}(?![${PL_UP}${PL_LO}])`, 'g');
+const RE_PAIR = new RegExp(`(?<![${PL_UP}${PL_LO}-])(${CAP_WORD})[ \\t]+(${CAP_WORD})(?![${PL_UP}${PL_LO}])`, 'g');
+const RE_SOLO_DICT = new RegExp(`(?<![${PL_UP}${PL_LO}-])[${PL_UP}][${PL_LO}]+(?![${PL_LO}${PL_UP}-])`, 'g');
+const RE_SOLO_MORPH = new RegExp(`(?<![${PL_UP}${PL_LO}-])${CAP_WORD}(?![${PL_UP}${PL_LO}])`, 'g');
 const RE_SURNAME_OBLIQUE =
   /(?:sk|ck|dzk)(?:iego|iej|iemu|im|imi|ich|ą)$|icz(?:a|owi|em|owie|ami|ach)$|czyk(?:a|owi|iem|ami|ach|owie)$/;
 
@@ -292,9 +296,22 @@ export const NON_PERSON_CONTEXT = new Set<string>(
     'syndrom syndromu próba próbę próby odczyn odczynu test testu testem skala skali skalę metoda ' +
     'metodę metody metodą prawo prawa twierdzenie zasada zasadę reguła reakcja klasyfikacja punkt ' +
     'ulica ulicy ulicę ulicą ulic aleja alei aleję aleją plac placu placem placa rondo ronda most ' +
-    'mostu mostem osiedle osiedla osiedlu dzielnica dzielnicy dzielnicę park parku skwer bulwar'
+    'mostu mostem osiedle osiedla osiedlu dzielnica dzielnicy dzielnicę park parku skwer bulwar ' +
+    // jednostki administracyjne — „powiat pruszkowski", „gmina …ska" to przymiotnik odmiejscowy,
+    // nie nazwisko (pola administracyjne są celowo jawne — patrz komentarz przy FORM_FIELDS)
+    'powiat powiatu powiecie powiatem gmina gminy gminie gminą województwo województwa województwie'
   ).split(/\s+/),
 );
+/**
+ * Etykieta pola ADMINISTRACYJNEGO tuż przed wartością („Powiat: Pruszkowski", „Województwo:\n
+ * Mazowieckie" — też wartość w następnej linii). Przymiotnik odmiejscowy po niej to nazwa
+ * jednostki, NIE nazwisko — bez tego strażnika „Powiat: Pruszkowski" stawał się [OSOBA-X]
+ * (prevLowerWord nie widzi etykiety przez dwukropek/nową linię).
+ */
+const precededByAdminLabel = (t: string, offset: number): boolean =>
+  /(?:powiat\w*|gmin[aęyą]|województw[oaeu]m?|dzielnic[aęy])[ \t]*:?[ \t]*\n?[ \t]*$/i.test(
+    t.slice(Math.max(0, offset - 24), offset),
+  );
 /**
  * Kraje/regiony i lokale mieszkalne — po markerze zamieszkania („zamieszkały w …") NIE są
  * miejscowością-PII: „w Polsce" (za szeroko), „w Domu Opieki" (instytucja, nie miasto).
@@ -1644,7 +1661,9 @@ export function redactPII(input: string, options?: RedactOptions): RedactionResu
     const nameTrigger = new RegExp(
       `\\b([Nn]azywam się|[Mm]am na imię|[Ii]mię i nazwisko|[Ii]mie i nazwisko|[Nn]azwisko:|` +
         `[Pp]anowie|[Pp]anami|[Pp]anom|[Pp]anów|[Pp]anem|[Pp]ana|[Pp]anią|[Pp]aniom|[Pp]anu|[Pp]ani|[Pp]an)` +
-        `([ \\t:]+)([${PL_UP}][${PL_LO}]+(?:-[${PL_UP}][${PL_LO}]+)?(?:[ \\t]+[${PL_UP}][${PL_LO}]+(?:-[${PL_UP}][${PL_LO}]+)?)?)`,
+        // prawa granica jak w RE_NAME_SEQ — token mieszany („NowaIska" z OCR-owym I) nie może
+      // być ucięty w połowie („Pani [OSOBA]Iska"); całość łapie wtedy reguła (c4)
+      `([ \\t:]+)([${PL_UP}][${PL_LO}]+(?:-[${PL_UP}][${PL_LO}]+)?(?:[ \\t]+[${PL_UP}][${PL_LO}]+(?:-[${PL_UP}][${PL_LO}]+)?)?)(?![${PL_UP}${PL_LO}])`,
       'g',
     );
     text = text.replace(nameTrigger, (m, kw: string, sep: string, name: string) => {
@@ -1676,6 +1695,7 @@ export function redactPII(input: string, options?: RedactOptions): RedactionResu
         if (!surnameBase(m)) return m;
         // „choroba Kowalskiego", „ulica Kwiatkowska", „im. Mickiewicza" — kontekst nie-osobowy
         if (precededByPatron(text, offset)) return m;
+        if (precededByAdminLabel(text, offset)) return m; // „Powiat: …", „Gmina: …"
         const prev = prevLowerWord(text, offset);
         if (prev && NON_PERSON_CONTEXT.has(prev)) return m;
         bump('IMIE');
@@ -1695,7 +1715,7 @@ export function redactPII(input: string, options?: RedactOptions): RedactionResu
       // należy do skrótu tytułu przed inicjałem („mec. J. Kowalski", „dr A. Baran").
       new RegExp(
         // (dwukropek NIE blokuje — „Do wiadomości: K. Baran" to rozdzielnik z realnym PII)
-        `(?<!(?:^|\\n)[ \\t]*)(?<!(?<!\\b(?:[Mm]ec|[Pp]rof|[Dd]r|[Mm]gr|[Ii]nż|hab|[Aa]dw|[Kk]s|płk|gen|kpt|mjr|por|sierż|lek|med|[Ss]ędz))[.!?][ \\t]+)\\b[${PL_UP}]\\.[ \\t]+([${PL_UP}][${PL_LO}]+(?:-[${PL_UP}][${PL_LO}]+)?)`,
+        `(?<!(?:^|\\n)[ \\t]*)(?<!(?<!\\b(?:[Mm]ec|[Pp]rof|[Dd]r|[Mm]gr|[Ii]nż|hab|[Aa]dw|[Kk]s|płk|gen|kpt|mjr|por|sierż|lek|med|[Ss]ędz))[.!?][ \\t]+)\\b[${PL_UP}]\\.[ \\t]+([${PL_UP}][${PL_LO}]+(?:-[${PL_UP}][${PL_LO}]+)?)(?![${PL_UP}${PL_LO}])`,
         'g',
       ),
       (m, w2: string, offset: number) => {
@@ -1721,7 +1741,7 @@ export function redactPII(input: string, options?: RedactOptions): RedactionResu
       new RegExp(
         `\\b([${PL_UP}][${PL_LO}]{1,6}-[${PL_UP}][${PL_LO}]{1,6})[ \\t]+` +
           `((?:(?:[Vv]an|[Vv]on|[Dd]e|[Dd]el|[Dd]ella|[Dd]i|Da|[Bb]in|[Tt]er|El|Al)[ \\t]+)?` +
-          `[${PL_UP}][${PL_LO}]+(?:-[${PL_UP}][${PL_LO}]+)?)(?![${PL_LO}])`,
+          `[${PL_UP}][${PL_LO}]+(?:-[${PL_UP}][${PL_LO}]+)?)(?![${PL_LO}${PL_UP}])`,
         'g',
       ),
       (m, first: string, w2: string) => {
@@ -1755,6 +1775,9 @@ export function redactPII(input: string, options?: RedactOptions): RedactionResu
         // eponim/ulica po wyrazie z małej litery („choroba Leśniowskiego", „ulica Puławska")
         // oraz patron instytucji („Szkoła im. Mickiewicza", „im. A. Mickiewicza")
         if (precededByPatron(text, offset)) return m;
+        // „Powiat: Pruszkowski", „Województwo: Mazowieckie" — przymiotnik odmiejscowy po
+        // etykiecie administracyjnej to nazwa jednostki, nie nazwisko
+        if (precededByAdminLabel(text, offset)) return m;
         const prev = prevLowerWord(text, offset);
         if (prev && NON_PERSON_CONTEXT.has(prev)) return m;
         bump('IMIE');
@@ -1799,6 +1822,37 @@ export function redactPII(input: string, options?: RedactOptions): RedactionResu
         bump('IMIE');
         return personMask(n2);
       },
+    );
+  }
+
+  // (c4) HOMOGLIF OCR WEWNĄTRZ słowa kapitalizowanego: „Jan KowaIski" (wielkie I zamiast l),
+  // „Anna NowaIska", „K0walski". Reguły (a)–(c2) odrzucają taki token w całości (prawa
+  // granica przed wielką literą), więc bez tej reguły nazwisko wyciekało w całości.
+  // PRECYZJA: token po normalizacji I/1→l, 0→o musi być nazwiskiem (słownik/morfologia);
+  // bramka odsiewa akronimy w środku słowa („McIntosh" → „mclntosh" nie jest nazwiskiem).
+  if (on('IMIE')) {
+    const OCR_MIX = `[${PL_UP}][${PL_LO}]*[I01][${PL_LO}I01]*`;
+    text = text.replace(
+      new RegExp(`(?<![${PL_UP}${PL_LO}0-9-])(?:(${CAP_WORD})[ \\t]+)?(${OCR_MIX})(?![${PL_UP}${PL_LO}0-9-])`, 'g'),
+      (m, w1: string | undefined, w2: string) => {
+        const n2 = w2[0].toLowerCase() + w2.slice(1).replace(/[I1]/g, 'l').replace(/0/g, 'o').toLowerCase();
+        if (!surnameBase(n2) && !looksLikeSurname(n2)) return m;
+        bump('IMIE');
+        // znane imię przed nazwiskiem wciągane do maski; inny wyraz („Firma") zostaje
+        if (w1 && isFirstNameLike(w1)) return personMask(n2);
+        return `${w1 ? `${w1} ` : ''}${personMask(n2)}`;
+      },
+    );
+  }
+
+  // DOMKNIĘCIE: imię słownikowe tuż przed zamaskowaną osobą — także złączone PODKREŚLENIEM
+  // lub myślnikiem, jak w nazwach plików („Umowa_Adam_[OSOBA-C].pdf", „skan_Jan_[OSOBA-B].jpg")
+  // — wciągane do maski: wyciek imienia obok maski to złamanie zasady „maskuj całość".
+  // Dwa przebiegi: po wciągnięciu jednego imienia przed maską może odsłonić się kolejne.
+  for (let pass = 0; pass < 2; pass++) {
+    text = text.replace(
+      new RegExp(`(?<![${PL_UP}${PL_LO}])([${PL_UP}][${PL_LO}]+)[ _-](\\[OSOBA-[A-Z]+\\]|\\[IMIĘ I NAZWISKO\\])`, 'g'),
+      (m, w: string, mask: string) => (isFirstNameLike(w) ? mask : m),
     );
   }
 

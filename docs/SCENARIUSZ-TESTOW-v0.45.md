@@ -91,8 +91,23 @@ overmask / broken-structure), każdy weryfikowany reprodukcją + polityką precy
 
 ## 4. Nie ruszone w tym cyklu (do rozważenia w przyszłości)
 
-Pakiet „enterprise" z raportu testera: uchwyty GitHub/LinkedIn/Teams/Slack/Discord/
-Telegram, ścieżki plików z nazwiskami (`C:\Users\Tomasz Kamiński\…`), podpisy
-`CN=…`, hostnames (`TKAMINSKI-LAPTOP`), ścieżki UNC, autor dokumentu. Także:
-nazwiska w ŚCIEŻCE URL-a (świadomie tylko parametry query — polityka precyzji),
-ścieżka wczytywania pliku (.docx/.pdf) i widok Porównanie w UI.
+Pakiet „enterprise" z raportów testera (I + II, stan po v0.45.1 — poprawione już:
+powiat/województwo, imię w nazwie pliku, homoglif I w środku nazwiska):
+
+- **Alias** (`Alias:\nadam1986`) — kandydat na rozszerzenie kotwic typu `LOGIN`.
+- **Hostname / nazwa komputera** (`AKOWALSKI-PC`, `AKOWALSKI-LAPTOP`) — nowy typ
+  `[HOSTNAME]`? Uwaga: nazwa zawiera nazwisko, więc to realny wyciek.
+- **Drukarka / ścieżka UNC** (`\\PRINT01\AdamK`).
+- **Loginy w ŚCIEŻKACH URL-i**: `bank.example.com/user/akowalski`,
+  `github.com/akowalski`, `gitlab…/akowalski`, `linkedin.com/in/adamkowalski`,
+  `sharepoint.com/personal/adam_kowalski_company_com` — dziś świadomie maskujemy
+  tylko parametry query (polityka precyzji); segmenty `/user/`, `/in/`, `/personal/`
+  to mocne kotwice — do rozszerzenia.
+- Uchwyty Teams/Slack/Discord/Telegram, ścieżki plików z nazwiskami
+  (`C:\Users\Tomasz Kamiński\…`, `/home/jkowalski`), podpisy `CN=…`, autor dokumentu.
+- **Granularność masek w XML/JSON**: tester sugeruje `[IMIĘ]`/`[NAZWISKO]` zamiast
+  `[IMIĘ I NAZWISKO]`/`[OSOBA-X]` dla kluczy `firstName`/`lastName` (kosmetyka,
+  wymaga nowych placeholderów).
+- **HTML**: `<p>Piastów</p>` — goła miejscowość bez kotwicy zostaje (świadoma
+  polityka); rozważyć kotwicę strukturalną dla bloków adresowych w HTML.
+- Ścieżka wczytywania pliku (.docx/.pdf) i widok Porównanie w UI.

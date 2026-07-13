@@ -1,8 +1,8 @@
 # Benchmark anonimizacji — precision / recall
 
 - **Data uruchomienia:** 2026-07-12
-- **Wersja rdzenia (`anonimizator`):** 0.29.0
-- **Zbiór ewaluacyjny:** 257 syntetycznych zdań (deterministyczny, seed `20260704`), 246 elementów do zamaskowania (mustMask), 275 elementów do zachowania (mustKeep)
+- **Wersja rdzenia (`anonimizator`):** 0.29.1
+- **Zbiór ewaluacyjny:** 260 syntetycznych zdań (deterministyczny, seed `20260704`), 248 elementów do zamaskowania (mustMask), 280 elementów do zachowania (mustKeep)
 - **Reprodukcja:** `npm run build -w anonimizator && node scripts/benchmark/run.mjs`
 
 ## Metodologia
@@ -20,7 +20,7 @@ Wszystkie identyfikatory w zbiorze mają **poprawne sumy kontrolne** policzone w
 (PESEL, NIP, REGON, IBAN mod-97, nr dowodu), a negatywy zawierają m.in. ciągi o celowo
 **błędnych** sumach kontrolnych — silnik ma je zostawić w spokoju.
 
-Liczności kategorii: osoby-podstawowe — 23, osoby-odmiana — 32, osoby-rzadkie — 24, strukturalne — 76, negatywy — 73, osoby-rzadkie-ner — 19, osoby-slownik — 10.
+Liczności kategorii: osoby-podstawowe — 23, osoby-odmiana — 32, osoby-rzadkie — 24, strukturalne — 78, negatywy — 74, osoby-rzadkie-ner — 19, osoby-slownik — 10.
 
 ### Warstwy
 
@@ -33,10 +33,10 @@ Liczności kategorii: osoby-podstawowe — 23, osoby-odmiana — 32, osoby-rzadk
 
 | Warstwa | Recall (łącznie) | Precision-proxy (łącznie) | F1 | Porażki (przypadki) | Czas | Wynik ≠ core |
 |---|---|---|---|---|---|---|
-| T0+T1 core | 93.9% (231/246) | 99.6% (274/275) | 96.7% | 16 | 0.0 s | — |
-| core+spacy | 99.2% (244/246) | 99.6% (274/275) | 99.4% | 3 | 1.4 s | 13 przyp. |
-| core+fastpdn | 98.8% (243/246) | 99.6% (274/275) | 99.2% | 4 | 5.8 s | 12 przyp. |
-| core+onnx (Node) | 98.4% (242/246) | 99.6% (274/275) | 99.0% | 5 | 1.7 s | 11 przyp. |
+| T0+T1 core | 94.0% (233/248) | 99.6% (279/280) | 96.7% | 16 | 0.0 s | — |
+| core+spacy | 99.2% (246/248) | 99.6% (279/280) | 99.4% | 3 | 1.4 s | 13 przyp. |
+| core+fastpdn | 98.8% (245/248) | 99.6% (279/280) | 99.2% | 4 | 5.7 s | 12 przyp. |
+| core+onnx (Node) | 98.4% (244/248) | 99.6% (279/280) | 99.0% | 5 | 1.6 s | 11 przyp. |
 
 F1 liczone jako średnia harmoniczna recall i precision-proxy (łącznie po wszystkich kategoriach
 z oboma rodzajami elementów; kategoria „negatywy" nie ma recall, więc nie wchodzi do składowej recall).

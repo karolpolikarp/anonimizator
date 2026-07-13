@@ -1,25 +1,25 @@
 {
-  "generatedAt": "2026-07-12T18:14:22.542Z",
+  "generatedAt": "2026-07-12T23:42:41.425Z",
   "seed": 20260704,
-  "coreVersion": "0.29.0",
-  "casesTotal": 257,
-  "mustMaskTotal": 246,
-  "mustKeepTotal": 275,
+  "coreVersion": "0.29.1",
+  "casesTotal": 260,
+  "mustMaskTotal": 248,
+  "mustKeepTotal": 280,
   "skippedLayers": [],
   "layers": [
     {
       "name": "T0+T1 core",
       "desc": "redactPII() — regex + sumy kontrolne + słownik (in-process, offline)",
-      "elapsedMs": 28,
+      "elapsedMs": 27,
       "changedVsCore": null,
-      "recall": 0.9390243902439024,
-      "precision": 0.9963636363636363,
-      "f1": 0.9668446257131728,
+      "recall": 0.9395161290322581,
+      "precision": 0.9964285714285714,
+      "f1": 0.967135800999762,
       "agg": {
-        "maskTotal": 246,
-        "maskHit": 231,
-        "keepTotal": 275,
-        "keepHit": 274
+        "maskTotal": 248,
+        "maskHit": 233,
+        "keepTotal": 280,
+        "keepHit": 279
       },
       "perCategory": {
         "osoby-podstawowe": {
@@ -53,19 +53,19 @@
           "recall": 1,
           "precision": 1,
           "f1": 1,
-          "maskTotal": 102,
-          "maskHit": 102,
-          "keepTotal": 79,
-          "keepHit": 79
+          "maskTotal": 104,
+          "maskHit": 104,
+          "keepTotal": 82,
+          "keepHit": 82
         },
         "negatywy": {
           "recall": null,
-          "precision": 0.9879518072289156,
+          "precision": 0.9882352941176471,
           "f1": null,
           "maskTotal": 0,
           "maskHit": 0,
-          "keepTotal": 83,
-          "keepHit": 82
+          "keepTotal": 85,
+          "keepHit": 84
         },
         "osoby-rzadkie-ner": {
           "recall": 0.21052631578947367,
@@ -1565,22 +1565,37 @@
           "id": "neg-73",
           "leaked": [],
           "eaten": []
+        },
+        {
+          "id": "neg-74",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-77",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-78",
+          "leaked": [],
+          "eaten": []
         }
       ]
     },
     {
       "name": "core+spacy",
       "desc": "redactPIIFull() + NER spaCy pl_core_news_lg (127.0.0.1:8090)",
-      "elapsedMs": 1398,
+      "elapsedMs": 1367,
       "changedVsCore": 13,
-      "recall": 0.991869918699187,
-      "precision": 0.9963636363636363,
-      "f1": 0.9941116992803187,
+      "recall": 0.9919354838709677,
+      "precision": 0.9964285714285714,
+      "f1": 0.9941769511559186,
       "agg": {
-        "maskTotal": 246,
-        "maskHit": 244,
-        "keepTotal": 275,
-        "keepHit": 274
+        "maskTotal": 248,
+        "maskHit": 246,
+        "keepTotal": 280,
+        "keepHit": 279
       },
       "perCategory": {
         "osoby-podstawowe": {
@@ -1614,19 +1629,19 @@
           "recall": 1,
           "precision": 1,
           "f1": 1,
-          "maskTotal": 102,
-          "maskHit": 102,
-          "keepTotal": 79,
-          "keepHit": 79
+          "maskTotal": 104,
+          "maskHit": 104,
+          "keepTotal": 82,
+          "keepHit": 82
         },
         "negatywy": {
           "recall": null,
-          "precision": 0.9879518072289156,
+          "precision": 0.9882352941176471,
           "f1": null,
           "maskTotal": 0,
           "maskHit": 0,
-          "keepTotal": 83,
-          "keepHit": 82
+          "keepTotal": 85,
+          "keepHit": 84
         },
         "osoby-rzadkie-ner": {
           "recall": 0.8947368421052632,
@@ -2970,22 +2985,37 @@
           "id": "neg-73",
           "leaked": [],
           "eaten": []
+        },
+        {
+          "id": "neg-74",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-77",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-78",
+          "leaked": [],
+          "eaten": []
         }
       ]
     },
     {
       "name": "core+fastpdn",
       "desc": "redactPIIFull() + NER FastPDN/HerBERT (127.0.0.1:8091)",
-      "elapsedMs": 5822,
+      "elapsedMs": 5666,
       "changedVsCore": 12,
-      "recall": 0.9878048780487805,
-      "precision": 0.9963636363636363,
-      "f1": 0.9920657980019221,
+      "recall": 0.9879032258064516,
+      "precision": 0.9964285714285714,
+      "f1": 0.9921475847654436,
       "agg": {
-        "maskTotal": 246,
-        "maskHit": 243,
-        "keepTotal": 275,
-        "keepHit": 274
+        "maskTotal": 248,
+        "maskHit": 245,
+        "keepTotal": 280,
+        "keepHit": 279
       },
       "perCategory": {
         "osoby-podstawowe": {
@@ -3019,19 +3049,19 @@
           "recall": 1,
           "precision": 1,
           "f1": 1,
-          "maskTotal": 102,
-          "maskHit": 102,
-          "keepTotal": 79,
-          "keepHit": 79
+          "maskTotal": 104,
+          "maskHit": 104,
+          "keepTotal": 82,
+          "keepHit": 82
         },
         "negatywy": {
           "recall": null,
-          "precision": 0.9879518072289156,
+          "precision": 0.9882352941176471,
           "f1": null,
           "maskTotal": 0,
           "maskHit": 0,
-          "keepTotal": 83,
-          "keepHit": 82
+          "keepTotal": 85,
+          "keepHit": 84
         },
         "osoby-rzadkie-ner": {
           "recall": 0.8421052631578947,
@@ -4387,22 +4417,37 @@
           "id": "neg-73",
           "leaked": [],
           "eaten": []
+        },
+        {
+          "id": "neg-74",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-77",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-78",
+          "leaked": [],
+          "eaten": []
         }
       ]
     },
     {
       "name": "core+onnx (Node)",
       "desc": "redactPII() + FastPDN ONNX int8 (q8) w Node przez @huggingface/transformers — bez Dockera",
-      "elapsedMs": 1657,
+      "elapsedMs": 1601,
       "changedVsCore": 11,
-      "recall": 0.983739837398374,
-      "precision": 0.9963636363636363,
-      "f1": 0.9900114964838675,
+      "recall": 0.9838709677419355,
+      "precision": 0.9964285714285714,
+      "f1": 0.9901099540403747,
       "agg": {
-        "maskTotal": 246,
-        "maskHit": 242,
-        "keepTotal": 275,
-        "keepHit": 274
+        "maskTotal": 248,
+        "maskHit": 244,
+        "keepTotal": 280,
+        "keepHit": 279
       },
       "perCategory": {
         "osoby-podstawowe": {
@@ -4436,19 +4481,19 @@
           "recall": 1,
           "precision": 1,
           "f1": 1,
-          "maskTotal": 102,
-          "maskHit": 102,
-          "keepTotal": 79,
-          "keepHit": 79
+          "maskTotal": 104,
+          "maskHit": 104,
+          "keepTotal": 82,
+          "keepHit": 82
         },
         "negatywy": {
           "recall": null,
-          "precision": 0.9879518072289156,
+          "precision": 0.9882352941176471,
           "f1": null,
           "maskTotal": 0,
           "maskHit": 0,
-          "keepTotal": 83,
-          "keepHit": 82
+          "keepTotal": 85,
+          "keepHit": 84
         },
         "osoby-rzadkie-ner": {
           "recall": 0.7894736842105263,
@@ -5814,6 +5859,21 @@
         },
         {
           "id": "neg-73",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-74",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-77",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-78",
           "leaked": [],
           "eaten": []
         }

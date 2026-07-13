@@ -596,6 +596,10 @@ export function buildDataset() {
   str('Zgłosił się J0AN K0WALSKI, zamieszkały uI. Lip0wa 15.', ['J0AN K0WALSKI', 'Lip0wa 15'], ['Zgłosił']);
   str('Biuro przy ul. Morskiej 12 w Gdańsku czynne od 8:00.', ['Morskiej 12', 'Gdańsku'], ['czynne']);
   neg('Spotkanie zespołu odbyło się w Gdańsku przy kawie.', ['Gdańsku']);
+  // v0.45.1: pola administracyjne jawne; imię w nazwie pliku i homoglif I w środku — maskuj całość
+  neg('Powiat: Pruszkowski, województwo mazowieckie pozostają jawne.', ['Pruszkowski', 'mazowieckie']);
+  str('Załącznik: Umowa_Kredytowa_Adam_Kowalski.pdf w aktach.', ['Adam_Kowalski'], ['Umowa_Kredytowa', '.pdf']);
+  str('Zgłosił się Jan KowaIski po odbiór dokumentów.', ['Jan KowaIski'], ['odbiór']);
 
   // ── Kontrola spójności zbioru ──
   const ids = new Set();
