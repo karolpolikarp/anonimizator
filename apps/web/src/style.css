@@ -341,15 +341,15 @@ select.field { font-family: var(--sans); line-height: normal; cursor: pointer; }
 
 /* ============ HERO ============ */
 /* Poziomy lockup marki: znak │ PARAWAN + tagline (mono wersaliki), jak w karcie marki. */
-.hero .card-h { min-height: 88px; gap: 18px; }
-.brand-mark { width: 66px; height: 60px; flex: none; display: block; }
+.hero .card-h { min-height: 96px; gap: 18px; }
+.brand-mark { width: 78px; height: 72px; flex: none; display: block; }
 .brand-mark .gi { width: 100%; height: 100%; }
-.brand-div { width: 2px; height: 56px; flex: none; background: var(--line-2); border-radius: 2px; }
+.brand-div { width: 2px; height: 68px; flex: none; background: var(--line-2); border-radius: 2px; }
 .brand-row { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
-.hero .card-t h1 { text-transform: uppercase; letter-spacing: -.005em; }
+.hero .card-t h1 { font-size: 33px; text-transform: uppercase; letter-spacing: -.01em; line-height: 1; }
 #hero-sub {
-  font-family: var(--sans); font-size: 12px; font-weight: 700;
-  letter-spacing: .12em; text-transform: uppercase; color: var(--acc); margin-top: 7px;
+  font-family: var(--sans); font-size: 12.5px; font-weight: 700;
+  letter-spacing: .1em; text-transform: uppercase; color: var(--acc); margin-top: 5px;
 }
 .ver-chip { font-family: var(--mono); font-size: 11px; font-weight: 600; letter-spacing: .16em; text-transform: uppercase; color: var(--mut); }
 .hero-meta { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; margin-top: 6px; }
@@ -521,7 +521,8 @@ select.field { font-family: var(--sans); line-height: normal; cursor: pointer; }
   /* RÓWNE okna źródła i wyniku — ta sama wysokość (wspólna zmienna --ed-h ustawiana przez uchwyt),
      scroll wewnątrz. Domyślnie umiarkowana wysokość (nie zajmuje całego ekranu). */
   height: var(--ed-h, clamp(280px, 42vh, 500px));
-  overflow-y: auto;
+  overflow: hidden auto; /* bez poziomego paska — treść zawija się (overflow-y:auto samo włączało x) */
+  overflow-wrap: anywhere;
   word-wrap: break-word;
 }
 .cl { display: grid; grid-template-columns: 30px 1fr; gap: 12px; }
@@ -564,7 +565,7 @@ textarea.editor-ta.dragover {
   background: rgba(11, 61, 46, .05);
 }
 
-.editor .placeholder { color: var(--mut); font-family: var(--sans); display: block; padding-left: 8px; }
+.editor .placeholder { color: var(--mut); font-family: var(--mono); display: block; padding-left: 8px; }
 
 .editor.plain { white-space: pre-wrap; padding-left: 14px; }
 

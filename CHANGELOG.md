@@ -1,5 +1,15 @@
 # Changelog
 
+## v0.46.7 — 2026-07-13
+
+**Spójność edytorów, proporcje hero.**
+
+- **Placeholder wyniku w tej samej czcionce co źródło** (mono) — koniec rozjazdu lewe/prawe okno.
+- **Koniec poziomego paska przewijania** w oknie wyniku (`overflow: hidden auto` + zawijanie długiej treści).
+- **Lockup hero lepiej wyważony**: większy znak i „PARAWAN", ciaśniejszy odstęp do tagline — mniej pustej przestrzeni.
+
+Aplikacja web 0.46.6 → 0.46.7. Rdzeń bez zmian.
+
 ## v0.46.6 — 2026-07-13
 
 **Finałowe dopięcie tekstów i drobiazgów UI.**
