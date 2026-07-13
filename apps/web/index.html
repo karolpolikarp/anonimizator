@@ -124,8 +124,8 @@
         <div class="card-h">
           <div class="card-t"><h2>Kolory znaczników</h2><p>każda kategoria danych ma swój kolor, ten sam w wyniku i w tabeli niżej</p></div>
           <div class="legend-items">
-            <span class="lg" data-tip="Imię i nazwisko, słownik, wyzwalacze kontekstu" tabindex="0">
-              <span class="dot dot-person"></span><b>Osoby</b><span class="lg-n">1 typ</span>
+            <span class="lg" data-tip="Imię i nazwisko oraz data urodzenia" tabindex="0">
+              <span class="dot dot-person"></span><b>Osoby</b><span class="lg-n">2 typy</span>
             </span>
             <span class="lg" data-tip="E-mail i telefon" tabindex="0">
               <span class="dot dot-contact"></span><b>Kontakt</b><span class="lg-n">2 typy</span>
@@ -136,8 +136,8 @@
             <span class="lg" data-tip="IBAN / numer konta, walidacja mod 97" tabindex="0">
               <span class="dot dot-fin"></span><b>Finanse</b><span class="lg-n">1 typ</span>
             </span>
-            <span class="lg" data-tip="Adres, kod pocztowy, data urodzenia" tabindex="0">
-              <span class="dot dot-place"></span><b>Adres i czas</b><span class="lg-n">3 typy</span>
+            <span class="lg" data-tip="Adres, kod pocztowy, miejscowość" tabindex="0">
+              <span class="dot dot-place"></span><b>Adres</b><span class="lg-n">3 typy</span>
             </span>
           </div>
         </div>
@@ -234,14 +234,14 @@
           <span class="chev">▸</span>
         </summary>
         <div class="card-b">
-          <div class="toggles">
-            <label class="tg tg-wide" data-tip="Ta sama osoba zachowuje tę samą etykietę w całym dokumencie, przydatne w umowach i pismach">
-              <span class="ic ic-s c-person"><i class="gi" data-i="losowanie"></i></span>
-              <span class="tg-t"><b>Rozróżniaj osoby</b><code>[OSOBA-A], [OSOBA-B]…</code></span>
-              <input type="checkbox" class="sw" id="pseudonyms" aria-label="Rozróżniaj osoby" />
-            </label>
-            <span id="mask-toggles" class="mask-toggles-host"></span>
+          <div class="mask-toolbar" role="group" aria-label="Akcje zbiorcze">
+            <button type="button" id="mask-all-on" class="btn btn-sm" data-tip="Włącz maskowanie wszystkich typów">Zaznacz wszystko</button>
+            <button type="button" id="mask-all-off" class="btn btn-sm" data-tip="Wyłącz maskowanie wszystkich typów (wszystko będzie widoczne)">Odznacz wszystko</button>
+            <button type="button" id="mask-invert" class="btn btn-sm" data-tip="Odwróć zaznaczenie każdego typu">Odwróć</button>
+            <span class="card-sp"></span>
+            <span class="mask-count" aria-live="polite">Maskuję <b id="mask-count-on">0</b>/<span id="mask-count-total">0</span></span>
           </div>
+          <div id="mask-toggles"></div>
         </div>
         <div class="card-f">
           <i class="gi" data-i="kosz"></i>
@@ -320,21 +320,21 @@
               </tr>
               <tr>
                 <td><span class="td-name"><span class="ic ic-s c-place"><i class="gi" data-i="dom"></i></span>Adres</span></td>
-                <td><span class="catpill cp-place">adres i czas</span></td>
+                <td><span class="catpill cp-place">adres</span></td>
                 <td><span class="how">ul./al./os./pl. + nazwa + numer</span></td>
                 <td><mark class="pii pii-place">[ADRES]</mark></td>
               </tr>
               <tr>
                 <td><span class="td-name"><span class="ic ic-s c-place"><i class="gi" data-i="mapa-pl"></i></span>Kod pocztowy</span></td>
-                <td><span class="catpill cp-place">adres i czas</span></td>
+                <td><span class="catpill cp-place">adres</span></td>
                 <td><span class="how">XX-XXX</span></td>
                 <td><mark class="pii pii-place">[KOD-POCZTOWY]</mark></td>
               </tr>
               <tr>
-                <td><span class="td-name"><span class="ic ic-s c-place"><i class="gi" data-i="kalendarz"></i></span>Data urodzenia</span></td>
-                <td><span class="catpill cp-place">adres i czas</span></td>
+                <td><span class="td-name"><span class="ic ic-s c-person"><i class="gi" data-i="kalendarz"></i></span>Data urodzenia</span></td>
+                <td><span class="catpill cp-person">osoby</span></td>
                 <td><span class="how">data z kontekstem „ur./urodzony”</span></td>
-                <td><mark class="pii pii-place">[DATA-URODZENIA]</mark></td>
+                <td><mark class="pii pii-person">[DATA-URODZENIA]</mark></td>
               </tr>
               <tr>
                 <td><span class="td-name"><span class="ic ic-s c-person"><i class="gi" data-i="dane-osobowe"></i></span>Imię i nazwisko</span></td>

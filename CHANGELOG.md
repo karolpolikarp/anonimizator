@@ -2,7 +2,19 @@
 
 ## v0.46.2 — 2026-07-13
 
-**Zmiana nazwy repozytorium na `parawan`, dopracowanie marki i faviconów.**
+**Przebudowa panelu „Co maskować", zmiana nazwy repozytorium na `parawan`, marka i favicony.**
+
+Panel „Co maskować":
+- **Zwarte wiersze** zamiast dużych kafelków + **akcje zbiorcze** (Zaznacz / Odznacz / Odwróć)
+  i licznik na żywo „Maskuję X/22".
+- **Kolumny zgrane między pasami** (wspólna siatka): Identyfikatory szeroko, a **Kontakt i Finanse
+  w jednej linii** (nagłówek „Finanse" nad kolumną IBAN), Adres i Dane osobowe pełną szerokością.
+- **Data urodzenia przeniesiona do kategorii „Osoby"** (kolor fioletowy) — zaktualizowane
+  `maskCategory`, legenda, tabela „Co wykrywa" i README. Kategoria „Adres i czas" → **„Adres"**.
+- **„Rozróżniaj osoby"** to teraz zwykły wiersz-tryb w grupie „Dane osobowe" (etykieta „tryb"),
+  nie osobna belka na całą szerokość.
+
+Marka i repozytorium:
 
 - **Repozytorium GitHub: `anonimizator` → `parawan`** (stara nazwa przekierowuje). Zaktualizowane
   wszystkie odniesienia URL w README, aplikacji, `release.yml`, szablonach i `packages/core`.

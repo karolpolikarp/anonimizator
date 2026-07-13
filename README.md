@@ -124,7 +124,7 @@ Każda kategoria danych ma swój kolor, ten sam w wyniku, w podsumowaniu i w tab
 ![Kontakt](https://img.shields.io/badge/Kontakt-%E2%97%8F-0C7288?style=flat-square)
 ![Identyfikatory](https://img.shields.io/badge/Identyfikatory-%E2%97%8F-8A5F00?style=flat-square)
 ![Finanse](https://img.shields.io/badge/Finanse-%E2%97%8F-127049?style=flat-square)
-![Adres i czas](https://img.shields.io/badge/Adres%20i%20czas-%E2%97%8F-2F5FC0?style=flat-square)
+![Adres](https://img.shields.io/badge/Adres-%E2%97%8F-2F5FC0?style=flat-square)
 
 ## 📋 Co wykrywa
 
@@ -151,7 +151,7 @@ kontekstową**, dlatego trafień „na ślepo" jest mało.
 | 🔵 E-mail | wzorzec adresu (w URL-ach także forma `%40`) | `[EMAIL]` |
 | 🔵 Telefon | 9 cyfr, opcjonalnie +48 (też „+48.512.345.678"), nawiasy, kropki z kotwicą; wyliczenia po przecinku i „oraz/i" | `[TELEFON]` |
 | 🔵 Kod pocztowy | XX-XXX | `[KOD-POCZTOWY]` |
-| 🔵 Data urodzenia | data z kontekstem „ur./urodzony", cyfrowa i słowna („5 maja 1985") | `[DATA-URODZENIA]` |
+| 🟣 Data urodzenia | data z kontekstem „ur./urodzony", cyfrowa i słowna („5 maja 1985") | `[DATA-URODZENIA]` |
 | 🔵 Adres | ul./al./os./pl. + nazwa + numer (też „3 Maja", „gen./ks./św.") | `[ADRES]` |
 | 🔵 Miejscowość | w adresie i przy zamieszkaniu; **nie** w prozie/instytucji | `[MIEJSCOWOŚĆ]` |
 | 🟣 Imię i nazwisko | słownik imion + nazwisk (z odmianą), **morfologia** (-ski/-cki/-icz/-czyk), kolejność odwrócona, wyzwalacze kontekstu | `[IMIĘ I NAZWISKO]` |

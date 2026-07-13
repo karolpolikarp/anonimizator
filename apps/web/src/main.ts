@@ -45,10 +45,10 @@ type Cat = 'person' | 'contact' | 'ident' | 'fin' | 'place';
 
 /** Kategoria wizualna znacznika po nazwie tokenu (spójna z legendą i tabelą). */
 function maskCategory(name: string): Cat {
-  if (name.startsWith('OSOBA-') || name === 'IMIĘ I NAZWISKO') return 'person';
+  if (name.startsWith('OSOBA-') || name === 'IMIĘ I NAZWISKO' || name === 'DATA-URODZENIA') return 'person';
   if (name === 'EMAIL' || name === 'TELEFON') return 'contact';
   if (name === 'NR-KONTA') return 'fin';
-  if (name === 'ADRES' || name === 'KOD-POCZTOWY' || name === 'DATA-URODZENIA' || name === 'MIEJSCOWOŚĆ') return 'place';
+  if (name === 'ADRES' || name === 'KOD-POCZTOWY' || name === 'MIEJSCOWOŚĆ') return 'place';
   return 'ident'; // PESEL / NIP / REGON / NR-DOWODU
 }
 
@@ -117,8 +117,8 @@ const MASK_GROUPS: MaskGroup[] = [
   { key: 'adres', label: 'Adres', types: ['ADRES'], cat: 'place', icon: 'dom', code: '[ADRES]', tip: 'ul./al./os./pl. + nazwa + numer' },
   { key: 'kod', label: 'Kod pocztowy', types: ['KOD-POCZTOWY'], cat: 'place', icon: 'mapa-pl', code: '[KOD-POCZTOWY]', tip: 'Wzorzec XX-XXX' },
   { key: 'miejscowosc', label: 'Miejscowość', types: ['MIEJSCOWOSC'], cat: 'place', icon: 'mapa-pl', code: '[MIEJSCOWOŚĆ]', tip: 'Miejscowość po kodzie pocztowym (w adresie)' },
-  { key: 'dataur', label: 'Data urodzenia', types: ['DATA-UR'], cat: 'place', icon: 'kalendarz', code: '[DATA-URODZENIA]', tip: 'Data z kontekstem „ur./urodzony”' },
   { key: 'imie', label: 'Imię i nazwisko', types: ['IMIE'], cat: 'person', icon: 'dane-osobowe', code: '[IMIĘ I NAZWISKO]', tip: 'Słownik ~200 imion i ~230 nazwisk z odmianą + morfologia i wyzwalacze kontekstu; wykrywanie heurystyczne' },
+  { key: 'dataur', label: 'Data urodzenia', types: ['DATA-UR'], cat: 'person', icon: 'kalendarz', code: '[DATA-URODZENIA]', tip: 'Data z kontekstem „ur./urodzony”' },
 ];
 
 const maskTogglesEl = $<HTMLSpanElement>('mask-toggles');
@@ -126,10 +126,22 @@ const disabledGroups = new Set<string>(
   (localStorage.getItem('mask-disabled') ?? '').split(',').filter(Boolean),
 );
 
-/** Buduje jeden przełącznik typu PII. */
-function buildToggle(g: MaskGroup): HTMLLabelElement {
+const CAT_LABELS: Record<Cat, string> = {
+  ident: 'Identyfikatory',
+  contact: 'Kontakt',
+  fin: 'Finanse',
+  place: 'Adres',
+  person: 'Dane osobowe',
+};
+
+function persistDisabled(): void {
+  localStorage.setItem('mask-disabled', [...disabledGroups].join(','));
+}
+
+/** Zwarty wiersz jednego typu PII (ikona + nazwa + kod + przełącznik). */
+function buildRow(g: MaskGroup): HTMLLabelElement {
   const label = document.createElement('label');
-  label.className = `tg${g.full ? ' tg-full' : ''}`;
+  label.className = 'tgr';
   label.dataset.tip = g.tip;
 
   const ic = document.createElement('span');
@@ -150,12 +162,14 @@ function buildToggle(g: MaskGroup): HTMLLabelElement {
   const box = document.createElement('input');
   box.type = 'checkbox';
   box.className = 'sw';
+  box.dataset.key = g.key;
   box.checked = !disabledGroups.has(g.key);
   box.setAttribute('aria-label', `Maskuj: ${g.label}`);
   box.addEventListener('change', () => {
     if (box.checked) disabledGroups.delete(g.key);
     else disabledGroups.add(g.key);
-    localStorage.setItem('mask-disabled', [...disabledGroups].join(','));
+    persistDisabled();
+    updateMaskTotal();
     update();
   });
 
@@ -163,20 +177,42 @@ function buildToggle(g: MaskGroup): HTMLLabelElement {
   return label;
 }
 
-// Grupowanie po KATEGORIACH (jak w legendzie) — porządek zamiast płaskiej, poszarpanej siatki.
-const CAT_LABELS: Record<Cat, string> = {
-  ident: 'Identyfikatory',
-  contact: 'Kontakt',
-  fin: 'Finanse',
-  place: 'Adres i czas',
-  person: 'Dane osobowe',
-};
-const CAT_ORDER: Cat[] = ['ident', 'contact', 'fin', 'place', 'person'];
+/** Wiersz-tryb „Rozróżniaj osoby" (nie typ danych) — mieszka w grupie „Dane osobowe". */
+function buildModeRow(): HTMLLabelElement {
+  const label = document.createElement('label');
+  label.className = 'tgr mode';
+  label.dataset.tip = 'Ta sama osoba zachowuje tę samą etykietę w całym dokumencie, przydatne w umowach i pismach';
 
-/** Nagłówek kategorii — rozpina się na cały rząd siatki (grid-column: 1/-1). */
-function buildCatHeader(cat: Cat): HTMLElement {
+  const ic = document.createElement('span');
+  ic.className = 'ic ic-s c-person';
+  const gi = document.createElement('i');
+  gi.className = 'gi';
+  gi.innerHTML = icon('losowanie');
+  ic.append(gi);
+
+  const t = document.createElement('span');
+  t.className = 'tg-t';
+  const b = document.createElement('b');
+  b.innerHTML = 'Rozróżniaj osoby<span class="mode-tag">tryb</span>';
+  const code = document.createElement('code');
+  code.textContent = '[OSOBA-A], [OSOBA-B]…';
+  t.append(b, code);
+
+  const box = document.createElement('input');
+  box.type = 'checkbox';
+  box.className = 'sw';
+  box.id = 'pseudonyms';
+  box.setAttribute('aria-label', 'Rozróżniaj osoby');
+
+  label.append(ic, t, box);
+  return label;
+}
+
+const group = (key: string): MaskGroup => MASK_GROUPS.find((g) => g.key === key)!;
+
+function catHeader(cat: Cat): HTMLElement {
   const h = document.createElement('div');
-  h.className = 'tg-cat-h';
+  h.className = 'mg-h';
   const dot = document.createElement('span');
   dot.className = `dot dot-${cat}`;
   const hl = document.createElement('span');
@@ -185,15 +221,70 @@ function buildCatHeader(cat: Cat): HTMLElement {
   return h;
 }
 
-// Jedna PŁASKA siatka na całą szerokość: dla każdej kategorii wstawiamy nagłówek (pełny rząd),
-// a pod nim jej kafelki, które pakują się jednolicie. Host ma display:contents, więc nagłówki
-// i kafelki stają się bezpośrednimi elementami siatki `.toggles`.
-for (const cat of CAT_ORDER) {
-  const groups = MASK_GROUPS.filter((g) => g.cat === cat);
-  if (!groups.length) continue;
-  maskTogglesEl.append(buildCatHeader(cat));
-  for (const g of groups) maskTogglesEl.append(buildToggle(g));
+/** Nagłówek nad konkretną kolumną siatki (klasa steruje pozycją — reset przez media-query). */
+function colHeader(cat: Cat, cls: string): HTMLElement {
+  const h = catHeader(cat);
+  h.classList.add(cls);
+  return h;
 }
+
+/** Komórka na jawnej pozycji siatki — zgrywa Kontakt+Finanse w jednej linii, kolumnowo z resztą. */
+function cellAt(g: MaskGroup, cls: string): HTMLElement {
+  const cell = document.createElement('div');
+  cell.className = cls;
+  cell.append(buildRow(g));
+  return cell;
+}
+
+function band(...kids: HTMLElement[]): HTMLElement {
+  const d = document.createElement('div');
+  d.className = 'mg-band';
+  d.append(...kids);
+  return d;
+}
+
+// Pasy: Identyfikatory (szeroko) · Kontakt+Finanse (jedna linia, kolumny zgrane) ·
+// Adres (szeroko) · Dane osobowe (szeroko + tryb „Rozróżniaj osoby").
+maskTogglesEl.append(
+  band(catHeader('ident'), ...MASK_GROUPS.filter((g) => g.cat === 'ident').map(buildRow)),
+  band(
+    colHeader('contact', 'kf-h-contact'),
+    cellAt(group('email'), 'kf-c1'),
+    cellAt(group('telefon'), 'kf-c2'),
+    colHeader('fin', 'kf-h-fin'),
+    cellAt(group('konto'), 'kf-c3'),
+  ),
+  band(catHeader('place'), ...MASK_GROUPS.filter((g) => g.cat === 'place').map(buildRow)),
+  band(catHeader('person'), ...MASK_GROUPS.filter((g) => g.cat === 'person').map(buildRow), buildModeRow()),
+);
+
+/* ── Akcje zbiorcze „Co maskować" + licznik ── */
+const maskCountOn = $<HTMLElement>('mask-count-on');
+function updateMaskTotal(): void {
+  maskCountOn.textContent = String(MASK_GROUPS.length - disabledGroups.size);
+}
+function syncSwitches(): void {
+  maskTogglesEl.querySelectorAll<HTMLInputElement>('.sw[data-key]').forEach((sw) => {
+    sw.checked = !disabledGroups.has(sw.dataset.key ?? '');
+  });
+}
+function bulkMask(mode: 'on' | 'off' | 'invert'): void {
+  for (const g of MASK_GROUPS) {
+    if (mode === 'on') disabledGroups.delete(g.key);
+    else if (mode === 'off') disabledGroups.add(g.key);
+    else if (disabledGroups.has(g.key)) disabledGroups.delete(g.key);
+    else disabledGroups.add(g.key);
+  }
+  persistDisabled();
+  syncSwitches();
+  updateMaskTotal();
+  update();
+}
+$<HTMLButtonElement>('mask-all-on').addEventListener('click', () => bulkMask('on'));
+$<HTMLButtonElement>('mask-all-off').addEventListener('click', () => bulkMask('off'));
+$<HTMLButtonElement>('mask-invert').addEventListener('click', () => bulkMask('invert'));
+$('mask-count-total').textContent = String(MASK_GROUPS.length);
+updateMaskTotal();
 
 /** Typy aktywne wg przełączników; undefined = wszystkie. */
 function activeTypes(): PiiType[] | undefined {
@@ -488,7 +579,7 @@ const CHIP_META: Record<string, { label: string; cat: Cat; icon: string }> = {
   ADRES: { label: 'adres', cat: 'place', icon: 'dom' },
   'KOD-POCZTOWY': { label: 'kod pocztowy', cat: 'place', icon: 'mapa-pl' },
   MIEJSCOWOSC: { label: 'miejscowość', cat: 'place', icon: 'mapa-pl' },
-  'DATA-UR': { label: 'data urodzenia', cat: 'place', icon: 'kalendarz' },
+  'DATA-UR': { label: 'data urodzenia', cat: 'person', icon: 'kalendarz' },
 };
 
 function renderFindings(found: PiiFinding[]): void {
