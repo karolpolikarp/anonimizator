@@ -381,8 +381,9 @@ select.field { font-family: var(--sans); line-height: normal; cursor: pointer; }
   display: flex; align-items: center; gap: 12px;
   padding: 12px 16px; border-radius: var(--r-ctl);
   border: 1px solid var(--acc-line); background: var(--acc-soft);
-  color: var(--acc); width: 340px; max-width: 40vw;
+  color: var(--acc); width: 430px; max-width: 42vw;
 }
+.privacy-t b { white-space: nowrap; } /* nagłówek w jednej linii */
 .privacy .gi { width: 30px; height: 30px; flex: none; }
 .privacy-t { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
 .privacy-t b { font-size: 14px; font-weight: 700; line-height: 1.25; }

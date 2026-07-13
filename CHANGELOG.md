@@ -1,5 +1,19 @@
 # Changelog
 
+## v0.46.6 — 2026-07-13
+
+**Finałowe dopięcie tekstów i drobiazgów UI.**
+
+- **Placeholder wyniku** bez surowych (niezanonimizowanych) danych — pokazuje tylko przykład wyniku
+  (`[IMIĘ I NAZWISKO], tel. [TELEFON]`) i podpowiedź „Wklej tekst… albo kliknij Przykład".
+- **Podtytuł wyniku**: „kliknij znacznik albo przechodź strzałkami ‹ ›" (usunięte mylące „najedź, by poznać powód").
+- **Box prywatności** rozszerzony — mieści się w 2 liniach (nagłówek + jednowierszowy podtekst).
+- **Link wersji**: „sprawdź nowszą wersję ↗" (jasne, że o wersję aplikacji).
+- **Lead**: „…zanim wkleisz go do asystenta lub czatu AI." (AI na końcu).
+- Final check spójności fontów/stylów/kolorów — bez rozjazdów.
+
+Aplikacja web 0.46.5 → 0.46.6. Rdzeń bez zmian.
+
 ## v0.46.5 — 2026-07-13
 
 **Dopięcie hero, czcionek, kart i kompletna tabela „Co wykrywa".**

@@ -655,9 +655,9 @@ function update(): void {
   if (!text.trim()) {
     output.classList.remove('plain');
     output.innerHTML =
-      '<span class="placeholder">Tu pojawi się zanonimizowany tekst, np.:<br><br>' +
-      'Jan Kowalski, tel. 600 700 800<br>→ ' +
-      `${maskHtml('IMIĘ I NAZWISKO')}, tel. ${maskHtml('TELEFON')}</span>`;
+      '<span class="placeholder">Tu pojawi się zanonimizowany wynik, na przykład ' +
+      `${maskHtml('IMIĘ I NAZWISKO')}, tel. ${maskHtml('TELEFON')}.<br><br>` +
+      'Wklej tekst po lewej albo kliknij „Przykład" powyżej.</span>';
     findingsCard.hidden = true;
     lastRedacted = '';
     maskEls = [];
