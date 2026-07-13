@@ -1,5 +1,29 @@
 # Changelog
 
+## v0.45.2 — 2026-07-13
+
+**Warstwa AI wydzielona do osobnego repozytorium — główny produkt to jeden plik HTML.**
+
+Powód: edycja „pełna / AI" była myląca i w praktyce nieużywalna (wymagała pobrania modelu
+z release'u `models-fastpdn-onnx-v1`, który nigdy nie powstał). Zgodnie z decyzją: rozdział
+na dwa repozytoria.
+
+- **To repo produkuje jeden artefakt: `Anonimizator.html`** (deterministyka — reguły, słowniki,
+  sumy kontrolne, w całości offline). Koniec dwóch edycji i przełącznika `VITE_EDITION`.
+- **Warstwa AI → [anonimizator-ai](https://github.com/karolpolikarp/anonimizator-ai)** (DLC,
+  local-only): usługa NER (spaCy/HerBERT), NER ONNX w przeglądarce, launcher HTTP, build paczki
+  modelu, eksperymentalny LLM. Wpina się w rdzeń przez npm (`anonimizator/ner`,
+  `anonimizator/ner-postprocess`, `anonimizator/llm` — te eksporty biblioteki ZOSTAJĄ w rdzeniu).
+- Usunięte z głównego repo: `services/ner/`, `launcher/`, `scripts/build-onnx-pack/`,
+  `apps/web/src/ner-browser.ts`, `examples/ner-onnx-node.mjs`, `docs/SOTA-ANALIZA.md`,
+  `docs/AI-BEZ-DOCKERA.md` oraz cała warstwa NER z `apps/web` (UI przełącznika, sekcja
+  „Wykrywanie nazwisk AI"). „Co maskować" rozciąga się teraz na całą szerokość.
+- Release: jeden plik `Anonimizator.html` + `JAK-UZYC.txt` (koniec `Anonimizator-AI.zip`).
+- Detekcja rdzenia bez zmian: 275 testów, benchmark rdzenia recall 94%/precyzja 99,6%.
+
+Aplikacja web 0.45.1 → 0.45.2. Rdzeń `anonimizator` bez zmian (0.29.1) — nadal eksportuje
+warstwy AI jako szew dla dodatku.
+
 ## v0.45.1 — 2026-07-13
 
 **Zmiana licencji na Apache 2.0 + poprawki precyzji po II raporcie testera.**

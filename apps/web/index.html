@@ -34,7 +34,7 @@
             <li class="badge" data-tip="Działa bez internetu, możesz rozłączyć sieć i sprawdzić" tabindex="0"><i class="gi" data-i="onoff"></i>100% Offline</li>
             <li class="badge" data-tip="Tekst nie opuszcza przeglądarki, zero wysyłania na serwery" tabindex="0"><i class="gi" data-i="haslo"></i>Bezpieczne</li>
             <li class="badge" data-tip="Kod otwarty na licencji Apache 2.0, możesz go samodzielnie zweryfikować" tabindex="0"><i class="gi" data-i="regula"></i>Open Source · Apache 2.0</li>
-            <li class="badge" id="badge-ai" data-tip="Warstwa reguł i sum kontrolnych + opcjonalny lokalny model NER" tabindex="0"><i class="gi" data-i="ner"></i><span id="badge-ai-txt">Reguły + lokalne AI</span></li>
+            <li class="badge" id="badge-ai" data-tip="Warstwa reguł, słowników i sum kontrolnych, w całości offline" tabindex="0"><i class="gi" data-i="regula"></i><span id="badge-ai-txt">Reguły + sumy kontrolne</span></li>
           </ul>
         </div>
         <div class="card-b hero-b">
@@ -60,7 +60,7 @@
           <span class="ic" data-tip="Analiza działa na bieżąco, podczas pisania" tabindex="0"><i class="gi" data-i="sprawdz"></i></span>
           <div class="card-t"><span class="kick">Krok 2</span><h2>Analiza</h2></div>
         </div>
-        <div class="card-b"><p id="step2-sub">reguły, sumy kontrolne, opcjonalny lokalny NER</p></div>
+        <div class="card-b"><p id="step2-sub">reguły, słowniki i sumy kontrolne</p></div>
       </section>
 
       <section class="card step g3" aria-label="Krok 3">
@@ -84,7 +84,7 @@
         <div class="card-h">
           <div class="card-t"><h2>Kolory znaczników</h2><p>każda kategoria danych ma swój kolor, ten sam w wyniku i w tabeli niżej</p></div>
           <div class="legend-items">
-            <span class="lg" data-tip="Imię i nazwisko, słownik, wyzwalacze kontekstu, opcjonalne AI" tabindex="0">
+            <span class="lg" data-tip="Imię i nazwisko, słownik, wyzwalacze kontekstu" tabindex="0">
               <span class="dot dot-person"></span><b>Osoby</b><span class="lg-n">1 typ</span>
             </span>
             <span class="lg" data-tip="E-mail i telefon" tabindex="0">
@@ -209,49 +209,6 @@
         </div>
       </details>
 
-      <!-- ══════════ NER ══════════ -->
-      <details class="card g5" id="ner-card" data-full>
-        <summary class="card-h">
-          <span class="ic"><i class="gi" data-i="ner"></i></span>
-          <div class="card-t"><h2>Wykrywanie nazwisk AI <span class="tag-opt">opcjonalne</span></h2><p>rzadkie i odmienione formy, bez Dockera, jedno kliknięcie</p></div>
-          <span class="card-sp"></span>
-          <span class="pill-off" id="ner-pill">wyłączone</span>
-          <span class="chev">▸</span>
-        </summary>
-        <div class="card-b">
-          <p class="ner-lead">Warstwa reguł, słowników i sum kontrolnych działa <strong>zawsze</strong>. To AI dokłada rzadkie i odmienione nazwiska (np. „sprawa Grzegorzewskiego”). Model działa u Ciebie, tekst nadal nie opuszcza komputera.</p>
-          <label class="ner-row" data-tip="Włącza lokalny model AI, lepsze wykrywanie rzadkich i odmienionych nazwisk">
-            <span class="ic ic-s"><i class="gi" data-i="onoff"></i></span>
-            <span class="tg-t"><b>Włącz AI</b><span class="sub ner-status" id="ner-status"></span></span>
-            <input type="checkbox" class="sw" id="ner-enabled" aria-label="Włącz lokalne AI (NER)" />
-          </label>
-          <div id="ner-details" hidden>
-            <label class="ner-row" data-tip="Zalecane: model w przeglądarce (jedno kliknięcie). Zaawansowane: własna usługa w Dockerze">
-              <span class="ic ic-s"><i class="gi" data-i="ustawienia"></i></span>
-              <span class="tg-t"><b>Skąd model</b><span class="sub">domyślnie: w przeglądarce</span></span>
-              <select id="ner-source" class="field field-inline" aria-label="Źródło modelu AI">
-                <option value="onnx">w przeglądarce (zalecane)</option>
-                <option value="http">usługa w Dockerze (zaawansowane)</option>
-              </select>
-            </label>
-            <label class="ner-row" id="ner-url-row" data-tip="Tekst trafia wyłącznie pod wskazany adres lokalny, nadal nic nie wychodzi do internetu">
-              <span class="ic ic-s"><i class="gi" data-i="haslo"></i></span>
-              <span class="tg-t"><b>Adres usługi</b><span class="sub">tylko adres lokalny</span></span>
-              <input id="ner-url" type="text" value="http://127.0.0.1:8090" spellcheck="false" class="field field-inline" aria-label="Adres lokalnej usługi NER" />
-            </label>
-            <p class="ner-note">
-              <strong>Najprościej (bez Dockera):</strong> pobierz paczkę „AI w przeglądarce”, rozpakuj obok
-              aplikacji i kliknij dwukrotnie <code>START-ANONIMIZATOR.bat</code>, model rusza lokalnie.
-              <a href="https://github.com/karolpolikarp/anonimizator/blob/main/docs/AI-BEZ-DOCKERA.md" target="_blank" rel="noopener noreferrer">instrukcja krok po kroku</a>.
-            </p>
-          </div>
-        </div>
-        <div class="card-f">
-          <i class="gi" data-i="sprawdz"></i>
-          <span>Nie chcesz AI? Nic nie rób, <strong>reguły, słowniki i sumy kontrolne</strong> działają od razu.</span>
-        </div>
-      </details>
-
       <!-- ══════════ CO WYKRYWA ══════════ -->
       <details class="card g12" id="co-wykrywa">
         <summary class="card-h">
@@ -342,7 +299,7 @@
               <tr>
                 <td><span class="td-name"><span class="ic ic-s c-person"><i class="gi" data-i="dane-osobowe"></i></span>Imię i nazwisko</span></td>
                 <td><span class="catpill cp-person">osoby</span></td>
-                <td><span class="how">słownik ~200 imion i ~230 nazwisk (z odmianą) + wyzwalacze („nazywam się”, „Pan/Pani”)<span data-full>; opcjonalnie <strong>lokalny NER</strong></span></span></td>
+                <td><span class="how">słownik ~200 imion i ~230 nazwisk (z odmianą) + wyzwalacze („nazywam się”, „Pan/Pani”)</span></td>
                 <td><mark class="pii pii-person">[IMIĘ I NAZWISKO]</mark></td>
               </tr>
             </tbody>
@@ -392,7 +349,6 @@
             <li><span><kbd>Ctrl</kbd>+<kbd>Enter</kbd> kopiuje wynik.</span></li>
             <li><span>Plik możesz upuścić w dowolnym miejscu strony.</span></li>
             <li><span>Po wczytaniu dokumentu włącza się widok <strong>Porównanie</strong>, oryginał przekreślony obok znacznika.</span></li>
-            <li data-full><span>Odznaczenie „imię i nazwisko” w „Co maskować” wyłącza też NER.</span></li>
           </ul>
         </div>
       </section>

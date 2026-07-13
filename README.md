@@ -59,9 +59,10 @@ zamaskowane fragmenty, a najechanie kursorem pokaże powód każdej maski.
 „Rozróżniaj osoby" nadaje tej samej osobie stałą etykietę (`[OSOBA‑A]`, `[OSOBA‑B]`) — przydatne
 w umowach i pismach, gdzie trzeba wiedzieć, kto jest kim, bez podawania nazwisk.
 
-**Bezpieczeństwo także wtedy, gdy coś nie działa.** Nawet jeśli włączysz zaawansowane, opcjonalne
-warstwy AI (opisane niżej) i one się zawieszą — ochrona **nigdy nie spada poniżej** warstwy reguł
-i sum kontrolnych. AI może co najwyżej zamaskować *więcej*, nigdy *odsłonić* danych.
+**Bezpieczeństwo także wtedy, gdy coś nie działa.** Cała detekcja to reguły, słowniki i sumy
+kontrolne działające lokalnie — nie ma zewnętrznych usług, które mogłyby paść i odsłonić dane.
+Opcjonalny dodatek AI (osobny projekt, niżej) może co najwyżej zamaskować *więcej*, nigdy
+*odsłonić* — i nie jest częścią tego pliku.
 
 ## Pobierz i używaj (jeden plik, bez instalacji)
 
@@ -84,8 +85,8 @@ Alternatywnie sklonuj repo i odpal z kodu (sekcja „Dla programistów" niżej).
 - **Biblioteka npm** (`packages/core`, pakiet `anonimizator`) — zero zależności, działa w Node,
   Deno, Bun i przeglądarce.
 - **CLI** — `anonimizator plik.txt`, także stdin → stdout do potoków.
-- **Opcjonalny lokalny NER** (`services/ner`) — usługa spaCy PL na Twoim komputerze,
-  podnosząca wykrywalność rzadkich nazwisk (szczegóły niżej).
+- **Opcjonalny dodatek AI** — osobny projekt [anonimizator-ai](https://github.com/karolpolikarp/anonimizator-ai)
+  (local-only) podnosi wykrywanie rzadkich i obcych nazwisk (szczegóły niżej).
 
 ```
 Nazywam się Jan Kowalski, PESEL 44051401359, ul. Polna 12/3, tel. 600 700 800.
@@ -139,93 +140,29 @@ słownika (z odmianą), nazwiska o charakterystycznym polskim sufiksie **morfolo
 (-ski/-cki/-dzki, -icz/-wicz, -czyk — także rzadkie i odmienione, np. „Gzowskiego", „Bąkiewiczowi"),
 pary imię+nazwisko i kolejność odwróconą oraz wyzwalacze kontekstu. Poza zasięgiem warstwy offline
 zostają głównie **nazwiska bez polskiego sufiksu, spoza słownika i bez kontekstu** (np. obce:
-„Nguyen", „Grynberg"). Domyka je opcjonalny lokalny NER (niżej). Zasada pozostaje: to narzędzie
-pomocnicze — **zawsze przejrzyj wynik przed udostępnieniem**.
+„Nguyen", „Grynberg"). Domyka je opcjonalny dodatek AI (osobny projekt, niżej). Zasada pozostaje:
+to narzędzie pomocnicze — **zawsze przejrzyj wynik przed udostępnieniem**.
 
 Benchmark warstwy offline (deterministyczny zbiór, `docs/BENCHMARK.md`): **recall 100%,
 precyzja‑proxy 99,4%** (rdzeń, bez NER).
 
-## Opcjonalny lokalny NER (rzadkie i odmienione nazwiska)
+## Rozszerzenie AI (osobny dodatek, local-only)
 
-Zdanie „Wczoraj Nguyen podpisał umowę z Grynbergiem" zawiera nazwiska bez polskiego sufiksu,
-spoza słownika i bez wyzwalacza — warstwa offline ich nie zamaskuje (nazwiska z sufiksem
--ski/-cki/-icz/-czyk łapie już morfologicznie). Rozwiązaniem dla takich przypadków jest **NER**
-(model spaCy PL rozpoznający osoby z kontekstu zdania), uruchamiany **na Twoim komputerze**:
+Nazwiska **bez polskiego sufiksu, spoza słownika i bez kontekstu** (np. obce „Nguyen",
+„Grynberg" w gołym zdaniu) są poza zasięgiem warstwy offline. Domyka je **opcjonalny dodatek
+AI**, który mieszka w osobnym repozytorium:
+[**anonimizator-ai**](https://github.com/karolpolikarp/anonimizator-ai).
 
-```bash
-cd services/ner
-docker compose up -d      # usługa na 127.0.0.1:8090 (tylko localhost)
-```
+- Warstwa NER (spaCy/HerBERT/ONNX FastPDN) i eksperymentalny lokalny LLM (Ollama/Bielik),
+  wszystko **w całości na Twoim komputerze** — tekst nie opuszcza maszyny.
+- Wpina się w ten rdzeń przez npm (`anonimizator/ner`, `anonimizator/ner-postprocess`,
+  `anonimizator/llm` — te wejścia biblioteki zostają tutaj dostępne dla budujących na rdzeniu).
+- Architektura **fail-safe**: AI dostaje tekst już po redakcji strukturalnej i może jedynie
+  zamaskować *więcej*, nigdy odsłonić. Ten plik HTML działa bez niego.
 
-Dostępne są dwa backendy: **spaCy** (domyślny, lekki) i **HerBERT** (SOTA dla polskiego,
-F1≈0,90 — najlepszy recall rzadkich nazwisk; `--build-arg NER_BACKEND=herbert`).
-Szczegóły: [`services/ner/README.md`](./services/ner/README.md).
-
-Potem w aplikacji webowej zaznacz „Użyj lokalnego NER". Architektura jest **fail-safe**:
-
-- NER dostaje tekst JUŻ po redakcji strukturalnej — **nigdy nie widzi** surowego PESEL/NIP;
-- gdy usługa nie działa / nie odpowiada / przekroczy timeout, wynik zostaje na warstwie
-  regex + sumy kontrolne — ochrona nigdy nie spada do zera;
-- circuit breaker przestaje odpytywać padniętą usługę (3 porażki → 30 s przerwy).
-
-Z biblioteki: `import { redactPIIFull } from 'anonimizator/ner'` —
-`await redactPIIFull(tekst, { url: 'http://127.0.0.1:8090' })`.
-Szczegóły: [`services/ner/README.md`](./services/ner/README.md).
-
-## NER bez Dockera (ONNX) — także w przeglądarce
-
-Zweryfikowany model FastPDN jest dostępny jako **ONNX int8 (~125 MB)** w
-[Releases → models-fastpdn-onnx-v1](https://github.com/karolpolikarp/anonimizator/releases/tag/models-fastpdn-onnx-v1):
-
-- **W aplikacji przeglądarkowej**: pobierz `anonimizator-onnx-pack.zip` i rozpakuj
-  **obok `index.html`** (katalogi `vendor/` i `models/`). Gdy aplikacja jest serwowana
-  po http (np. `npx serve .`, hosting, `npm run preview`) — w ustawieniach NER pojawi
-  się źródło „w przeglądarce (ONNX, bez Dockera)". Model ładuje się przy pierwszym
-  użyciu i działa w pełni offline (inferencja ~kilkadziesiąt ms).
-  Uwaga: z `file://` (podwójny klik) przeglądarki blokują wasm/fetch — ta opcja
-  wymaga serwowania; paczka offline działa wtedy na warstwie regex+słowniki.
-- **W Node**: kompletny przykład [`examples/ner-onnx-node.mjs`](./examples/ner-onnx-node.mjs)
-  (`@huggingface/transformers`, ~16 ms na akapit na CPU).
-
-## Warstwa eksperymentalna: lokalny LLM (Ollama/Bielik)
-
-Najgłębsza (i najwolniejsza) siatka bezpieczeństwa: **lokalny model językowy** wskazuje
-fragmenty tekstu wyglądające na dane osobowe — tryb *span-extraction*. **LLM niczego nie
-przepisuje.** Zwraca wyłącznie listę kandydatów, a maskowanie wykonuje kod biblioteki po
-twardej walidacji: kandydat musi wystąpić w tekście znak w znak (halucynacje odpadają),
-limit 2–80 znaków i max 100 kandydatów, placeholdery odrzucane. Złośliwy tekst (prompt
-injection) może więc co najwyżej doprowadzić do NADmaskowania — nigdy do odmaskowania.
-
-```bash
-# wymaga zainstalowanej Ollamy: https://ollama.com
-ollama pull SpeakLeash/bielik-11b-v2.3-instruct:Q4_K_M   # polski model Bielik (~7 GB)
-# Ollama nasłuchuje domyślnie na http://127.0.0.1:11434
-```
-
-```ts
-import { redactPIIUltra } from 'anonimizator/llm';
-
-const { redacted, found } = await redactPIIUltra(tekst, {
-  ner: { url: 'http://127.0.0.1:8090' },                          // opcjonalnie
-  llm: { model: 'SpeakLeash/bielik-11b-v2.3-instruct:Q4_K_M' },   // Ollama lokalnie
-});
-```
-
-Kolejność warstw: redakcja strukturalna (regex + sumy kontrolne) → opcjonalny NER →
-opcjonalny LLM. Model widzi tekst **już po** redakcji strukturalnej — nigdy surowego
-PESEL/NIP — i wszystko dzieje się lokalnie, na Twoim komputerze.
-
-**Ostrzeżenia:**
-
-- **Eksperymentalne** — jakość zależy od modelu; to dodatkowa siatka, nie gwarancja.
-  Zawsze przejrzyj wynik.
-- **Wolne** — odpowiedź lokalnego LLM to sekundy, nie milisekundy (domyślny timeout 60 s;
-  analizowane jest pierwsze 6000 znaków tekstu).
-- **Wymaga mocnego sprzętu** — Bielik 11B w kwantyzacji Q4 potrzebuje ~8 GB RAM/VRAM;
-  na słabszym sprzęcie wybierz mniejszy model.
-- **Fail-safe jak przy NER** — awaria/timeout/brak Ollamy nigdy nie obniża ochrony:
-  wynik zostaje na wcześniejszych warstwach, a circuit breaker (3 porażki → 30 s)
-  przestaje odpytywać padniętą usługę.
+Po co osobno: warstwa AI wymaga mini-serwera lokalnego i pobrania modelu (~125 MB) — to łamie
+obietnicę „jeden plik, zero instalacji", która jest wartością głównego produktu. Dlatego AI jest
+świadomie oddzielnym, opcjonalnym dodatkiem.
 
 ## Użycie — biblioteka
 
@@ -284,28 +221,29 @@ npm test
 ```
 
 Aplikacja nie ma backendu, analityki ani żadnych zapytań sieciowych — cała logika wykonuje
-się w przeglądarce. Jedyny wyjątek to świadomie włączony lokalny NER (żądania idą wyłącznie
-pod adres localhost wskazany przez użytkownika).
+się w przeglądarce, a plik HTML nie łączy się z niczym (możesz wyłączyć internet i sprawdzić).
 
 ## Struktura repozytorium
 
 ```
-packages/core/    # silnik redakcji (TS, zero zależności) + klient NER + CLI + testy (Vitest)
+packages/core/    # silnik redakcji (TS, zero zależności) + CLI + testy (Vitest)
 apps/web/         # statyczna aplikacja (Vite, bez frameworka), działa z file://
-services/ner/     # opcjonalna lokalna usługa NER (Python/FastAPI + spaCy PL, Docker)
 ```
+
+Warstwa AI (NER/LLM) jest osobnym dodatkiem:
+[anonimizator-ai](https://github.com/karolpolikarp/anonimizator-ai). Rdzeń nadal eksportuje
+wejścia `anonimizator/ner`, `anonimizator/ner-postprocess`, `anonimizator/llm` — to szew, w który
+wpina się dodatek.
 
 ## Testy
 
 ```bash
 npm test          # sumy kontrolne, maskowanie, fałszywe trafienia, idempotencja,
-                  # opcje types/masks, fail-safe NER (mock), circuit breaker
+                  # opcje types/masks, circuit breaker
 ```
 
 ## Roadmapa
 
-- [ ] NER bez Dockera: model ONNX odpalany bezpośrednio w przeglądarce (transformers.js) —
-      pełny recall nazwisk bez instalowania czegokolwiek.
 - [x] Konfigurowalne placeholdery i wybór typów do maskowania (v0.2.0).
 - [x] Obsługa plików DOCX w aplikacji webowej — ekstrakcja tekstu lokalnie (v0.3.0).
 - [x] Obsługa plików PDF — pdf.js w buildzie single-file, w pełni offline (v0.4.0).
@@ -321,10 +259,11 @@ gdzie maskuje dane osobowe w pytaniach użytkowników, zanim trafią do modelu j
 
 **Anonimizator** is a local-first redactor for Polish PII (personal data): PESEL, NIP, REGON,
 IBAN and national ID numbers are validated against their checksums (very few false positives);
-e-mails, phones, addresses and person names are matched heuristically, with an optional
-self-hosted spaCy NER service for rare surnames. Ships as a zero-dependency npm library +
-CLI (`anonimizator`), and a single-file offline web app (grab `Anonimizator.html`
-from Releases and just double-click it — nothing ever leaves your machine). Apache 2.0 licensed.
+e-mails, phones, addresses and person names are matched heuristically. Ships as a
+zero-dependency npm library + CLI (`anonimizator`), and a single-file offline web app (grab
+`Anonimizator.html` from Releases and just double-click it — nothing ever leaves your machine).
+An optional local-only AI add-on for rare/foreign surnames lives in a separate repo:
+[anonimizator-ai](https://github.com/karolpolikarp/anonimizator-ai). Apache 2.0 licensed.
 
 ## Licencja
 

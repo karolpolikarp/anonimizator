@@ -8,8 +8,7 @@
     "skipLibCheck": true,
     "noEmit": true,
     "paths": {
-      "anonimizator": ["../../packages/core/src/index.ts"],
-      "anonimizator/ner": ["../../packages/core/src/ner-client.ts"]
+      "anonimizator": ["../../packages/core/src/index.ts"]
     }
   },
   "include": ["src"]

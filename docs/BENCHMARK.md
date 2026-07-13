@@ -1,6 +1,6 @@
 # Benchmark anonimizacji — precision / recall
 
-- **Data uruchomienia:** 2026-07-12
+- **Data uruchomienia:** 2026-07-13
 - **Wersja rdzenia (`anonimizator`):** 0.29.1
 - **Zbiór ewaluacyjny:** 260 syntetycznych zdań (deterministyczny, seed `20260704`), 248 elementów do zamaskowania (mustMask), 280 elementów do zachowania (mustKeep)
 - **Reprodukcja:** `npm run build -w anonimizator && node scripts/benchmark/run.mjs`
@@ -25,18 +25,15 @@ Liczności kategorii: osoby-podstawowe — 23, osoby-odmiana — 32, osoby-rzadk
 ### Warstwy
 
 - **T0+T1 core** — redactPII() — regex + sumy kontrolne + słownik (in-process, offline)
-- **core+spacy** — redactPIIFull() + NER spaCy pl_core_news_lg (127.0.0.1:8090)
-- **core+fastpdn** — redactPIIFull() + NER FastPDN/HerBERT (127.0.0.1:8091)
-- **core+onnx (Node)** — redactPII() + FastPDN ONNX int8 (q8) w Node przez @huggingface/transformers — bez Dockera
+- **core+spacy** — POMINIĘTA: usługa `http://127.0.0.1:8090` niedostępna w chwili uruchomienia (health-check).
+- **core+fastpdn** — POMINIĘTA: usługa `http://127.0.0.1:8091` niedostępna w chwili uruchomienia (health-check).
+- **core+onnx (Node)** — POMINIĘTA: biblioteka @huggingface/transformers lub lokalny model ONNX niedostępne.
 
 ## Wyniki
 
 | Warstwa | Recall (łącznie) | Precision-proxy (łącznie) | F1 | Porażki (przypadki) | Czas | Wynik ≠ core |
 |---|---|---|---|---|---|---|
 | T0+T1 core | 94.0% (233/248) | 99.6% (279/280) | 96.7% | 16 | 0.0 s | — |
-| core+spacy | 99.2% (246/248) | 99.6% (279/280) | 99.4% | 3 | 1.4 s | 13 przyp. |
-| core+fastpdn | 98.8% (245/248) | 99.6% (279/280) | 99.2% | 4 | 5.7 s | 12 przyp. |
-| core+onnx (Node) | 98.4% (244/248) | 99.6% (279/280) | 99.0% | 5 | 1.6 s | 11 przyp. |
 
 F1 liczone jako średnia harmoniczna recall i precision-proxy (łącznie po wszystkich kategoriach
 z oboma rodzajami elementów; kategoria „negatywy" nie ma recall, więc nie wchodzi do składowej recall).
@@ -46,27 +43,18 @@ z oboma rodzajami elementów; kategoria „negatywy" nie ma recall, więc nie wc
 | Warstwa | osoby-podstawowe | osoby-odmiana | osoby-rzadkie | strukturalne | negatywy | osoby-rzadkie-ner | osoby-slownik |
 |---|---|---|---|---|---|---|---|
 | T0+T1 core | 100.0% | 100.0% | 100.0% | 100.0% | — | 21.1% | 100.0% |
-| core+spacy | 100.0% | 100.0% | 100.0% | 100.0% | — | 89.5% | 100.0% |
-| core+fastpdn | 100.0% | 100.0% | 100.0% | 100.0% | — | 84.2% | 100.0% |
-| core+onnx (Node) | 100.0% | 100.0% | 100.0% | 100.0% | — | 78.9% | 100.0% |
 
 ### F1 per kategoria
 
 | Warstwa | osoby-podstawowe | osoby-odmiana | osoby-rzadkie | strukturalne | negatywy | osoby-rzadkie-ner | osoby-slownik |
 |---|---|---|---|---|---|---|---|
 | T0+T1 core | 100.0% | 100.0% | 100.0% | 100.0% | — | 34.8% | 100.0% |
-| core+spacy | 100.0% | 100.0% | 100.0% | 100.0% | — | 94.4% | 100.0% |
-| core+fastpdn | 100.0% | 100.0% | 100.0% | 100.0% | — | 91.4% | 100.0% |
-| core+onnx (Node) | 100.0% | 100.0% | 100.0% | 100.0% | — | 88.2% | 100.0% |
 
 ### Precision-proxy per kategoria
 
 | Warstwa | osoby-podstawowe | osoby-odmiana | osoby-rzadkie | strukturalne | negatywy | osoby-rzadkie-ner | osoby-slownik |
 |---|---|---|---|---|---|---|---|
 | T0+T1 core | 100.0% | 100.0% | 100.0% | 100.0% | 98.8% | 100.0% | 100.0% |
-| core+spacy | 100.0% | 100.0% | 100.0% | 100.0% | 98.8% | 100.0% | 100.0% |
-| core+fastpdn | 100.0% | 100.0% | 100.0% | 100.0% | 98.8% | 100.0% | 100.0% |
-| core+onnx (Node) | 100.0% | 100.0% | 100.0% | 100.0% | 98.8% | 100.0% | 100.0% |
 
 („—" = brak elementów danego rodzaju w kategorii, np. negatywy nie mają mustMask.)
 
@@ -94,42 +82,6 @@ Legenda: **przeszło** = element mustMask pozostał w wyniku (wyciek PII);
 - `os-rn-17` (osoby-rzadkie-ner): przeszło „Horvat" — tekst: _umowę serwisową parafował Horvat osobiście_
 - `os-rn-18` (osoby-rzadkie-ner): przeszło „Weber" — tekst: _reklamację rozpatrzył Weber w dwa dni_
 - `os-rn-19` (osoby-rzadkie-ner): przeszło „Rossi" — tekst: _kontrakt firmował Rossi przed notariuszem_
-
-**Nadmaskowania (zjedzono 1 elem. w 1 przypadkach):**
-
-- `neg-52` (negatywy): zjedzono „Tadeusz" — wynik: _Pan [IMIĘ I NAZWISKO] to najsłynniejsza polska epopeja narodowa._
-
-### core+spacy — 3 przypadków z porażką
-
-**Wycieki (przeszło 2 elem. w 2 przypadkach):**
-
-- `os-rn-03` (osoby-rzadkie-ner): przeszło „Gągały" — tekst: _zeznania Gągały spisano protokolarnie_
-- `os-rn-04` (osoby-rzadkie-ner): przeszło „Grzmota" — tekst: _wniosek Grzmota rozpatrzono odmownie_
-
-**Nadmaskowania (zjedzono 1 elem. w 1 przypadkach):**
-
-- `neg-52` (negatywy): zjedzono „Tadeusz" — wynik: _Pan [IMIĘ I NAZWISKO] to najsłynniejsza polska epopeja narodowa._
-
-### core+fastpdn — 4 przypadków z porażką
-
-**Wycieki (przeszło 3 elem. w 3 przypadkach):**
-
-- `os-rn-14` (osoby-rzadkie-ner): przeszło „Cieciory" — tekst: _do akt dołączono notatkę Cieciory z narady_
-- `os-rn-18` (osoby-rzadkie-ner): przeszło „Weber" — tekst: _reklamację rozpatrzył Weber w dwa dni_
-- `os-rn-19` (osoby-rzadkie-ner): przeszło „Rossi" — tekst: _kontrakt firmował Rossi przed notariuszem_
-
-**Nadmaskowania (zjedzono 1 elem. w 1 przypadkach):**
-
-- `neg-52` (negatywy): zjedzono „Tadeusz" — wynik: _Pan [IMIĘ I NAZWISKO] to najsłynniejsza polska epopeja narodowa._
-
-### core+onnx (Node) — 5 przypadków z porażką
-
-**Wycieki (przeszło 4 elem. w 4 przypadkach):**
-
-- `os-rn-03` (osoby-rzadkie-ner): przeszło „Gągały" — tekst: _zeznania Gągały spisano protokolarnie_
-- `os-rn-05` (osoby-rzadkie-ner): przeszło „Ciołka" — tekst: _do akt dołączono notatkę Ciołka z rozmowy_
-- `os-rn-14` (osoby-rzadkie-ner): przeszło „Cieciory" — tekst: _do akt dołączono notatkę Cieciory z narady_
-- `os-rn-18` (osoby-rzadkie-ner): przeszło „Weber" — tekst: _reklamację rozpatrzył Weber w dwa dni_
 
 **Nadmaskowania (zjedzono 1 elem. w 1 przypadkach):**
 

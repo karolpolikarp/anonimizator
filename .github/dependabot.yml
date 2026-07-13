@@ -7,10 +7,6 @@ updates:
     groups:
       npm-all:
         patterns: ["*"]
-  - package-ecosystem: pip
-    directory: "/services/ner"
-    schedule:
-      interval: weekly
   - package-ecosystem: github-actions
     directory: "/"
     schedule:

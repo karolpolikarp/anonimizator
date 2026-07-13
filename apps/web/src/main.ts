@@ -1,8 +1,6 @@
 import { redactPII, type PiiFinding, type PiiType } from 'anonimizator';
-import { mergeFindings, nerHealthCheck, nerRedact } from 'anonimizator/ner';
 import { extractDocxText } from './docx';
 import { extractPdfText } from './pdf';
-import { browserNerAvailable, browserNerRedact } from './ner-browser';
 import './style.css';
 
 // Ikony — inline SVG (jedno źródło prawdy, kolor z currentColor). Zero rastrów.
@@ -26,12 +24,6 @@ const exampleBtn = $<HTMLButtonElement>('example');
 const loadFileBtn = $<HTMLButtonElement>('load-file');
 const loadFileLabel = $<HTMLSpanElement>('load-file-label');
 const fileInput = $<HTMLInputElement>('file-input');
-const nerEnabledBox = $<HTMLInputElement>('ner-enabled');
-const nerDetails = $<HTMLDivElement>('ner-details');
-const nerSourceSel = $<HTMLSelectElement>('ner-source');
-const nerUrlInput = $<HTMLInputElement>('ner-url');
-const nerStatus = $<HTMLSpanElement>('ner-status');
-const nerPill = $<HTMLSpanElement>('ner-pill');
 const viewResultBtn = $<HTMLButtonElement>('view-result');
 const viewCompareBtn = $<HTMLButtonElement>('view-compare');
 const appError = $<HTMLParagraphElement>('app-error');
@@ -46,21 +38,6 @@ let lastInput = '';
 let viewMode: 'result' | 'compare' = 'result';
 let maskEls: HTMLElement[] = []; // znaczniki w wyniku, w kolejności dokumentu
 let maskIdx = -1; // bieżący znacznik w przeglądaniu (-1 = żaden)
-
-// Edycja „urzędnik" (release dla głównej grupy docelowej): build BEZ warstwy AI/NER.
-// Kod NER zostaje w repozytorium — tu tylko usuwamy elementy oznaczone [data-full] z DOM,
-// żeby interfejs był maksymalnie prosty. Flagę podstawia Vite przy buildzie (VITE_EDITION).
-const CLERK_EDITION = import.meta.env.VITE_EDITION === 'urzednik';
-if (CLERK_EDITION) {
-  for (const el of document.querySelectorAll('[data-full]')) el.remove();
-  // Edycja urzędnik nie ma warstwy AI — usuwamy wzmianki o niej z nagłówka (uczciwość).
-  const sub = document.getElementById('hero-sub');
-  if (sub) sub.textContent = 'Lokalny anonimizator polskich danych osobowych';
-  const badge = document.getElementById('badge-ai-txt');
-  if (badge) badge.textContent = 'Reguły + sumy kontrolne';
-  const step2 = document.getElementById('step2-sub');
-  if (step2) step2.textContent = 'reguły, słowniki i sumy kontrolne';
-}
 
 /* ── Kategorie i metadane typów PII (jedna rodzina kolorów w całej aplikacji) ── */
 
@@ -98,7 +75,7 @@ const MASK_TIP: Record<string, string> = {
   'KOD-POCZTOWY': 'Adres i czas · wzorzec XX-XXX',
   'MIEJSCOWOŚĆ': 'Adres i czas · miejscowość po kodzie pocztowym',
   'DATA-URODZENIA': 'Adres i czas · data z kontekstem „ur./urodzony”',
-  'IMIĘ I NAZWISKO': 'Osoby · słownik imion/nazwisk lub wyzwalacz kontekstu; opcjonalnie NER',
+  'IMIĘ I NAZWISKO': 'Osoby · słownik imion/nazwisk lub wyzwalacz kontekstu',
 };
 
 function maskTip(name: string): string {
@@ -141,17 +118,8 @@ const MASK_GROUPS: MaskGroup[] = [
   { key: 'kod', label: 'Kod pocztowy', types: ['KOD-POCZTOWY'], cat: 'place', icon: 'mapa-pl', code: '[KOD-POCZTOWY]', tip: 'Wzorzec XX-XXX' },
   { key: 'miejscowosc', label: 'Miejscowość', types: ['MIEJSCOWOSC'], cat: 'place', icon: 'mapa-pl', code: '[MIEJSCOWOŚĆ]', tip: 'Miejscowość po kodzie pocztowym (w adresie)' },
   { key: 'dataur', label: 'Data urodzenia', types: ['DATA-UR'], cat: 'place', icon: 'kalendarz', code: '[DATA-URODZENIA]', tip: 'Data z kontekstem „ur./urodzony”' },
-  { key: 'imie', label: 'Imię i nazwisko', types: ['IMIE'], cat: 'person', icon: 'dane-osobowe', code: '[IMIĘ I NAZWISKO]', tip: 'Słownik ~200 imion i ~230 nazwisk z odmianą + morfologia i wyzwalacze kontekstu; wykrywanie heurystyczne, odznaczenie wyłącza też NER' },
+  { key: 'imie', label: 'Imię i nazwisko', types: ['IMIE'], cat: 'person', icon: 'dane-osobowe', code: '[IMIĘ I NAZWISKO]', tip: 'Słownik ~200 imion i ~230 nazwisk z odmianą + morfologia i wyzwalacze kontekstu; wykrywanie heurystyczne' },
 ];
-
-// W edycji „urzędnik" nie ma NER — usuwamy wzmianki z etykiet/tooltipów tej warstwy.
-if (CLERK_EDITION) {
-  const imie = MASK_GROUPS.find((g) => g.key === 'imie');
-  if (imie) {
-    imie.tip = 'Słownik ~200 imion i ~230 nazwisk z odmianą + morfologia i wyzwalacze kontekstu; wykrywanie heurystyczne';
-  }
-  MASK_TIP['IMIĘ I NAZWISKO'] = 'Osoby · słownik imion/nazwisk lub wyzwalacz kontekstu';
-}
 
 const maskTogglesEl = $<HTMLSpanElement>('mask-toggles');
 const disabledGroups = new Set<string>(
@@ -240,10 +208,6 @@ if (restRow.childElementCount) maskTogglesEl.append(restRow);
 function activeTypes(): PiiType[] | undefined {
   if (disabledGroups.size === 0) return undefined;
   return MASK_GROUPS.filter((g) => !disabledGroups.has(g.key)).flatMap((g) => g.types);
-}
-
-function imieEnabled(): boolean {
-  return !disabledGroups.has('imie');
 }
 
 const pseudonymsBox = $<HTMLInputElement>('pseudonyms');
@@ -538,7 +502,7 @@ const CHIP_META: Record<string, { label: string; cat: Cat; icon: string }> = {
 
 function renderFindings(found: PiiFinding[]): void {
   findingsCard.hidden = false;
-  // koercja licznika do liczby — obrona przed nie-liczbowym count z warstwy NER (XSS/NaN)
+  // koercja licznika do liczby — obrona przed nie-liczbowym count (XSS/NaN)
   const total = found.reduce((s, f) => s + (Number(f.count) || 0), 0);
   const byLabel = new Map<string, { count: number; cat: Cat; icon: string }>();
   for (const f of found) {
@@ -554,10 +518,7 @@ function renderFindings(found: PiiFinding[]): void {
     const clean = disabledGroups.size > 0
       ? '<span class="chip chip-hint">nic nie zamaskowano, część typów jest wyłączona w „Co maskować”</span>'
       : '<span class="chip chip-ok">nie wykryto danych osobowych</span>';
-    const hint = !CLERK_EDITION && !nerEnabledBox.checked
-      ? ' <span class="chip chip-hint">💡 rzadkie nazwiska złapie „Dokładniejsze wykrywanie nazwisk” poniżej</span>'
-      : '';
-    findingsChips.innerHTML = clean + hint;
+    findingsChips.innerHTML = clean;
     findingsStatus.textContent = disabledGroups.size > 0 ? 'Nic nie zamaskowano.' : 'Nie wykryto danych osobowych.';
     return;
   }
@@ -608,7 +569,6 @@ function renderResult(redacted: string, found: PiiFinding[]): void {
 
 function update(): void {
   const text = input.value;
-  nerSeq++; // unieważnij spóźnioną odpowiedź NER
   updateSrcMeta(text);
   if (!text.trim()) {
     output.classList.remove('plain');
@@ -629,7 +589,6 @@ function update(): void {
     pseudonyms: pseudonymsBox.checked,
   });
   renderResult(redacted, found);
-  scheduleNer(redacted, found);
 }
 
 // Debounce: przy szybkim pisaniu nie odpalaj pełnego pipeline'u (26 przebiegów + przerender)
@@ -640,121 +599,6 @@ input.addEventListener('input', () => {
   clearTimeout(updateTimer);
   updateTimer = setTimeout(update, 140);
 });
-
-/* ── NER (usługa lokalna / ONNX w przeglądarce) — fail-safe ── */
-
-let nerSeq = 0;
-let nerTimer: ReturnType<typeof setTimeout> | undefined;
-
-function nerConfig() {
-  return { url: nerUrlInput.value.trim(), timeoutMs: 5000 };
-}
-
-function nerSource(): 'http' | 'onnx' {
-  return nerSourceSel.value === 'onnx' ? 'onnx' : 'http';
-}
-
-function setNerStatus(ok: boolean | null): void {
-  const viaOnnx = nerSource() === 'onnx' ? ' (ONNX w przeglądarce)' : '';
-  if (ok === null) {
-    nerStatus.textContent = 'sprawdzam…';
-    nerStatus.className = 'sub ner-status';
-    nerPill.textContent = 'sprawdzam';
-    nerPill.className = 'pill-off';
-  } else if (ok) {
-    nerStatus.textContent = `aktywny ✓${viaOnnx}`;
-    nerStatus.className = 'sub ner-status ner-ok';
-    nerPill.textContent = 'aktywny';
-    nerPill.className = 'pill-off pill-on';
-  } else {
-    nerStatus.textContent = 'niedostępny, działa warstwa reguł i słowników';
-    nerStatus.className = 'sub ner-status ner-fail';
-    nerPill.textContent = 'niedostępny';
-    nerPill.className = 'pill-off';
-  }
-}
-
-function scheduleNer(baseRedacted: string, baseFound: PiiFinding[]): void {
-  if (!nerEnabledBox.checked) return;
-  if (nerSource() === 'http' && !nerUrlInput.value.trim()) return;
-  if (!imieEnabled()) return; // odznaczone imiona — NER nie ma czego dokładać
-  const seq = ++nerSeq;
-  clearTimeout(nerTimer);
-  nerStatus.textContent = 'analizuję…';
-  nerStatus.className = 'sub ner-status';
-  output.setAttribute('aria-busy', 'true');
-  nerTimer = setTimeout(async () => {
-    const ner =
-      nerSource() === 'onnx'
-        ? await browserNerRedact(baseRedacted, (msg) => {
-            if (seq === nerSeq) nerStatus.textContent = msg;
-          })
-        : await nerRedact(baseRedacted, nerConfig());
-    if (seq !== nerSeq) return;
-    output.removeAttribute('aria-busy');
-    if (!ner) {
-      setNerStatus(false);
-      return;
-    }
-    setNerStatus(true);
-    renderResult(ner.redacted, mergeFindings(baseFound, ner.found));
-    output.classList.remove('ner-updated');
-    void output.offsetWidth;
-    output.classList.add('ner-updated');
-  }, 400);
-}
-
-async function checkNer(): Promise<void> {
-  if (!nerEnabledBox.checked) {
-    nerStatus.textContent = 'wymaga jednorazowego uruchomienia usługi';
-    nerStatus.className = 'sub ner-status';
-    nerPill.textContent = 'wyłączony';
-    nerPill.className = 'pill-off';
-    return;
-  }
-  setNerStatus(null);
-  setNerStatus(nerSource() === 'onnx' ? await browserNerAvailable() : await nerHealthCheck(nerConfig()));
-}
-
-nerEnabledBox.addEventListener('change', () => {
-  nerDetails.hidden = !nerEnabledBox.checked;
-  localStorage.setItem('ner-enabled', nerEnabledBox.checked ? '1' : '');
-  checkNer();
-  update();
-});
-
-nerUrlInput.addEventListener('change', () => {
-  localStorage.setItem('ner-url', nerUrlInput.value.trim());
-  checkNer();
-  update();
-});
-
-// Adres usługi (Docker) ma sens tylko dla źródła „http" — dla przeglądarki go chowamy.
-function syncUrlRowVisibility(): void {
-  nerUrlInput.closest('.ner-row')?.toggleAttribute('hidden', nerSource() === 'onnx');
-}
-
-nerSourceSel.addEventListener('change', () => {
-  localStorage.setItem('ner-source', nerSourceSel.value);
-  syncUrlRowVisibility();
-  checkNer();
-  update();
-});
-
-// Źródło modelu: przywróć zapamiętany wybór, w przeciwnym razie zostaje domyślne
-// „w przeglądarce" (pierwsza opcja). Selektor jest zawsze widoczny — użytkownik
-// Dockera może przełączyć na „usługa w Dockerze" nawet bez paczki ONNX.
-const savedSource = localStorage.getItem('ner-source');
-if (savedSource === 'http' || savedSource === 'onnx') nerSourceSel.value = savedSource;
-syncUrlRowVisibility();
-
-const savedUrl = localStorage.getItem('ner-url');
-if (savedUrl) nerUrlInput.value = savedUrl;
-if (localStorage.getItem('ner-enabled')) {
-  nerEnabledBox.checked = true;
-  nerDetails.hidden = false;
-}
-checkNer();
 
 /* ── Akcje ── */
 
@@ -903,17 +747,6 @@ if (params.has('demo')) {
   input.value = EXAMPLE_TEXT;
 } else if (matchMedia('(pointer: fine)').matches) {
   input.focus();
-}
-
-// ?nertest=onnx — E2E ścieżki NER w przeglądarce
-if (params.get('nertest') === 'onnx') {
-  input.value =
-    'Wczoraj Bąkiewicz podpisał umowę z Szczepankowską. Zeznania Krzemienieckiej ' +
-    'potwierdził świadek Gzowski.';
-  nerEnabledBox.checked = true;
-  nerDetails.hidden = false;
-  nerSourceSel.value = 'onnx';
-  checkNer();
 }
 
 // ?pdftest — samodiagnostyka ścieżki PDF (fake worker w buildzie single-file)

@@ -574,37 +574,9 @@ mark.pii.pii-linked { box-shadow: 0 0 0 2px var(--acc-line); }
 /* „Rozróżniaj osoby" to tryb (nie typ danych) — zostaje pełną szerokością u góry, z linią przerywaną */
 .tg-wide { border-style: dashed; }
 
-/* ============ NER ============ */
-.ner-row {
-  display: flex; align-items: center; gap: 11px;
-  padding: 10px 12px 10px 9px;
-  background: var(--card-2); border: 1px solid var(--line); border-radius: var(--r-ctl);
-  cursor: pointer;
-}
-.ner-row + .ner-row, #ner-details .ner-row:first-child, .ner-note { margin-top: 10px; }
-.ner-row .tg-t { flex: 1; min-width: 0; }
-.ner-row b { display: block; font-size: 13px; font-weight: 600; }
-.ner-row .sub { font-size: 11.5px; color: var(--mut); display: block; }
-.ner-status.ner-ok { color: var(--ok); }
-.ner-status.ner-fail { color: var(--warn); }
-.pill-off {
-  flex: none; font-size: 11px; font-weight: 700; letter-spacing: .08em;
-  color: var(--mut); border: 1px solid var(--line-2); border-radius: 999px;
-  padding: 4px 10px; text-transform: uppercase; background: var(--well);
-}
-.pill-off.pill-on { color: var(--ok); border-color: rgba(79,192,141,.42); background: rgba(79,192,141,.08); }
-.ner-note {
-  font-size: 12.5px; color: var(--mut);
-  border-left: 3px solid var(--line-2); padding: 2px 0 2px 12px;
-}
-.ner-note code { color: var(--mut); }
-/* Edycja „urzędnik": ukryj warstwę AI/NER od pierwszego malowania (bez mignięcia). */
-html[data-hide-full] [data-full] { display: none !important; }
-/* Bez karty NER (edycja urzędnik) „Co maskować" rozciąga się na całą szerokość —
-   inaczej po prawej zostaje dziura po zniknięciu karty NER (g7 + g5). */
-html[data-hide-full] #co-maskowac { grid-column: 1 / -1; }
-.ner-lead { font-size: 13px; color: var(--mut); margin: 0 0 12px; line-height: 1.55; }
-.ner-lead strong { color: var(--text); }
+/* Bez karty AI „Co maskować" rozciąga się na całą szerokość (inaczej po prawej zostałaby
+   dziura po dawnej karcie NER). Warstwa AI żyje teraz w osobnym repo anonimizator-ai. */
+#co-maskowac { grid-column: 1 / -1; }
 .tag-opt {
   font-size: 10.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
   color: var(--mut); background: var(--well); border: 1px solid var(--line-2);

@@ -2,28 +2,27 @@
 
 Lokalny anonimizator polskich danych osobowych (PII). **Wszystko działa lokalnie**, tekst nigdy nie
 opuszcza komputera. Zasada nadrzędna: **precyzja > nadmaskowanie** (nadmaskowanie gorsze niż drobny
-wyciek) — patrz `docs/SOTA-ANALIZA.md`.
+wyciek) — patrz pamięć `anonimizacja-precyzja-nad-nadmaskowaniem`.
+
+## JEDEN produkt: samowystarczalny HTML (patrz pamięć `dwie-edycje-html-i-ai`)
+
+To repo produkuje **jeden plik `Anonimizator.html`** — `file://`, zero instalacji, WYŁĄCZNIE
+deterministyka (reguły + słowniki + sumy kontrolne). To jest fosa: przechodzi przez blokady
+firmowe/urzędowe (dokument, nie program). Warstwa AI (NER/LLM) mieszka w OSOBNYM repo-dodatku
+**[anonimizator-ai](https://github.com/karolpolikarp/anonimizator-ai)** — nie dokładać jej tutaj.
 
 ## Struktura (monorepo, npm workspaces)
 
 - `packages/core/` — pakiet npm `anonimizator`. **Jedyne źródło prawdy logiki**, ZERO zależności,
   działa w Node/Deno/Bun/przeglądarce. `src/index.ts` = silnik `redactPII()` (regexy + sumy
   kontrolne + kotwice kontekstowe). `src/surnames.ts` = słownik nazwisk (+ rozszerzenie z PESEL) i
-  morfologia. `src/ner-postprocess.ts` = wspólny post-processing wyjścia neuronowego NER.
-  `src/ner-client.ts` (usługa HTTP), `src/llm-client.ts` (Ollama) = opcjonalne warstwy AI (fail-safe).
+  morfologia. `src/ner-postprocess.ts` / `src/ner-client.ts` / `src/llm-client.ts` = eksporty
+  npm (`anonimizator/ner-postprocess`, `/ner`, `/llm`) — SZEW, w który wpina się dodatek AI;
+  zostają tu jako część biblioteki, single-HTML ich NIE importuje.
 - `apps/web/` — pakiet `anonimizator-web`. UI budowane Vite `vite-plugin-singlefile` do JEDNEGO
-  samowystarczalnego `index.html`. Flaga `VITE_EDITION=urzednik` produkuje edycję „czysty HTML"
-  (bez AI, `[data-full]` ukryte). `src/ner-browser.ts` = NER ONNX w przeglądarce (opcjonalny).
-- `services/ner/` — opcjonalna usługa Docker (Python, spaCy/HerBERT). `launcher/` — mini-serwer
-  HTTP dla warstwy AI (bo `file://` blokuje WASM). `scripts/build-onnx-pack/` — build paczki modelu.
+  samowystarczalnego `index.html`. Bez warstwy AI (wycięta w v0.45.2 — patrz CHANGELOG).
 - `scripts/benchmark/` — deterministyczny benchmark precision/recall/F1 (`dataset.mjs` + `run.mjs`).
-
-## Dwa produkty (patrz pamięć `dwie-edycje-html-i-ai`)
-
-1. **Single-HTML deterministyczny (fosa)** — jeden plik, `file://`, zero instalacji. Przechodzi przez
-   blokady firmowe/urzędowe (to dokument, nie program). WYŁĄCZNIE deterministyka. To edycja `urzednik`.
-2. **Pełna / AI** — z launcherem HTTP + modelem ONNX; dla maszyn bez blokad. Recall na rzadkich
-   nazwiskach. **NIE rozbijać na osobne repo** — separacja artefaktu jest już przy buildzie.
+  Warstwy NER w run.mjs degradują się łagodnie (health-check → skip), gdy brak usług/modelu.
 
 ## Komendy
 
@@ -33,15 +32,12 @@ npm run build -w anonimizator                     # rdzeń → dist (tsc)
 npm run test  -w anonimizator                     # testy rdzenia (vitest)
 npx tsc -p apps/web/tsconfig.json                 # typecheck web (jak CI)
 npm run test  -w anonimizator-web                 # testy web
-npm run build -w anonimizator-web                 # edycja pełna → dist/index.html
-VITE_EDITION=urzednik npm run build -w anonimizator-web   # edycja urząd (bez AI)
-node scripts/benchmark/run.mjs                    # benchmark (core; onnx jeśli lib+model)
+npm run build -w anonimizator-web                 # single-HTML → apps/web/dist/index.html
 node scripts/benchmark/run.mjs --check            # BRAMKA regresji rdzenia (używana w CI)
 ```
 
 CI (`.github/workflows/ci.yml`): build+test core → tsc web → test web → build web → bramka benchmarku.
-Release (`.github/workflows/release.yml`, tag `v*`): dwa artefakty — `Anonimizator.html` (urząd) i
-`Anonimizator-AI.zip` (pełna). Model ONNX to osobny release `models-fastpdn-onnx-v1`.
+Release (`.github/workflows/release.yml`, tag `v*`): jeden artefakt — `Anonimizator.html` + `JAK-UZYC.txt`.
 
 ## Konwencje detekcji (index.ts)
 
