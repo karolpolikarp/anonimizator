@@ -417,16 +417,16 @@ select.field { font-family: var(--sans); line-height: normal; cursor: pointer; }
 .dot-place   { background: var(--place); }
 
 /* ============ DEMO „Jak to działa" ============ */
-/* Dokument wchodzi z lewej, chowa się za parawan (znak marki), wychodzi zanonimizowany
-   w prawo. Współrzędne dobrane do pełnej szerokości karty; na wąskich ekranach kadr się
-   przycina (overflow: hidden), a ruchome karty chowamy w media-query. */
-.demo { position: relative; height: 360px; overflow: hidden; }
+/* Dokument wchodzi z lewej, chowa się za parawan (wyśrodkowany znak marki) i wychodzi
+   zanonimizowany w prawo. WSZYSTKO liczone względem środka karty (left:50% + translateX),
+   więc animacja wygląda tak samo niezależnie od szerokości. Na wąsko chowamy ruchome karty. */
+.demo { position: relative; height: 340px; overflow: hidden; }
 .demo-cap { position: absolute; left: 22px; top: 16px; z-index: 5; }
 .demo-kick { font-family: var(--mono); font-size: 10px; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; color: var(--gold); }
 .demo-cap h2 { font-size: 16px; font-weight: 800; color: var(--acc); margin-top: 2px; max-width: 380px; }
-.demo-doc { position: absolute; top: 130px; width: 180px; z-index: 1; }
-.demo-in  { left: 60px;  animation: demoIn 7s ease-in-out infinite; }
-.demo-out { left: 720px; animation: demoOut 7s ease-in-out infinite; }
+.demo-doc { position: absolute; top: 132px; left: 50%; width: 176px; margin-left: -88px; z-index: 1; will-change: transform, opacity; }
+.demo-in  { animation: demoIn 7s ease-in-out infinite; }
+.demo-out { animation: demoOut 7s ease-in-out infinite; }
 .demo-card {
   background: #fff; border: 2px solid var(--acc); border-radius: 10px;
   padding: 12px 14px; box-shadow: 0 10px 22px rgba(11,61,46,.12);
@@ -441,9 +441,9 @@ select.field { font-family: var(--sans); line-height: normal; cursor: pointer; }
 .demo-out .demo-mono { color: var(--gold); }
 .demo-out .demo-head { display: flex; justify-content: space-between; }
 .demo-anon { font-family: var(--mono); font-size: 9px; letter-spacing: .1em; text-transform: uppercase; color: var(--gold); font-weight: 700; }
-.demo-mark { position: absolute; left: 460px; top: 108px; width: 260px; height: 210px; z-index: 3; }
+.demo-mark { position: absolute; left: 50%; top: 100px; width: 252px; height: 206px; margin-left: -126px; z-index: 3; }
 .demo-mark .gi { display: block; width: 100%; height: 100%; }
-.demo-badge-wrap { position: absolute; left: 460px; width: 260px; top: 66px; display: flex; justify-content: center; z-index: 4; pointer-events: none; }
+.demo-badge-wrap { position: absolute; left: 50%; top: 58px; width: 260px; margin-left: -130px; display: flex; justify-content: center; z-index: 4; pointer-events: none; }
 .demo-badge {
   animation: demoBadge 7s ease-in-out infinite;
   display: inline-flex; align-items: center; gap: 7px;
@@ -454,18 +454,21 @@ select.field { font-family: var(--sans); line-height: normal; cursor: pointer; }
 .demo-foot { position: absolute; bottom: 14px; font-family: var(--mono); font-size: 10.5px; letter-spacing: .14em; text-transform: uppercase; }
 .demo-foot-in { left: 60px; color: var(--mut); }
 .demo-foot-out { right: 60px; color: var(--gold); font-weight: 700; }
+/* wejście: od lewej do środka (za parawan), tam zanika */
 @keyframes demoIn {
-  0% { transform: translateX(0); opacity: 0; } 8% { opacity: 1; }
-  36% { transform: translateX(330px); opacity: 1; }
-  44% { transform: translateX(430px); opacity: 0; }
-  100% { transform: translateX(430px); opacity: 0; }
+  0%   { transform: translateX(-360px); opacity: 0; }
+  9%   { transform: translateX(-360px); opacity: 1; }
+  40%  { transform: translateX(-58px);  opacity: 1; }
+  47%  { transform: translateX(-8px);   opacity: 0; }
+  100% { transform: translateX(-8px);   opacity: 0; }
 }
+/* wyjście: wyłania się zza parawana (środek) i odjeżdża w prawo */
 @keyframes demoOut {
-  0%, 62% { transform: translateX(0); opacity: 0; }
-  70% { transform: translateX(70px); opacity: 1; }
-  93% { transform: translateX(170px); opacity: 1; }
-  99% { transform: translateX(195px); opacity: 0; }
-  100% { transform: translateX(195px); opacity: 0; }
+  0%, 53% { transform: translateX(8px);   opacity: 0; }
+  61%     { transform: translateX(58px);  opacity: 1; }
+  88%     { transform: translateX(300px); opacity: 1; }
+  96%     { transform: translateX(348px); opacity: 0; }
+  100%    { transform: translateX(348px); opacity: 0; }
 }
 @keyframes demoBadge {
   0%, 42% { opacity: 0; transform: scale(.9); }
@@ -473,32 +476,6 @@ select.field { font-family: var(--sans); line-height: normal; cursor: pointer; }
   62% { opacity: 1; transform: scale(1); }
   72%, 100% { opacity: 0; transform: scale(1); }
 }
-
-/* ============ PANEL „Tryb urzędowy · bez AI" ============ */
-.tryb { background: var(--acc); color: #f4f6f1; box-shadow: 0 4px 16px rgba(11,61,46,.14); }
-.tryb .card-h { border-bottom: 1px solid rgba(244,246,241,.14); }
-.tryb .card-t h2 { color: #f4f6f1; }
-.tryb .card-t p { color: #a9c6b4; }
-.tryb-tag {
-  font-family: var(--mono); font-size: 10px; letter-spacing: .14em; text-transform: uppercase;
-  color: #a9c6b4; font-weight: 400; margin-left: 6px;
-}
-.tryb-badge {
-  margin-left: auto; flex: none;
-  font-family: var(--mono); font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase;
-  color: #f4f6f1; border: 1px solid rgba(244,246,241,.4); border-radius: 999px;
-  padding: 4px 10px; font-weight: 700;
-}
-.tryb-list { padding: 16px 18px; flex: 1; display: flex; flex-direction: column; gap: 10px; }
-.tryb-item {
-  display: flex; align-items: center; gap: 10px;
-  background: rgba(244,246,241,.07); border: 1px solid rgba(244,246,241,.16);
-  border-radius: 12px; padding: 10px 14px;
-  font-size: 13px; color: #dce7df;
-}
-.tryb-item .gi { width: 20px; height: 20px; color: #a9c6b4; flex: none; }
-.tryb-item b { color: #f4f6f1; }
-.tryb .card-f { border-top: 1px solid rgba(244,246,241,.14); color: #a9c6b4; }
 
 /* ============ EDYTORY ============ */
 .toolbar {
@@ -687,29 +664,24 @@ mark.pii.pii-linked { box-shadow: 0 0 0 2px var(--acc-line); }
 .stat-total b { color: var(--text); font-size: 15px; }
 
 /* ============ CO MASKOWAĆ ============ */
-/* Układ pogrupowany po KATEGORIACH (jak legenda): pionowy stos sekcji z nagłówkiem, w każdej
-   przełączniki wypełniają swój rząd. Grupowanie daje porządek, którego płaska siatka 13 pozycji
-   (liczba pierwsza — nie dzieli się równo) mieć nie mogła. */
-.toggles { display: flex; flex-direction: column; gap: 15px; }
+/* JEDNA płaska siatka na całą szerokość: kafelki wszystkich typów mają równą szerokość i pakują
+   się jednolicie (auto-fill). Nagłówki kategorii oraz „Rozróżniaj osoby" rozpinają się na cały
+   rząd (grid-column: 1/-1) i wymuszają nowy pas — czytelne pasma bez pustych, poszarpanych rzędów. */
+.toggles {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 10px;
+  align-items: stretch; /* równa wysokość kafelków w rzędzie (także tych z 2-wierszową etykietą) */
+}
 .mask-toggles-host { display: contents; }
-.tg-cat { display: flex; flex-direction: column; gap: 9px; }
 .tg-cat-h {
+  grid-column: 1 / -1;
   display: flex; align-items: center; gap: 8px;
+  margin-top: 8px;
   font-size: 11px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase;
   color: var(--mut);
 }
 .tg-cat-h .dot { width: 9px; height: 9px; }
-/* Jednolita siatka: WSZYSTKIE kafelki tej samej szerokości (auto-fill, nie -fit → pojedynczy typ
-   w kategorii, np. IBAN, zostaje normalnym kafelkiem, a nie rozciągniętą belką na całą szerokość). */
-.tg-cat-body { display: grid; grid-template-columns: repeat(auto-fill, minmax(205px, 1fr)); gap: 10px; }
-/* Wspólny pas małych kategorii: sekcje stoją obok siebie i wypełniają szerokość, zamiast
-   czterech osobnych, w większości pustych rzędów. Każda sekcja rośnie proporcjonalnie do
-   liczby swoich kafelków, więc „Adres i czas" (4) dostaje więcej miejsca niż „Finanse" (1). */
-.tg-cat-row { display: flex; flex-wrap: wrap; gap: 15px 22px; align-items: flex-start; }
-.tg-cat-row .tg-cat { flex: 1 1 200px; min-width: 0; }
-/* Jedna kolumna kafelków na kategorię, o szerokości zbliżonej do „Identyfikatorów" (nie
-   rozdmuchana na całą kolumnę flex) — spójny wygląd kafelków w całym panelu. */
-.tg-cat-row .tg-cat-body { grid-template-columns: minmax(0, 230px); }
 .tg {
   display: flex; align-items: center; gap: 11px;
   padding: 9px 12px 9px 9px;
@@ -720,11 +692,9 @@ mark.pii.pii-linked { box-shadow: 0 0 0 2px var(--acc-line); }
 .tg .tg-t { min-width: 0; flex: 1; }
 .tg b { display: block; font-size: 13px; font-weight: 600; }
 .tg code { display: block; font-size: 11px; color: var(--mut); white-space: nowrap; } /* token nie łamie się */
-/* „Rozróżniaj osoby" to tryb (nie typ danych) — zostaje pełną szerokością u góry, z linią przerywaną */
-.tg-wide { border-style: dashed; }
+/* „Rozróżniaj osoby" to tryb (nie typ danych) — pełna szerokość u góry, z linią przerywaną */
+.tg-wide { grid-column: 1 / -1; border-style: dashed; }
 
-/* „Co maskować" (7 kolumn) sąsiaduje z panelem „Tryb urzędowy · bez AI" (5 kolumn) —
-   panel zamyka rząd bez pustki po prawej i podkreśla deterministykę (zero warstwy AI). */
 .tag-opt {
   font-size: 10.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
   color: var(--mut); background: var(--well); border: 1px solid var(--line-2);
@@ -809,11 +779,10 @@ table .pii { cursor: default; }
   .g4, .g5, .g6, .g7 { grid-column: span 12; }
   .privacy { max-width: none; }
   .table-wrap { overflow-x: auto; }
-  /* Demo: współrzędne są dla szerokiej karty — na wąsko chowamy ruchome karty i dolne
-     etykiety, a znak marki centrujemy; zostaje czytelny podpis + puls „anonimizacja…". */
-  .demo { height: 280px; }
+  /* Demo: znak jest już wyśrodkowany — na wąsko chowamy tylko ruchome karty i dolne
+     etykiety; zostaje czytelny znak + podpis + puls „anonimizacja…". */
+  .demo { height: 260px; }
   .demo-in, .demo-out, .demo-foot { display: none; }
-  .demo-mark, .demo-badge-wrap { left: 50%; transform: translateX(-50%); }
   /* iOS auto-zoomuje pola <16px — także w zakresie tabletowym */
   textarea.editor-ta, .editor { font-size: 16px; }
   /* legenda pod nagłówkiem, w równych kolumnach zamiast postrzępionego zawijania */

@@ -1,5 +1,23 @@
 # Changelog
 
+## v0.46.1 — 2026-07-13
+
+**Dopracowanie UI po v0.46.0 — usunięty panel, czytelniejsze „Co maskować", płynniejsze demo.**
+
+- **Usunięto panel „Tryb urzędowy · bez AI"** (za dużo pustej przestrzeni, treść zbędna —
+  deterministykę komunikuje już badge „bez AI · tryb urzędowy" w hero). „Co maskować" wraca na
+  całą szerokość.
+- **„Co maskować" — nowy układ**: jedna płaska siatka na całą szerokość z nagłówkami kategorii
+  rozpiętymi na cały rząd (grid-column 1/-1). Kafelki wszystkich typów mają równą szerokość i
+  wysokość w rzędzie — czytelne pasma zamiast poszarpanych, w większości pustych rzędów. Wszystkie
+  przełączniki obecne (Identyfikatory ×14, Kontakt ×2, Finanse ×1, Adres i czas ×4, Osoby ×1).
+- **Animacja „Jak to działa"** przepisana na współrzędne WZGLĘDEM ŚRODKA (left:50% + translateX):
+  karta wejścia płynnie wchodzi z lewej za wyśrodkowany parawan, karta wyjścia wyłania się zza
+  niego i odjeżdża w prawo — spójnie niezależnie od szerokości karty (koniec „wiszenia" w sztywnym
+  punkcie).
+
+Aplikacja web 0.46.0 → 0.46.1. Rdzeń bez zmian.
+
 ## v0.46.0 — 2026-07-13
 
 **Nowa marka „Parawan" i przeprojektowany interfejs (wg makiety z Claude Design).**

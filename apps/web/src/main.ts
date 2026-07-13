@@ -173,9 +173,8 @@ const CAT_LABELS: Record<Cat, string> = {
 };
 const CAT_ORDER: Cat[] = ['ident', 'contact', 'fin', 'place', 'person'];
 
-function buildCatSection(cat: Cat, groups: MaskGroup[]): HTMLElement {
-  const section = document.createElement('section');
-  section.className = 'tg-cat';
+/** Nagłówek kategorii — rozpina się na cały rząd siatki (grid-column: 1/-1). */
+function buildCatHeader(cat: Cat): HTMLElement {
   const h = document.createElement('div');
   h.className = 'tg-cat-h';
   const dot = document.createElement('span');
@@ -183,26 +182,18 @@ function buildCatSection(cat: Cat, groups: MaskGroup[]): HTMLElement {
   const hl = document.createElement('span');
   hl.textContent = CAT_LABELS[cat];
   h.append(dot, hl);
-  const body = document.createElement('div');
-  body.className = 'tg-cat-body';
-  for (const g of groups) body.append(buildToggle(g));
-  section.append(h, body);
-  return section;
+  return h;
 }
 
-// „Identyfikatory" (najliczniejsza grupa) dostają pełną szerokość — same wypełniają rzędy.
-// Pozostałe, małe kategorie (Kontakt/Finanse/Adres/Osoby) pakujemy w jeden wspólny pas obok
-// siebie, zamiast czterech osobnych, w większości pustych rzędów — lepsze wykorzystanie miejsca.
-const restRow = document.createElement('div');
-restRow.className = 'tg-cat-row';
+// Jedna PŁASKA siatka na całą szerokość: dla każdej kategorii wstawiamy nagłówek (pełny rząd),
+// a pod nim jej kafelki, które pakują się jednolicie. Host ma display:contents, więc nagłówki
+// i kafelki stają się bezpośrednimi elementami siatki `.toggles`.
 for (const cat of CAT_ORDER) {
   const groups = MASK_GROUPS.filter((g) => g.cat === cat);
   if (!groups.length) continue;
-  const section = buildCatSection(cat, groups);
-  if (cat === 'ident') maskTogglesEl.append(section);
-  else restRow.append(section);
+  maskTogglesEl.append(buildCatHeader(cat));
+  for (const g of groups) maskTogglesEl.append(buildToggle(g));
 }
-if (restRow.childElementCount) maskTogglesEl.append(restRow);
 
 /** Typy aktywne wg przełączników; undefined = wszystkie. */
 function activeTypes(): PiiType[] | undefined {
