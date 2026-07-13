@@ -12,8 +12,10 @@ export default defineConfig({
     __APP_VERSION__: JSON.stringify(process.env.npm_package_version ?? 'dev'),
   },
   build: {
-    // ikony (~8 kB/szt.) MUSZĄ być inline — osobne pliki assetów złamałyby file://
-    assetsInlineLimit: 32768,
+    // WSZYSTKIE assety MUSZĄ być inline (data:) — osobny plik assetu złamałby file://
+    // (Chromium blokuje pobocze przy origin null). Limit obejmuje też fonty marki
+    // (Archivo ~35 kB/podzbiór, IBM Plex Mono ~15 kB/waga) — stąd zapas 256 kB.
+    assetsInlineLimit: 262144,
   },
   resolve: {
     alias: {

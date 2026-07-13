@@ -4,12 +4,12 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="color-scheme" content="light" />
-    <meta name="theme-color" content="#e6ebf3" />
-    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%9B%A1%EF%B8%8F%3C/text%3E%3C/svg%3E" />
-    <title>Anonimizator: usuń dane osobowe z tekstu, lokalnie w przeglądarce</title>
+    <meta name="theme-color" content="#efede6" />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230B3D2E'/%3E%3Cpath d='M6 21 L12 12 L16 18 L20 12 L26 21' fill='none' stroke='%23F4F6F1' stroke-width='2.4' stroke-linejoin='round' stroke-linecap='round'/%3E%3Cpath d='M6 21 V24.5 M12 12 V24.5 M16 18 V24.5 M20 12 V24.5 M26 21 V24.5' stroke='%23F4F6F1' stroke-width='2.4' stroke-linecap='round'/%3E%3C/svg%3E" />
+    <title>Parawan: usuń dane osobowe z tekstu, lokalnie w przeglądarce</title>
     <meta
       name="description"
-      content="Lokalny anonimizator polskich danych osobowych: PESEL, NIP, REGON, numer konta, dowód, e-mail, telefon, adres, imię i nazwisko. Tekst nie opuszcza Twojej przeglądarki."
+      content="Parawan — lokalny anonimizator polskich danych osobowych: PESEL, NIP, REGON, numer konta, dowód, e-mail, telefon, adres, imię i nazwisko. Tekst nie opuszcza Twojej przeglądarki. 100% offline, bez AI (tryb urzędowy)."
     />
   </head>
   <body>
@@ -18,29 +18,32 @@
       <!-- ══════════ HERO ══════════ -->
       <header class="card hero g12">
         <div class="card-h">
-          <span class="ic ic-xl" data-tip="Anonimizator, wszystko dzieje się lokalnie, w Twojej przeglądarce" tabindex="0">
-            <i class="gi" data-i="anonimizuj"></i>
+          <span class="brand-mark" data-tip="Parawan — wszystko dzieje się lokalnie, w Twojej przeglądarce" tabindex="0">
+            <i class="gi" data-i="parawan-mark"></i>
           </span>
           <div class="card-t">
-            <h1>Anonimizator</h1>
-            <p id="hero-sub">Lokalny anonimizator polskich danych osobowych</p>
+            <div class="brand-row">
+              <h1>Parawan</h1>
+              <span class="ver-chip">wersja <span id="app-version-top">—</span></span>
+            </div>
+            <p id="hero-sub">Dane za parawanem — lokalny anonimizator polskich danych osobowych</p>
             <div class="hero-meta">
-              <a class="ver-link" id="ver-link" href="https://github.com/karolpolikarp/anonimizator/releases/latest" target="_blank" rel="noopener noreferrer" data-tip="Otwiera stronę wydań, porównaj numer, by sprawdzić, czy masz najnowszą wersję">wersja <span id="app-version-top">—</span> · sprawdź najnowszą ↗</a>
+              <a class="ver-link" id="ver-link" href="https://github.com/karolpolikarp/anonimizator/releases/latest" target="_blank" rel="noopener noreferrer" data-tip="Otwiera stronę wydań, porównaj numer, by sprawdzić, czy masz najnowszą wersję">sprawdź najnowszą ↗</a>
               <a class="ver-link" href="https://karolwilczynski.com" target="_blank" rel="noopener noreferrer" data-tip="Strona autora — Karol Wilczyński">autor · karolwilczynski.com ↗</a>
             </div>
           </div>
           <span class="card-sp"></span>
           <ul class="badges" aria-label="Cechy">
-            <li class="badge" data-tip="Działa bez internetu, możesz rozłączyć sieć i sprawdzić" tabindex="0"><i class="gi" data-i="onoff"></i>100% Offline</li>
-            <li class="badge" data-tip="Tekst nie opuszcza przeglądarki, zero wysyłania na serwery" tabindex="0"><i class="gi" data-i="haslo"></i>Bezpieczne</li>
-            <li class="badge" data-tip="Kod otwarty na licencji Apache 2.0, możesz go samodzielnie zweryfikować" tabindex="0"><i class="gi" data-i="regula"></i>Open Source · Apache 2.0</li>
-            <li class="badge" id="badge-ai" data-tip="Warstwa reguł, słowników i sum kontrolnych, w całości offline" tabindex="0"><i class="gi" data-i="regula"></i><span id="badge-ai-txt">Reguły + sumy kontrolne</span></li>
+            <li class="badge" data-tip="Działa bez internetu, możesz rozłączyć sieć i sprawdzić" tabindex="0">100% offline</li>
+            <li class="badge" data-tip="Tekst nie opuszcza przeglądarki, zero wysyłania na serwery" tabindex="0">bezpieczne</li>
+            <li class="badge" data-tip="Kod otwarty na licencji Apache 2.0, możesz go samodzielnie zweryfikować" tabindex="0">open source</li>
+            <li class="badge badge-solid" data-tip="Wyłącznie reguły, słowniki i sumy kontrolne — zero modeli AI, wyniki przewidywalne" tabindex="0">bez AI · tryb urzędowy</li>
           </ul>
         </div>
         <div class="card-b hero-b">
-          <p class="hero-lead">Usuń dane osobowe z&nbsp;tekstu, <strong>zanim wkleisz go do czatu AI lub asystenta.</strong></p>
+          <p class="hero-lead">Usuń dane osobowe z&nbsp;tekstu, <strong>zanim udostępnisz go poza urząd.</strong></p>
           <div class="privacy" data-tip="Cała analiza odbywa się w Twojej przeglądarce, możesz rozłączyć internet i sprawdzić" tabindex="0">
-            <i class="gi" data-i="haslo"></i>
+            <i class="gi" data-i="maskowanie"></i>
             <span>Twój tekst nie opuszcza przeglądarki — nic nie trafia na żaden serwer.</span>
           </div>
         </div>
@@ -48,35 +51,72 @@
 
       <!-- ══════════ KROKI 1–4 ══════════ -->
       <section class="card step g3" aria-label="Krok 1">
-        <div class="card-h">
-          <span class="ic" data-tip="Obsługiwane formaty: TXT, MD, CSV, LOG, DOCX, PDF" tabindex="0"><i class="gi" data-i="plik-txt"></i></span>
-          <div class="card-t"><span class="kick">Krok 1</span><h2>Wklej tekst</h2></div>
+        <div class="step-h">
+          <span class="ic ic-s" data-tip="Obsługiwane formaty: TXT, MD, CSV, LOG, DOCX, PDF" tabindex="0"><i class="gi" data-i="plik-txt"></i></span>
+          <span class="kick">Krok 1</span>
         </div>
-        <div class="card-b"><p>lub upuść plik (TXT, DOCX, PDF) w dowolnym miejscu strony</p></div>
+        <h2 class="step-t">Wklej tekst</h2>
+        <p class="step-d">lub upuść plik (TXT, DOCX, PDF) w dowolnym miejscu strony</p>
       </section>
 
       <section class="card step g3" aria-label="Krok 2">
-        <div class="card-h">
-          <span class="ic" data-tip="Analiza działa na bieżąco, podczas pisania" tabindex="0"><i class="gi" data-i="sprawdz"></i></span>
-          <div class="card-t"><span class="kick">Krok 2</span><h2>Analiza</h2></div>
+        <div class="step-h">
+          <span class="ic ic-s" data-tip="Analiza działa na bieżąco, podczas pisania" tabindex="0"><i class="gi" data-i="sprawdz"></i></span>
+          <span class="kick">Krok 2</span>
         </div>
-        <div class="card-b"><p id="step2-sub">reguły, słowniki i sumy kontrolne</p></div>
+        <h2 class="step-t">Analiza</h2>
+        <p class="step-d" id="step2-sub">reguły, słowniki i sumy kontrolne — bez AI</p>
       </section>
 
       <section class="card step g3" aria-label="Krok 3">
-        <div class="card-h">
-          <span class="ic" data-tip="Każda kategoria danych ma swój kolor znacznika" tabindex="0"><i class="gi" data-i="maskowanie"></i></span>
-          <div class="card-t"><span class="kick">Krok 3</span><h2>Maskowanie</h2></div>
+        <div class="step-h">
+          <span class="ic ic-s" data-tip="Każda kategoria danych ma swój kolor znacznika" tabindex="0"><i class="gi" data-i="maskowanie"></i></span>
+          <span class="kick">Krok 3</span>
         </div>
-        <div class="card-b"><p>kolorowe znaczniki zamiast danych osobowych</p></div>
+        <h2 class="step-t">Maskowanie</h2>
+        <p class="step-d">kolorowe znaczniki zamiast danych osobowych</p>
       </section>
 
       <section class="card step g3" aria-label="Krok 4">
-        <div class="card-h">
-          <span class="ic" data-tip="Skrót Ctrl+Enter kopiuje wynik do schowka" tabindex="0"><i class="gi" data-i="walidacja"></i></span>
-          <div class="card-t"><span class="kick">Krok 4</span><h2>Gotowe</h2></div>
+        <div class="step-h">
+          <span class="ic ic-s" data-tip="Skrót Ctrl+Enter kopiuje wynik do schowka" tabindex="0"><i class="gi" data-i="walidacja"></i></span>
+          <span class="kick">Krok 4</span>
         </div>
-        <div class="card-b"><p>skopiuj bezpieczny tekst lub pobierz plik</p></div>
+        <h2 class="step-t">Gotowe</h2>
+        <p class="step-d">skopiuj bezpieczny tekst lub pobierz plik</p>
+      </section>
+
+      <!-- ══════════ DEMO: JAK TO DZIAŁA ══════════ -->
+      <section class="card demo g12" aria-label="Jak to działa: dokument przechodzi za parawan i wychodzi zanonimizowany">
+        <div class="demo-cap">
+          <div class="demo-kick">Jak to działa</div>
+          <h2>Dokument przechodzi za parawan — wychodzi zanonimizowany</h2>
+        </div>
+        <div class="demo-doc demo-in" aria-hidden="true">
+          <div class="demo-card">
+            <div class="demo-tag">Pismo · wejście</div>
+            <div class="demo-name">Jan Kowalski</div>
+            <div class="demo-mono">PESEL 84092512345</div>
+            <div class="demo-lines"><i style="width:100%"></i><i style="width:78%"></i></div>
+          </div>
+        </div>
+        <div class="demo-doc demo-out" aria-hidden="true">
+          <div class="demo-card">
+            <div class="demo-head"><span class="demo-tag">Pismo · wyjście</span><span class="demo-anon">anonim</span></div>
+            <div class="demo-name">[OSOBA-A]</div>
+            <div class="demo-mono">PESEL [PESEL]</div>
+            <div class="demo-lines"><i style="width:100%"></i><i style="width:78%"></i></div>
+          </div>
+        </div>
+        <div class="demo-mark" aria-hidden="true"><i class="gi" data-i="parawan-mark"></i></div>
+        <div class="demo-badge-wrap" aria-hidden="true">
+          <div class="demo-badge">
+            <svg viewBox="0 0 32 32" width="15" height="15" aria-hidden="true"><path d="M16 3 L27 8 V15 C27 23 22 27 16 29 C10 27 5 23 5 15 V8 Z" fill="none" stroke="#F4F6F1" stroke-width="2.6" stroke-linejoin="round"></path><path d="M11 16 l3.5 3.5 L21 12" fill="none" stroke="#F4F6F1" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+            <span>anonimizacja…</span>
+          </div>
+        </div>
+        <div class="demo-foot demo-foot-in" aria-hidden="true">Wejście · dane jawne</div>
+        <div class="demo-foot demo-foot-out" aria-hidden="true">Wyjście · anonim</div>
       </section>
 
       <!-- ══════════ LEGENDA KATEGORII ══════════ -->
@@ -208,6 +248,24 @@
           <span>Odznaczone typy <strong>pozostaną widoczne</strong> w wyniku, zaznaczaj świadomie.</span>
         </div>
       </details>
+
+      <!-- ══════════ TRYB URZĘDOWY · BEZ AI ══════════ -->
+      <section class="card tryb g5" aria-label="Tryb urzędowy — bez AI">
+        <div class="card-h">
+          <div class="card-t">
+            <h2>Tryb urzędowy <span class="tryb-tag">bez AI</span></h2>
+            <p>deterministyczne reguły — przewidywalne wyniki</p>
+          </div>
+          <span class="card-sp"></span>
+          <span class="tryb-badge">aktywny</span>
+        </div>
+        <div class="tryb-list">
+          <div class="tryb-item"><i class="gi" data-i="walidacja"></i><span><b>Bez modeli AI</b> — to samo wejście zawsze daje ten sam wynik</span></div>
+          <div class="tryb-item"><i class="gi" data-i="walidacja"></i><span><b>Walidacja sum kontrolnych</b> — PESEL, NIP, REGON, nr konta</span></div>
+          <div class="tryb-item"><i class="gi" data-i="walidacja"></i><span><b>100% offline</b> — działa w przeglądarce, bez internetu</span></div>
+        </div>
+        <div class="card-f">Wersja dla administracji — zgodna z zasadą minimalizacji danych (RODO).</div>
+      </section>
 
       <!-- ══════════ CO WYKRYWA ══════════ -->
       <details class="card g12" id="co-wykrywa">

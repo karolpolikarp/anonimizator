@@ -1,5 +1,32 @@
 # Changelog
 
+## v0.46.0 — 2026-07-13
+
+**Nowa marka „Parawan" i przeprojektowany interfejs (wg makiety z Claude Design).**
+
+Rebranding głównego produktu: „Anonimizator" → **Parawan** („Dane za parawanem"). Nowa
+tożsamość wizualna z makiety `Parawan - makieta aplikacji.dc.html` — **bez zmian w logice
+detekcji** (rdzeń nietknięty, bramka benchmarku bez regresji: recall 94% / precyzja 99,6%).
+
+- **Marka i paleta:** głęboka leśna zieleń `#0B3D2E` + krem `#EFEDE6` + bursztyn `#B9791F`
+  (akcja główna „Kopiuj"). Znak marki **ParawanMark** — parawan złożony w harmonijkę, widok
+  z góry (inline SVG w `icons.ts`). Nowa favicona i kolor motywu.
+- **Typografia:** Archivo (nagłówki 800/900) + IBM Plex Mono (etykiety/wersaliki/mono).
+  Fonty **wbudowane lokalnie** (woff2 latin + latin-ext, z polskimi znakami) i wtapiane do
+  jednego pliku HTML jako `data:` — ZERO zależności zewnętrznych, `file://` bez internetu
+  (fosa nienaruszona). Archivo jako font zmienny (zakres wag 100–900). Atrybucja OFL:
+  `apps/web/src/fonts/LICENSE-FONTS.md`.
+- **Nowe sekcje:** animacja „Jak to działa" (dokument znika za parawanem, wychodzi
+  zanonimizowany) oraz panel **„Tryb urzędowy · bez AI"** (podkreśla deterministykę — zero
+  modeli AI, walidacja sum kontrolnych, 100% offline). „Co maskować" wraca do 7 kolumn obok
+  panelu (zamiast pustki po prawej).
+- **Bez zmian:** cała mechanika (maskowanie na bieżąco, przeglądanie znaczników, Porównanie,
+  wczytywanie DOCX/PDF, „Co maskować", tabela „Co wykrywa"). Kolory kategorii PII te same
+  (osoby lekko przyciemnione do `#5B3FA8`).
+
+Aplikacja web 0.45.2 → 0.46.0. Rdzeń `anonimizator` bez zmian (0.29.1). Nazwa artefaktu
+release (`Anonimizator.html`) i pakietu npm (`anonimizator`) pozostają — repozytorium bez zmian.
+
 ## v0.45.2 — 2026-07-13
 
 **Warstwa AI wydzielona do osobnego repozytorium — główny produkt to jeden plik HTML.**

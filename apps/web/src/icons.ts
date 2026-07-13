@@ -100,7 +100,36 @@ export const ICONS: Record<string, string> = {
     '<rect x="6" y="6" width="12" height="12" rx="2"/><rect x="9.5" y="9.5" width="5" height="5" rx="1"/>' +
       '<path d="M9 3v3M15 3v3M9 18v3M15 18v3M3 9h3M3 15h3M18 9h3M18 15h3"/>',
   ),
+
+  // Znak marki „Parawan" (dwutonowy, stałe barwy) — patrz parawanMark() niżej.
+  'parawan-mark': parawanMark(),
 };
+
+/**
+ * Znak marki „Parawan" — parawan złożony w harmonijkę, widok Z GÓRY (wariant „accordion").
+ * Dwutonowy: panele tylne w kolorze głównym marki, panele przednie rozjaśnione (światło na
+ * złożeniach), na wierzchu słupki przy każdym zgięciu. To ZNAK MARKI o stałych barwach —
+ * świadomie NIE dziedziczy `currentColor`. Własny viewBox skaluje się do kontenera `.gi`.
+ * Współrzędne wyliczone z generatora makiety (nPanels=4, x0=30…x1=290, drop=158, opaque).
+ */
+export function parawanMark(primary = '#0B3D2E', light = '#859E97'): string {
+  const pole = (x: number, y1: number): string =>
+    `<line x1="${x}" y1="${y1}" x2="${x}" y2="${y1 + 176}" stroke="${primary}" stroke-width="14" stroke-linecap="round"/>`;
+  return (
+    '<svg viewBox="14 48 292 235" width="100%" height="100%" preserveAspectRatio="xMidYMid meet" ' +
+    'aria-hidden="true" style="display:block;overflow:visible">' +
+    // panele od lewej: tył (główny) / przód (jasny) / tył / przód
+    `<polygon points="30,74 95,112 95,270 30,232" fill="${primary}"/>` +
+    `<polygon points="95,112 160,74 160,232 95,270" fill="${light}"/>` +
+    `<polygon points="160,74 225,112 225,270 160,232" fill="${primary}"/>` +
+    `<polygon points="225,112 290,74 290,232 225,270" fill="${light}"/>` +
+    // górny szew — zygzak złożeń
+    `<path d="M30 74 L95 112 L160 74 L225 112 L290 74" fill="none" stroke="${primary}" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/>` +
+    // słupki przy każdym złożeniu (na wierzchu)
+    pole(30, 56) + pole(95, 94) + pole(160, 56) + pole(225, 94) + pole(290, 56) +
+    '</svg>'
+  );
+}
 
 /** Zwraca inline SVG dla nazwy (pusty string, gdy brak — bezpieczne dla DOM). */
 export function icon(name: string): string {
