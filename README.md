@@ -74,7 +74,7 @@ wysłać treść dalej (do czatu z AI, e-maila, zgłoszenia), nie ujawniając, k
 **Jak rozpoznaje dane (bez „sztucznej inteligencji").** To **deterministyczne reguły**: te same
 dane zawsze dają ten sam wynik, nic nie „zgaduje" modelem:
 
-- 🟤 **PESEL, NIP, REGON, numer konta (IBAN), numer dowodu** mają *cyfrę/sumę kontrolną*, wbudowany
+- 🟤 **PESEL, NIP, REGON, numer konta (IBAN), numer dowodu, numer karty (Luhn)** mają *cyfrę/sumę kontrolną*, wbudowany
   w numer sprawdzian poprawności. Parawan go **przelicza**, więc przypadkowy ciąg cyfr (numer sprawy,
   sygnatura) **nie** zostanie pomylony z PESEL-em. → *mało fałszywych trafień.*
 - 🔵 **E-mail** ma znak `@`, **telefon** to 9 cyfr, **kod pocztowy** to `XX-XXX`, rozpoznawane po wzorze.
@@ -139,6 +139,7 @@ kontekstową**, dlatego trafień „na ślepo" jest mało.
 | 🟤 NIP | 10 cyfr (też z myślnikami) + suma kontrolna (lub przy etykiecie „NIP") | `[NIP]` |
 | 🟤 REGON | 9/14 cyfr + suma kontrolna (lub przy etykiecie „REGON") | `[REGON]` |
 | 🟢 IBAN / nr konta | mod 97 lub kontekst „konto/rachunek/IBAN" (też format IBAN mimo złej sumy) | `[NR-KONTA]` |
+| 🟢 Karta płatnicza | kontekst „karta/Visa/Mastercard/Amex…" + 13–19 cyfr, prefiks sieci + suma Luhna | `[NR-KARTY]` |
 | 🟤 Nr dowodu | 3 litery + 6 cyfr (+ suma kontrolna bez kontekstu) | `[NR-DOWODU]` |
 | 🟤 Nr paszportu | kontekst „paszport" + 2 litery + 7 cyfr | `[NR-PASZPORTU]` |
 | 🟤 Numer KRS | kontekst „KRS" + 10 cyfr (też z zerami wiodącymi) | `[KRS]` |

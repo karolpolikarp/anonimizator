@@ -8,6 +8,7 @@ import {
   isValidRegon14,
   isValidIban,
   isValidDowod,
+  isValidCard,
 } from './index';
 
 // Buduje POPRAWNY IBAN z kodu kraju + BBAN (liczymy cyfry kontrolne mod 97),
@@ -56,6 +57,38 @@ test('DOWOD — poprawny wektor ABA300000', () => {
 });
 test('DOWOD — zła suma odrzucona', () => {
   expect(isValidDowod('ABA300001')).toBe(false);
+});
+test('KARTA — poprawne numery testowe (z separatorami)', () => {
+  expect(isValidCard('4111 1111 1111 1111')).toBe(true); // Visa 16
+  expect(isValidCard('4111-1111-1111-1111')).toBe(true); // Visa z myślnikami
+  expect(isValidCard('5555555555554444')).toBe(true); // Mastercard
+  expect(isValidCard('378282246310005')).toBe(true); // American Express (15)
+});
+test('KARTA — zły Luhn / brak prefiksu sieci / zła długość odrzucone', () => {
+  expect(isValidCard('4111111111111112')).toBe(false); // prefiks Visa, zły Luhn
+  expect(isValidCard('1111222233334444')).toBe(false); // brak prefiksu znanej sieci
+  expect(isValidCard('411111111111')).toBe(false); // 12 cyfr — za krótkie
+  expect(isValidCard('44051401359')).toBe(false); // PESEL (11 cyfr) to nie karta
+});
+test('KARTA — redakcja: karta Z KONTEKSTEM maskowana', () => {
+  expect(redactPII('Karta: 4111 1111 1111 1111.').redacted).toBe('Karta: [NR-KARTY].');
+  expect(redactPII('Zapłata kartą 5555-5555-5555-4444 OK').redacted).toBe('Zapłata kartą [NR-KARTY] OK');
+  expect(redactPII('nr karty 378282246310005 na fakturze').redacted).toBe('nr karty [NR-KARTY] na fakturze');
+});
+test('KARTA — BEZ kontekstu karty nie maskuje (precyzja > nadmaskowanie)', () => {
+  // IMEI (15 cyfr, ma sumę Luhna, prefiks 35 = zakres JCB) BEZ kontekstu karty — zostaje
+  expect(redactPII('IMEI telefonu: 353281112345672').redacted).toBe('IMEI telefonu: 353281112345672');
+  // EAN-13 z prefiksem 54 (Mastercard) — kod kreskowy, nie karta
+  expect(redactPII('Kod kreskowy EAN 5449000000996').redacted).toBe('Kod kreskowy EAN 5449000000996');
+  // 16 cyfr bez prefiksu znanej sieci — nie karta
+  expect(redactPII('Zamówienie 1111222233334444 gotowe').redacted).toBe('Zamówienie 1111222233334444 gotowe');
+  // po odwołaniu prawnym, bez kontekstu karty — zostaje
+  expect(redactPII('zgodnie z art. 4111 1111 1111 1111').redacted).toBe('zgodnie z art. 4111 1111 1111 1111');
+});
+test('KARTA — nie koliduje z PESEL/NIP/REGON/IBAN', () => {
+  expect(redactPII('PESEL 44051401359').redacted).toBe('PESEL [PESEL]');
+  expect(redactPII('REGON 123456785').redacted).toBe('REGON [REGON]');
+  expect(redactPII('NIP 1234563218').redacted).toBe('NIP [NIP]');
 });
 
 // ── Redakcja: maskuje realne PII ──

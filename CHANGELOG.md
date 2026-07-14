@@ -1,5 +1,21 @@
 # Changelog
 
+## v0.46.12 — 2026-07-14
+
+**Nowy typ: karta płatnicza (Visa/Mastercard/Amex/Discover/Diners/JCB/Maestro).** 23. typ danych.
+
+- Wykrywanie numerów kart: 13–19 cyfr + prefiks znanej sieci + suma **Luhna**, TYLKO z kontekstem
+  karty („karta/Visa/Mastercard/Amex…", pole `card=` w URL). Placeholder `[NR-KARTY]`, kategoria
+  Finanse.
+- Kontekst jest wymagany ŚWIADOMIE: audyt adwersarialny na realistycznych pismach pokazał, że sam
+  Luhn+prefiks daje fałszywe trafienia na IMEI (15 cyfr, ma sumę Luhna!), numerach przesyłek, kodach
+  kreskowych (EAN) i identyfikatorach transakcji. Precyzja > nadmaskowanie: **FP = 0** na zbiorze
+  audytowym; nietypowe formaty (separator kropka/ukośnik, kontekst nieprzylegający) świadomie pomijane.
+- Dodane do rdzenia, aplikacji web (przełącznik „Co maskować", chip „Zamaskowano", tabela „Co
+  wykrywa"), README i strony produktowej. Golden-master i benchmark bez regresji na istniejących typach.
+
+Rdzeń `anonimizator` 0.29.4 → 0.29.5, aplikacja web 0.46.10 → 0.46.12, landing 0.46.11 → 0.46.12.
+
 ## v0.46.11 — 2026-07-14
 
 **Landing (parawan.karolwilczynski.com): przepisane copy — mniej marketingu, więcej konkretu.**

@@ -28,6 +28,7 @@ export type PiiType =
   | 'EMAIL'
   | 'IBAN'
   | 'NR-KONTA'
+  | 'KARTA'
   | 'PESEL'
   | 'NIP'
   | 'REGON'
@@ -101,6 +102,7 @@ const MASK: Record<PiiType, string> = {
   EMAIL: '[EMAIL]',
   IBAN: '[NR-KONTA]',
   'NR-KONTA': '[NR-KONTA]',
+  KARTA: '[NR-KARTY]',
   PESEL: '[PESEL]',
   NIP: '[NIP]',
   REGON: '[REGON]',
@@ -209,6 +211,55 @@ export function isValidDowod(raw: string): boolean {
     sum += val * w[i];
   }
   return sum % 10 === 0;
+}
+
+/** Suma Luhna (mod 10) — walidacja numerów kart płatniczych. */
+function luhnValid(digits: number[]): boolean {
+  let sum = 0;
+  let double = false;
+  for (let i = digits.length - 1; i >= 0; i--) {
+    let x = digits[i];
+    if (double) {
+      x *= 2;
+      if (x > 9) x -= 9;
+    }
+    sum += x;
+    double = !double;
+  }
+  return sum % 10 === 0;
+}
+
+/**
+ * Prefiks (IIN) znanej sieci: Visa/Mastercard/Amex/Discover/Diners/JCB. Sam Luhn przepuszcza
+ * ~1/10 losowych ciągów — dopiero prefiks + długość + Luhn dają pewność „to naprawdę karta".
+ * Maestro i rzadkie sieci (szeroki, mało specyficzny prefiks 50/56–69) celowo pomijamy: ich
+ * dodanie zawyżyłoby liczbę fałszywych trafień (precyzja > nadmaskowanie).
+ */
+function hasCardPrefix(d: number[]): boolean {
+  const p2 = d[0] * 10 + d[1];
+  const p4 = p2 * 100 + d[2] * 10 + d[3];
+  if (d[0] === 4) return true; // Visa
+  if (p2 >= 51 && p2 <= 55) return true; // Mastercard
+  if (p4 >= 2221 && p4 <= 2720) return true; // Mastercard (seria 2)
+  if (p2 === 34 || p2 === 37) return true; // American Express
+  if (p2 === 36 || p2 === 38 || p2 === 39) return true; // Diners Club
+  if (d[0] === 3 && d[1] === 0 && d[2] <= 5) return true; // Diners 300–305
+  if (p4 === 6011 || p2 === 65) return true; // Discover
+  if (p2 === 64 && d[2] >= 4 && d[2] <= 9) return true; // Discover 644–649
+  if (p4 >= 3528 && p4 <= 3589) return true; // JCB
+  if (p2 === 50 || (p2 >= 56 && p2 <= 69)) return true; // Maestro (szeroki prefiks — bezpieczny TYLKO z kontekstem karty)
+  return false;
+}
+
+/**
+ * Numer karty płatniczej: 13–19 cyfr, prefiks znanej sieci + suma Luhna. Kombinacja tych trzech
+ * cech jest bardzo specyficzna (jak IBAN mod-97), więc wystarcza SAMODZIELNIE, bez etykiety.
+ */
+export function isValidCard(raw: string): boolean {
+  const d = onlyDigits(raw);
+  if (d.length < 13 || d.length > 19) return false;
+  if (!hasCardPrefix(d)) return false;
+  return luhnValid(d);
 }
 
 // ============================================================================
@@ -609,6 +660,7 @@ const URL_PARAM_RULES: Array<{ re: RegExp; type: PiiType }> = [
   { re: /([?&#](?:full_?name|first_?name|last_?name|name|imie|nazwisko|osoba)=)([^&#\s\[\]]+)/gi, type: 'IMIE' },
   { re: /([?&#](?:phone|tel(?:efon)?|mobile|msisdn)=)([^&#\s\[\]]+)/gi, type: 'TELEFON' },
   { re: /([?&#]pesel=)(\d+)/gi, type: 'PESEL' },
+  { re: /([?&#](?:card(?:number|no)?|karta|nr_?karty|numer_?karty)=)([^&#\s\[\]]+)/gi, type: 'KARTA' },
   { re: /([?&#](?:token|api_?key|secret|auth|access_?token)=)([^&#\s\[\]]+)/gi, type: 'TOKEN' },
 ];
 
@@ -1109,6 +1161,28 @@ function passRegon(ctx: RedactCtx): void {
     ctx,
     /\b(regon(?:\s+[A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźż]{3,})?)([\s:=.-]+)(\d{14}|\d{9})(?![\d])/gi,
     'REGON',
+  );
+}
+
+// 6b) KARTA PŁATNICZA — TYLKO z kontekstem karty („karta/płatnicz/Visa/Mastercard/Maestro/Amex/
+// Diners/Discover/JCB/card"): 13–19 cyfr (grupy po 4, sep. spacja/myślnik) + prefiks znanej sieci
+// + suma Luhna. Kontekst jest WYMAGANY, bo sam Luhn+prefiks jest zbyt niejednoznaczny: IMEI
+// (15 cyfr, MA sumę Luhna, prefiksy 35/37/4…), numery przesyłek/faktur, kody kreskowe (EAN) i
+// identyfikatory transakcji też je spełniają. Bez etykiety karty NIE maskujemy (precyzja >
+// nadmaskowanie — audyt adwersarialny wykrył 10 fałszywych trafień na wariancie bez kontekstu).
+// Biegnie PRZED REGON, żeby kontekst karty wygrał dla 14-cyfrowego numeru (Diners) nad ślepą
+// sumą REGON; numer 14-cyfr bez kontekstu karty zostaje dla REGON.
+function passCard(ctx: RedactCtx): void {
+  if (!ctx.on('KARTA')) return;
+  ctx.text = ctx.text.replace(
+    /\b((?:kart[a-ząćęłńóśźż]*|card|visa|mastercard|maestro|amex|american\s+express|diners(?:\s+club)?|discover|jcb|płatnicz[a-ząćęłńóśźż]*|kredytow[a-ząćęłńóśźż]*|debetow[a-ząćęłńóśźż]*)(?:[ \t]+(?:nr|numer|no)\.?)?)([\s:="'()<>|.-]+)((?:\d[ -]?){12,18}\d)(?![\d])/gi,
+    (m, kw: string, sep: string, num: string) => {
+      if (isValidCard(num)) {
+        ctx.bump('KARTA');
+        return `${kw}${sep}${ctx.M.KARTA}`;
+      }
+      return m;
+    },
   );
 }
 
@@ -1715,6 +1789,7 @@ export function redactPII(input: string, options?: RedactOptions): RedactionResu
   passAccount(ctx);
   passPesel(ctx);
   passNip(ctx);
+  passCard(ctx);
   passRegon(ctx);
   passPhone(ctx);
   passIdCard(ctx);
@@ -1757,6 +1832,7 @@ const HUMAN_LABEL: Record<PiiType, string> = {
   EMAIL: 'adres e-mail',
   IBAN: 'numer konta',
   'NR-KONTA': 'numer konta',
+  KARTA: 'numer karty płatniczej',
   PESEL: 'PESEL',
   NIP: 'NIP',
   REGON: 'REGON',

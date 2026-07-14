@@ -1,7 +1,7 @@
 # Benchmark anonimizacji — precision / recall
 
 - **Data uruchomienia:** 2026-07-14
-- **Wersja rdzenia (`anonimizator`):** 0.29.4
+- **Wersja rdzenia (`anonimizator`):** 0.29.5
 - **Zbiór ewaluacyjny:** 268 syntetycznych zdań (deterministyczny, seed `20260704`), 258 elementów do zamaskowania (mustMask), 294 elementów do zachowania (mustKeep)
 - **Reprodukcja:** `npm run build -w anonimizator && node scripts/benchmark/run.mjs`
 
