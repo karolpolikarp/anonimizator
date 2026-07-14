@@ -163,6 +163,58 @@ const CAT_LABELS: Record<Cat, string> = {
   person: 'Dane osobowe',
 };
 
+/* ── Tabela „Co wykrywa" — generowana z jednego źródła (nie ~130 linii statycznego HTML) ── */
+// Krótka etykieta kategorii w pigułce tabeli (inna niż CAT_LABELS: person → „osoby", place → „adres").
+const CATPILL: Record<Cat, string> = {
+  ident: 'identyfikatory',
+  contact: 'kontakt',
+  fin: 'finanse',
+  place: 'adres',
+  person: 'osoby',
+};
+// Opis „jak rozpoznaje" jest SWOISTY dla tabeli (z wyróżnieniem <strong>/<code>, zaufany statyczny
+// HTML) i determinuje KOLEJNOŚĆ wierszy. Nazwa, kategoria, ikona i kod pochodzą z MASK_GROUPS/
+// PII_TOKENS po kodzie znacznika — nie powielamy ich tu.
+const WYKRYWA_ROWS: Array<{ code: string; how: string }> = [
+  { code: '[PESEL]', how: '11 cyfr + <strong>walidacja sumy kontrolnej</strong>' },
+  { code: '[NIP]', how: '10 cyfr (także z myślnikami) + <strong>suma kontrolna</strong>' },
+  { code: '[REGON]', how: '9/14 cyfr + <strong>suma kontrolna</strong>' },
+  { code: '[NR-DOWODU]', how: '3 litery + 6 cyfr + <strong>suma kontrolna</strong>' },
+  { code: '[NR-PASZPORTU]', how: 'kontekst „paszport" + 2 litery + 7 cyfr' },
+  { code: '[KRS]', how: 'kontekst „KRS" + 10 cyfr' },
+  { code: '[ZNAK-SPRAWY]', how: 'znak sprawy/pisma wg JRWA lub sygnatura akt („Sygn. akt II CSK 234/19")' },
+  { code: '[PRAWO-JAZDY]', how: 'kontekst „prawo jazdy" + numer (z cyfrą)' },
+  { code: '[NR-REJESTRACYJNY]', how: 'kontekst „rejestracyjny/tablica/pojazd" + tablica (np. WI1234K)' },
+  { code: '[VIN]', how: '17 znaków bez I/O/Q; kontekst „VIN/nadwozia" lub wyraźny układ VIN' },
+  { code: '[IP]', how: 'IPv4 (oktety 0–255) oraz IPv6' },
+  { code: '[MAC]', how: '6 par hex (00:1A:2B:3C:4D:5E)' },
+  { code: '[TOKEN]', how: 'token JWT (<code>eyJ…</code>) — może dawać dostęp' },
+  { code: '[LOGIN]', how: 'kontekst „login/username" + wartość (też w URL i XML/JSON)' },
+  { code: '[NR-KONTA]', how: 'walidacja <strong>mod 97</strong> lub kontekst „konto/rachunek”' },
+  { code: '[EMAIL]', how: 'wzorzec adresu' },
+  { code: '[TELEFON]', how: '9 cyfr, opcjonalnie +48' },
+  { code: '[ADRES]', how: 'ul./al./os./pl. + nazwa + numer' },
+  { code: '[KOD-POCZTOWY]', how: 'XX-XXX' },
+  { code: '[MIEJSCOWOŚĆ]', how: 'miejscowość po kodzie pocztowym lub przy zamieszkaniu (nie w prozie/instytucji)' },
+  { code: '[DATA-URODZENIA]', how: 'data z kontekstem „ur./urodzony”' },
+  { code: '[IMIĘ I NAZWISKO]', how: 'słownik ~200 imion i ~230 nazwisk (z odmianą) + wyzwalacze („nazywam się”, „Pan/Pani”)' },
+];
+const wykrywaBody = document.getElementById('wykrywa-body');
+if (wykrywaBody) {
+  const groupByCode = new Map(MASK_GROUPS.map((g) => [g.code, g]));
+  wykrywaBody.innerHTML = WYKRYWA_ROWS.map(({ code, how }) => {
+    const meta = PII_TOKENS[tokenOfCode(code)];
+    const name = groupByCode.get(code)?.label ?? tokenOfCode(code);
+    return (
+      `<tr><td><span class="td-name"><span class="ic ic-s c-${meta.cat}">` +
+      `<i class="gi">${icon(meta.icon)}</i></span>${escapeHtml(name)}</span></td>` +
+      `<td><span class="catpill cp-${meta.cat}">${CATPILL[meta.cat]}</span></td>` +
+      `<td><span class="how">${how}</span></td>` +
+      `<td><mark class="pii pii-${meta.cat}">${escapeHtml(code)}</mark></td></tr>`
+    );
+  }).join('');
+}
+
 function persistDisabled(): void {
   localStorage.setItem('mask-disabled', [...disabledGroups].join(','));
 }
@@ -340,12 +392,10 @@ function escapeHtml(s: string): string {
 }
 
 // Rozpoznaje znaczniki [TOKEN] do podświetlenia/nawigacji w wyniku. Lista tokenów pochodzi
-// z PII_TOKENS (+ dynamiczne OSOBA-A/B…). LOGIN jest POMIJANY — [LOGIN] celowo nie jest dziś
-// podświetlany ani nawigowalny (znany brak z wydania; włączenie byłoby zmianą zachowania UI).
-// Żaden token nie zawiera metaznaków regexu, a każdy jest zakotwiczony nawiasami [...], więc
-// wstawiamy je wprost i kolejność alternatyw nie ma znaczenia.
+// z PII_TOKENS (+ dynamiczne OSOBA-A/B…). Żaden token nie zawiera metaznaków regexu, a każdy
+// jest zakotwiczony nawiasami [...], więc wstawiamy je wprost i kolejność alternatyw nie ma znaczenia.
 const MASK_TOKEN_RE = new RegExp(
-  `\\[(${[...Object.keys(PII_TOKENS).filter((t) => t !== 'LOGIN'), 'OSOBA-[A-Z]+'].join('|')})\\]`,
+  `\\[(${[...Object.keys(PII_TOKENS), 'OSOBA-[A-Z]+'].join('|')})\\]`,
   'g',
 );
 
@@ -611,6 +661,7 @@ const CHIP_DEFS: Array<{ type: PiiType; token: string; label: string }> = [
   { type: 'PASZPORT', token: 'NR-PASZPORTU', label: 'nr paszportu' },
   { type: 'KRS', token: 'KRS', label: 'numer KRS' },
   { type: 'ZNAK-SPRAWY', token: 'ZNAK-SPRAWY', label: 'znak sprawy' },
+  { type: 'LOGIN', token: 'LOGIN', label: 'login' },
   { type: 'IBAN', token: 'NR-KONTA', label: 'nr konta' },
   { type: 'NR-KONTA', token: 'NR-KONTA', label: 'nr konta' },
   { type: 'EMAIL', token: 'EMAIL', label: 'e-mail' },

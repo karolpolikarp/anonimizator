@@ -1,5 +1,22 @@
 # Changelog
 
+## v0.46.10 — 2026-07-14
+
+**Dekompozycja silnika, [LOGIN] podświetlany, tabela „Co wykrywa" z jednego źródła.** Dalsze
+sprzątanie po v0.46.9 — czytelniejszy rdzeń i web. Jedyna zmiana zachowania to podświetlanie [LOGIN].
+
+- **Silnik `redactPII` rozbity na 35 nazwanych funkcji przebiegów** (`passEmail`, `passPesel`,
+  `passCity`… `finalizePersons`) na top-level, spiętych kontekstem `RedactCtx`. `redactPII` to teraz
+  czytelny ORKIESTRATOR listujący przebiegi w kolejności wykonania — koniec monolitu ~1300 linii.
+  Zero zmian zachowania: golden-master i benchmark bit-identyczne, tsc/lint czyste. Sentinel URL
+  jako nazwane stałe (`URL_SENTINEL_OPEN/CLOSE`) zamiast niewidzialnych znaków U+E000/E001.
+- **[LOGIN] w wyniku podświetlany i nawigowalny** — wcześniej `[LOGIN]` był maskowany, ale pomijany
+  w podświetleniu/nawigacji i chipach; teraz dołączony do `MASK_TOKEN_RE` i chipów „Zamaskowano".
+- **Tabela „Co wykrywa" generowana z jednego źródła** (`WYKRYWA_ROWS`) zamiast ~130 linii
+  statycznego HTML — dodanie/zmiana typu w jednym miejscu; wygląd tabeli bez zmian.
+
+Rdzeń `anonimizator` 0.29.3 → 0.29.4, aplikacja web 0.46.9 → 0.46.10.
+
 ## v0.46.9 — 2026-07-14
 
 **Sprzątanie i przejrzystość kodu — zero zmian zachowania.** Runda porządkowa po wydaniu: mniej
