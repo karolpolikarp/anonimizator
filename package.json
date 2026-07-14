@@ -6,11 +6,14 @@
     "apps/*"
   ],
   "scripts": {
-    "build": "npm run build -w anonimizator && npm run build -w anonimizator-web",
+    "build": "npm run build -w anonimizator && npm run build -w anonimizator-web && npm run build -w parawan-landing",
     "test": "npm run test -w anonimizator && npm run test -w anonimizator-web",
-    "dev": "npm run dev -w anonimizator-web"
+    "dev": "npm run dev -w anonimizator-web",
+    "lint": "biome lint",
+    "format": "biome format --write"
   },
   "devDependencies": {
+    "@biomejs/biome": "^2.5.3",
     "esbuild": "^0.28.1"
   }
 }

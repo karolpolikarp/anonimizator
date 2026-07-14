@@ -1,0 +1,12 @@
+// Wspólna baza konfiguracji TypeScript dla całego monorepo. Poszczególne tsconfig.json
+// rozszerzają ją przez "extends" i dokładają tylko własne różnice (noEmit / declaration+outDir /
+// biblioteki DOM / paths). Jedno miejsce na rygor kompilatora — bez powtórzeń w każdym pakiecie.
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "skipLibCheck": true
+  }
+}

@@ -19,6 +19,8 @@ Wszystko dzieje się na Twoim komputerze. Nic nie trafia do internetu.
 ![zero zależności](https://img.shields.io/badge/zale%C5%BCno%C5%9Bci-zero-0B3D2E?style=flat-square)
 ![po polsku](https://img.shields.io/badge/j%C4%99zyk-polski-B9791F?style=flat-square)
 
+**[🔗 parawan.karolwilczynski.com](https://parawan.karolwilczynski.com)** — strona produktu z **demo na żywo** (anonimizacja w przeglądarce, bez wysyłki)
+
 </div>
 
 ---

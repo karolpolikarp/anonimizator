@@ -15,11 +15,19 @@ jobs:
           node-version: 20
           cache: npm
       - run: npm ci
+      # Bramka stylu/jakości statycznej (Biome) — łapie realne błędy (nieużyte zmienne, złe
+      # typy) na całym repo. Formatowania NIE wymuszamy repo-wide (świadomie, bez big-bangu).
+      - name: Lint (Biome)
+        run: npm run lint
       - run: npm run build -w anonimizator
       - run: npm run test -w anonimizator
       - run: npx tsc -p apps/web/tsconfig.json
       - run: npm run test -w anonimizator-web
       - run: npm run build -w anonimizator-web
+      # Landing (parawan.karolwilczynski.com) — typecheck jak w apps/web + build jednoplikowy,
+      # żeby strona marketingowa nie zgniła przy zmianach w rdzeniu/silniku (live demo importuje redactPII).
+      - run: npx tsc -p apps/landing/tsconfig.json
+      - run: npm run build -w parawan-landing
       # Bramka regresji detekcji na warstwie deterministycznej (bez modelu ONNX — warstwy NER
       # pominięte fail-safe). Fail przy spadku recall na kategoriach osobowych/strukturalnych
       # lub precyzji poniżej progu. Nie commituje raportu — tylko sprawdza progi.

@@ -1,0 +1,496 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="light" />
+    <meta name="theme-color" content="#efede6" />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Crect%20x%3D%220.6%22%20y%3D%220.6%22%20width%3D%2230.8%22%20height%3D%2230.8%22%20rx%3D%227%22%20fill%3D%22%23FFFFFF%22%20stroke%3D%22%23DAD6C8%22%20stroke-width%3D%221.2%22%2F%3E%3Csvg%20x%3D%225%22%20y%3D%228%22%20width%3D%2222%22%20height%3D%2216%22%20viewBox%3D%2214%2048%20292%20235%22%20preserveAspectRatio%3D%22xMidYMid%20meet%22%3E%3Cpolygon%20points%3D%2230%2C74%2095%2C112%2095%2C270%2030%2C232%22%20fill%3D%22%230B3D2E%22%2F%3E%3Cpolygon%20points%3D%2295%2C112%20160%2C74%20160%2C232%2095%2C270%22%20fill%3D%22%23859E97%22%2F%3E%3Cpolygon%20points%3D%22160%2C74%20225%2C112%20225%2C270%20160%2C232%22%20fill%3D%22%230B3D2E%22%2F%3E%3Cpolygon%20points%3D%22225%2C112%20290%2C74%20290%2C232%20225%2C270%22%20fill%3D%22%23859E97%22%2F%3E%3Cpath%20d%3D%22M30%2074%20L95%20112%20L160%2074%20L225%20112%20L290%2074%22%20fill%3D%22none%22%20stroke%3D%22%230B3D2E%22%20stroke-width%3D%225%22%20stroke-linejoin%3D%22round%22%20stroke-linecap%3D%22round%22%2F%3E%3Cline%20x1%3D%2230%22%20y1%3D%2256%22%20x2%3D%2230%22%20y2%3D%22232%22%20stroke%3D%22%230B3D2E%22%20stroke-width%3D%2214%22%20stroke-linecap%3D%22round%22%2F%3E%3Cline%20x1%3D%2295%22%20y1%3D%2294%22%20x2%3D%2295%22%20y2%3D%22270%22%20stroke%3D%22%230B3D2E%22%20stroke-width%3D%2214%22%20stroke-linecap%3D%22round%22%2F%3E%3Cline%20x1%3D%22160%22%20y1%3D%2256%22%20x2%3D%22160%22%20y2%3D%22232%22%20stroke%3D%22%230B3D2E%22%20stroke-width%3D%2214%22%20stroke-linecap%3D%22round%22%2F%3E%3Cline%20x1%3D%22225%22%20y1%3D%2294%22%20x2%3D%22225%22%20y2%3D%22270%22%20stroke%3D%22%230B3D2E%22%20stroke-width%3D%2214%22%20stroke-linecap%3D%22round%22%2F%3E%3Cline%20x1%3D%22290%22%20y1%3D%2256%22%20x2%3D%22290%22%20y2%3D%22232%22%20stroke%3D%22%230B3D2E%22%20stroke-width%3D%2214%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E%3C%2Fsvg%3E" />
+    <title>Parawan — zanonimizuj polskie dane osobowe lokalnie, w przeglądarce (offline, bez AI)</title>
+    <meta
+      name="description"
+      content="Parawan usuwa polskie dane osobowe (PESEL, NIP, REGON, numer konta, dowód, e-mail, telefon, adres, imię i nazwisko) z tekstu — w 100% lokalnie. Jeden plik HTML, działa offline, bez konta i bez wysyłania danych na serwer. Open source, Apache 2.0. Wypróbuj na żywo."
+    />
+    <meta property="og:title" content="Parawan — anonimizacja polskich danych osobowych, lokalnie i offline" />
+    <meta property="og:description" content="Jeden plik HTML. Twój tekst nie opuszcza przeglądarki — możesz odłączyć internet i sprawdzić. Open source, bez AI, po polsku." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://parawan.karolwilczynski.com" />
+    <meta name="twitter:card" content="summary" />
+  </head>
+  <body>
+    <a href="#demo" class="vh">Przejdź do demo</a>
+
+    <!-- ══════════ NAWIGACJA ══════════ -->
+    <nav class="nav" aria-label="Główna">
+      <div class="nav-in">
+        <a href="#top" class="nav-brand" aria-label="Parawan — strona główna">
+          <span class="mark"><i class="gi" data-i="parawan-mark"></i></span>
+          <b>Parawan</b>
+        </a>
+        <div class="nav-links" id="nav-links">
+          <a href="#demo">Wypróbuj</a>
+          <a href="#jak">Jak działa</a>
+          <a href="#bezpieczenstwo">Bezpieczeństwo</a>
+          <a href="#faq">FAQ</a>
+          <a href="https://github.com/karolpolikarp/parawan" target="_blank" rel="noopener noreferrer">GitHub&nbsp;↗</a>
+        </div>
+        <div class="nav-cta">
+          <a class="btn btn-cta btn-sm btn-nav-download" href="https://github.com/karolpolikarp/parawan/releases/latest" target="_blank" rel="noopener noreferrer">Pobierz plik</a>
+          <button class="nav-toggle" id="nav-toggle" aria-label="Menu" aria-expanded="false"><i class="gi" data-i="suwaki"></i></button>
+        </div>
+      </div>
+    </nav>
+
+    <span id="top"></span>
+
+    <!-- ══════════ HERO ══════════ -->
+    <header class="hero section wrap">
+      <div class="hero-grid">
+        <div class="hero-copy">
+          <span class="hero-eyebrow"><span class="dotpulse"></span>100% lokalnie · nic nie wychodzi do sieci</span>
+          <h1>Usuń dane osobowe z tekstu, <span class="hl">zanim wyjdą z Twojego komputera.</span></h1>
+          <p class="hero-lead">Parawan anonimizuje polskie dane osobowe — PESEL, NIP, numer konta, e-mail, adres, imię i nazwisko — zanim wkleisz tekst do czatu AI, wyślesz mailem albo udostępnisz dalej.</p>
+          <div class="hero-cta">
+            <a class="btn btn-cta btn-lg" href="https://github.com/karolpolikarp/parawan/releases/latest" target="_blank" rel="noopener noreferrer">
+              <i class="gi" data-i="anonimizuj"></i>Pobierz Parawan — jeden plik HTML
+            </a>
+            <a class="btn btn-ghost btn-lg" href="#demo"><i class="gi" data-i="podglad"></i>Wypróbuj na żywo</a>
+          </div>
+          <div class="hero-micro">
+            <span><span class="ck">✓</span> Bez instalacji</span>
+            <span><span class="ck">✓</span> Bez konta</span>
+            <span><span class="ck">✓</span> Bez internetu</span>
+            <span><span class="ck">✓</span> Za darmo, open source</span>
+          </div>
+        </div>
+
+        <aside class="hero-visual" aria-label="Podgląd wyniku anonimizacji">
+          <div class="hero-doc">
+            <div class="hd-head">
+              <span class="hero-mark"><i class="gi" data-i="parawan-mark"></i></span>
+              <div class="hd-title">
+                <b>Pismo · po anonimizacji</b>
+                <span>przykładowy wynik · wersja <span id="ver">…</span></span>
+              </div>
+              <span class="hd-badge"><i class="gi" data-i="walidacja"></i>zanonimizowano</span>
+            </div>
+            <div class="hd-body">
+              <p>Nazywam się <mark class="pii pii-person">[IMIĘ&nbsp;I&nbsp;NAZWISKO]</mark>,</p>
+              <p>PESEL <mark class="pii pii-ident">[PESEL]</mark>, tel. <mark class="pii pii-contact">[TELEFON]</mark>.</p>
+              <p>Adres: <mark class="pii pii-place">[ADRES]</mark>,</p>
+              <p><mark class="pii pii-place">[KOD-POCZTOWY]</mark> <mark class="pii pii-place">[MIEJSCOWOŚĆ]</mark>.</p>
+              <p>Nr konta: <mark class="pii pii-fin">[NR-KONTA]</mark>.</p>
+            </div>
+          </div>
+          <div class="privacy">
+            <i class="gi" data-i="maskowanie"></i>
+            <span class="privacy-t">
+              <b>Twój tekst nie opuszcza przeglądarki</b>
+              <span>Nic nie trafia na serwer. Możesz wyłączyć internet i sprawdzić.</span>
+            </span>
+          </div>
+        </aside>
+      </div>
+    </header>
+
+    <!-- ══════════ PASEK ZAUFANIA ══════════ -->
+    <section class="trust" aria-label="Kluczowe fakty">
+      <div class="trust-in">
+        <div class="trust-item"><span class="trust-num gold">0</span><span class="trust-lbl">żądań do sieci</span></div>
+        <div class="trust-item"><span class="trust-num gold">0</span><span class="trust-lbl">instalacji</span></div>
+        <div class="trust-item"><span class="trust-num gold">0</span><span class="trust-lbl">kont i haseł</span></div>
+        <div class="trust-item"><span class="trust-num">100%</span><span class="trust-lbl">lokalnie / offline</span></div>
+        <div class="trust-item"><span class="trust-num">22</span><span class="trust-lbl">typy danych</span></div>
+        <div class="trust-item"><span class="trust-num">Apache&nbsp;2.0</span><span class="trust-lbl">open source</span></div>
+      </div>
+    </section>
+
+    <!-- ══════════ PROBLEM ══════════ -->
+    <section class="section wrap problem">
+      <p class="q">Wklejasz dane klientów do <em>ChatGPT</em>? Wysyłasz umowę do losowego narzędzia w chmurze? <em>Wrzucasz pismo</em> na obcy serwer, żeby je „przetworzyć”?</p>
+      <p class="a">Każde z tych kliknięć to wyciek danych osobowych poza Twoją kontrolę. <strong>Parawan zdejmuje dane, zanim tekst gdziekolwiek pojedzie</strong> — a robi to w całości na Twoim komputerze.</p>
+    </section>
+
+    <!-- ══════════ DEMO (LIVE) ══════════ -->
+    <section class="section wrap section-tint" id="demo" aria-label="Demo na żywo">
+      <div class="sec-head center">
+        <span class="kicker">Wypróbuj tutaj</span>
+        <h2>Wpisz albo wklej tekst — zobacz anonimizację na żywo</h2>
+        <p>To prawdziwy silnik Parawana, uruchomiony w tej karcie przeglądarki. Nic nie jest wysyłane. Otwórz narzędzia deweloperskie (F12) → zakładka „Sieć” i przekonaj się: <b>zero żądań</b>.</p>
+      </div>
+
+      <div class="card demo-card">
+        <div class="demo-bar">
+          <button type="button" id="demo-example" class="btn btn-sm"><i class="gi" data-i="przyklad"></i>Wstaw przykład</button>
+          <button type="button" id="demo-clear" class="btn btn-sm"><i class="gi" data-i="wyczysc"></i>Wyczyść</button>
+          <span class="demo-sp"></span>
+          <span class="seg" role="group" aria-label="Widok wyniku">
+            <button type="button" id="view-result" class="sbtn on" aria-pressed="true">Wynik</button>
+            <button type="button" id="view-compare" class="sbtn" aria-pressed="false">Porównanie</button>
+          </span>
+          <button type="button" id="demo-copy" class="btn btn-cta btn-sm"><i class="gi" data-i="kopiuj"></i><span id="demo-copy-label">Kopiuj wynik</span></button>
+        </div>
+        <div class="demo-panes">
+          <div class="demo-pane">
+            <div class="demo-plabel"><span class="d d-in"></span>Tekst źródłowy</div>
+            <textarea id="demo-input" class="editor" spellcheck="false" aria-label="Tekst źródłowy do anonimizacji" placeholder="Wpisz albo wklej tekst z danymi osobowymi…"></textarea>
+          </div>
+          <div class="demo-pane">
+            <div class="demo-plabel"><span class="d d-out"></span>Wynik zanonimizowany</div>
+            <div id="demo-output" class="editor" role="region" aria-live="polite" aria-label="Wynik anonimizacji"></div>
+          </div>
+        </div>
+        <div class="demo-foot">
+          <i class="gi" data-i="suma" style="width:18px;height:18px;color:var(--acc)"></i>
+          <span class="demo-stat" id="demo-stat">Zamaskowano 0 fragmentów.</span>
+          <span class="demo-sp"></span>
+          <span>Analiza działa na bieżąco, podczas pisania.</span>
+        </div>
+      </div>
+
+      <div class="demo-note">
+        <i class="gi" data-i="maskowanie"></i>
+        <span><b>To dzieje się teraz, w Twojej przeglądarce.</b> Silnik to czyste reguły i sumy kontrolne (bez AI), wbudowane w tę stronę. Możesz rozłączyć internet — demo zadziała tak samo.</span>
+      </div>
+    </section>
+
+    <!-- ══════════ JAK TO DZIAŁA (KROKI) ══════════ -->
+    <section class="section wrap" id="jak" aria-label="Jak to działa">
+      <div class="sec-head center">
+        <span class="kicker">Jak to działa</span>
+        <h2>Cztery kroki, żaden nie prowadzi do internetu</h2>
+      </div>
+      <div class="grid g-4">
+        <div class="card step">
+          <div class="step-top"><span class="ic c-place"><i class="gi" data-i="plik-txt"></i></span><span class="step-n">Krok 1</span></div>
+          <h3>Wklej tekst</h3>
+          <p>lub upuść plik (TXT, DOCX, PDF) w dowolnym miejscu strony — Word i PDF są czytane w całości lokalnie.</p>
+        </div>
+        <div class="card step">
+          <div class="step-top"><span class="ic c-ident"><i class="gi" data-i="sprawdz"></i></span><span class="step-n">Krok 2</span></div>
+          <h3>Analiza</h3>
+          <p>reguły, słowniki i sumy kontrolne rozpoznają dane — bez AI, bez wysyłki, wynik przewidywalny.</p>
+        </div>
+        <div class="card step">
+          <div class="step-top"><span class="ic c-person"><i class="gi" data-i="maskowanie"></i></span><span class="step-n">Krok 3</span></div>
+          <h3>Maskowanie</h3>
+          <p>kolorowe znaczniki, np. <mark class="pii pii-ident">[PESEL]</mark>, zamiast danych osobowych.</p>
+        </div>
+        <div class="card step">
+          <div class="step-top"><span class="ic c-fin"><i class="gi" data-i="walidacja"></i></span><span class="step-n">Krok 4</span></div>
+          <h3>Gotowe</h3>
+          <p>skopiuj bezpieczny tekst albo pobierz plik — dopiero teraz decydujesz, gdzie go wysłać.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════ OBIETNICA PRYWATNOŚCI (RDZEŃ) ══════════ -->
+    <section class="section wrap section-tint promise" id="bezpieczenstwo">
+      <span class="promise-mark"><i class="gi" data-i="parawan-mark"></i></span>
+      <h2>Twój tekst nie opuszcza przeglądarki.<br><span class="hl">Nie ma serwera do zhakowania — bo nie ma żadnego serwera.</span></h2>
+      <p>Parawan to jeden plik, który pobierasz i otwierasz u siebie. Nie ma backendu, konta ani chmury. Nie „szyfrujemy” i nie „anonimizujemy” Twoich danych na naszych maszynach — one po prostu nigdy do nas nie trafiają.</p>
+    </section>
+
+    <!-- ══════════ SPRAWDŹ SAM ══════════ -->
+    <section class="section wrap" aria-label="Sprawdź sam">
+      <div class="sec-head center">
+        <span class="kicker">Nie musisz wierzyć — sprawdź</span>
+        <h2>Trzy sposoby, żeby zweryfikować to samodzielnie</h2>
+        <p>Prywatność nie jest tu obietnicą marketingową. Jest czymś, co możesz sprawdzić w minutę.</p>
+      </div>
+      <div class="grid g-3">
+        <div class="card pillar">
+          <span class="ic c-fin"><i class="gi" data-i="onoff"></i></span>
+          <h3>1. Odłącz internet</h3>
+          <p>Wyłącz Wi-Fi albo wyciągnij kabel, a potem użyj Parawana. Działa dokładnie tak samo — bo do działania nigdy nie potrzebował sieci.</p>
+          <span class="how">Wi-Fi wył. → wklej tekst → wynik jest</span>
+        </div>
+        <div class="card pillar">
+          <span class="ic c-ident"><i class="gi" data-i="sprawdz"></i></span>
+          <h3>2. Podejrzyj ruch sieciowy</h3>
+          <p>Otwórz narzędzia deweloperskie (F12) → zakładka „Sieć” i korzystaj z narzędzia. Nie zobaczysz ani jednego żądania z Twoimi danymi.</p>
+          <span class="net-badge" id="net-badge" title="Żądania do serwerów zewnętrznych od otwarcia tej strony">Żądań do sieci na tej stronie: <b id="net-count">0</b></span>
+        </div>
+        <div class="card pillar">
+          <span class="ic c-person"><i class="gi" data-i="szablon"></i></span>
+          <h3>3. Przeczytaj kod</h3>
+          <p>Cały kod jest jawny na GitHubie (Apache 2.0). To jeden plik, który możesz obejrzeć w całości — bez ukrytego backendu, bez tajemnic.</p>
+          <span class="how"><a href="https://github.com/karolpolikarp/parawan" target="_blank" rel="noopener noreferrer">github.com/karolpolikarp/parawan ↗</a></span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════ CO WYKRYWA ══════════ -->
+    <section class="section wrap section-tint" aria-label="Co wykrywa">
+      <div class="sec-head center">
+        <span class="kicker">Co wykrywa</span>
+        <h2>22 typy polskich danych w 5 kategoriach</h2>
+        <p>Każdy typ z walidacją sumy kontrolnej albo kotwicą kontekstową — stąd mało fałszywych trafień.</p>
+      </div>
+      <div class="grid g-3">
+        <div class="card cat-card cat-ident">
+          <div class="cat-head"><span class="ic c-ident"><i class="gi" data-i="pesel"></i></span><h3>Identyfikatory</h3><span class="n">14 typów</span></div>
+          <div class="cat-chips">
+            <span class="chip-t ct-ident">PESEL</span><span class="chip-t ct-ident">NIP</span><span class="chip-t ct-ident">REGON</span>
+            <span class="chip-t ct-ident">nr dowodu</span><span class="chip-t ct-ident">paszport</span><span class="chip-t ct-ident">KRS</span>
+            <span class="chip-t ct-ident">znak sprawy</span><span class="chip-t ct-ident">prawo jazdy</span><span class="chip-t ct-ident">nr rej.</span>
+            <span class="chip-t ct-ident">VIN</span><span class="chip-t ct-ident">IP</span><span class="chip-t ct-ident">MAC</span>
+            <span class="chip-t ct-ident">token/JWT</span><span class="chip-t ct-ident">login</span>
+          </div>
+        </div>
+        <div class="card cat-card cat-fin">
+          <div class="cat-head"><span class="ic c-fin"><i class="gi" data-i="iban"></i></span><h3>Finanse</h3><span class="n">1 typ</span></div>
+          <div class="cat-chips"><span class="chip-t ct-fin">IBAN / nr konta</span></div>
+        </div>
+        <div class="card cat-card cat-contact">
+          <div class="cat-head"><span class="ic c-contact"><i class="gi" data-i="telefon"></i></span><h3>Kontakt</h3><span class="n">2 typy</span></div>
+          <div class="cat-chips"><span class="chip-t ct-contact">e-mail</span><span class="chip-t ct-contact">telefon</span></div>
+        </div>
+        <div class="card cat-card cat-place">
+          <div class="cat-head"><span class="ic c-place"><i class="gi" data-i="dom"></i></span><h3>Adres</h3><span class="n">3 typy</span></div>
+          <div class="cat-chips"><span class="chip-t ct-place">adres</span><span class="chip-t ct-place">kod pocztowy</span><span class="chip-t ct-place">miejscowość</span></div>
+        </div>
+        <div class="card cat-card cat-person">
+          <div class="cat-head"><span class="ic c-person"><i class="gi" data-i="dane-osobowe"></i></span><h3>Osoby</h3><span class="n">2 typy</span></div>
+          <div class="cat-chips"><span class="chip-t ct-person">imię i nazwisko</span><span class="chip-t ct-person">data urodzenia</span></div>
+        </div>
+        <div class="card cat-card" style="border-top-color: var(--acc); display:flex; flex-direction:column; justify-content:center;">
+          <div class="cat-head"><span class="ic"><i class="gi" data-i="suma"></i></span><h3>Sumy kontrolne</h3></div>
+          <p style="font-size:13.5px;color:var(--mut-2)">PESEL, NIP, REGON, IBAN i numer dowodu są sprawdzane matematycznie — przypadkowy ciąg cyfr (sygnatura akt, numer przepisu) nie spełnia sumy i zostaje nietknięty.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════ CZEGO NIE ROBI ══════════ -->
+    <section class="section wrap notdo" aria-label="Czego Parawan nie robi">
+      <div class="sec-head center">
+        <span class="kicker">Bez ściemy</span>
+        <h2>Czego Parawan świadomie NIE robi</h2>
+      </div>
+      <div class="notdo-grid">
+        <div class="notdo-row">
+          <div class="notdo-cell bad"><span class="mk">✕</span><span>Nie wysyła Twojego tekstu na żaden serwer</span></div>
+          <div class="notdo-cell good"><span class="mk">✓</span><span>Cała analiza dzieje się w Twojej przeglądarce</span></div>
+        </div>
+        <div class="notdo-row">
+          <div class="notdo-cell bad"><span class="mk">✕</span><span>Nie wymaga konta, logowania ani e-maila</span></div>
+          <div class="notdo-cell good"><span class="mk">✓</span><span>Otwierasz plik i od razu działasz</span></div>
+        </div>
+        <div class="notdo-row">
+          <div class="notdo-cell bad"><span class="mk">✕</span><span>Nie zbiera analityki ani telemetrii</span></div>
+          <div class="notdo-cell good"><span class="mk">✓</span><span>Zero trackerów, zero ciasteczek, zero śledzenia</span></div>
+        </div>
+        <div class="notdo-row">
+          <div class="notdo-cell bad"><span class="mk">✕</span><span>Nie używa modeli AI ani usług zewnętrznych</span></div>
+          <div class="notdo-cell good"><span class="mk">✓</span><span>Reguły i sumy kontrolne — wynik jest powtarzalny</span></div>
+        </div>
+        <div class="notdo-row">
+          <div class="notdo-cell bad"><span class="mk">✕</span><span>Nie dociąga niczego w tle (fontów, skryptów, obrazów)</span></div>
+          <div class="notdo-cell good"><span class="mk">✓</span><span>Wszystko jest w jednym pliku — także ta strona</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════ BLOKADY FIRMOWE ══════════ -->
+    <section class="section wrap section-tint">
+      <div class="split">
+        <div>
+          <span class="kicker">Dla firm i urzędów</span>
+          <h2>Przechodzi tam, gdzie „program” się nie przeciśnie</h2>
+          <p>Parawan to zwykły dokument HTML, a nie aplikacja do zainstalowania. Nie jest plikiem <code>.exe</code>, nie uruchamia serwera, nie potrzebuje uprawnień administratora. Dlatego działa nawet na mocno zablokowanych komputerach firmowych i urzędowych.</p>
+          <ul>
+            <li><i class="gi" data-i="walidacja"></i><span>Bez instalatora i bez praw administratora</span></li>
+            <li><i class="gi" data-i="walidacja"></i><span>Otwierasz jak zdjęcie — podwójnym kliknięciem</span></li>
+            <li><i class="gi" data-i="walidacja"></i><span>Możesz rozesłać jeden plik całemu zespołowi</span></li>
+            <li><i class="gi" data-i="walidacja"></i><span>Zgodny z podejściem „dane nie wychodzą z organizacji”</span></li>
+          </ul>
+        </div>
+        <div class="split-visual">
+          <div class="filebox">
+            <span class="ic c-place"><i class="gi" data-i="plik-txt"></i></span>
+            <div>
+              <b>Parawan.html</b>
+              <span>~1 plik · otwiera się w przeglądarce</span>
+            </div>
+          </div>
+          <div class="check-list">
+            <div><i class="gi" data-i="walidacja"></i>Nie instaluje się w systemie</div>
+            <div><i class="gi" data-i="walidacja"></i>Nie łączy się z internetem</div>
+            <div><i class="gi" data-i="walidacja"></i>Nie zapisuje danych poza kartą przeglądarki</div>
+            <div><i class="gi" data-i="walidacja"></i>Znika bez śladu, gdy zamkniesz kartę</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════ PORÓWNANIE ══════════ -->
+    <section class="section wrap" aria-label="Porównanie">
+      <div class="sec-head center">
+        <span class="kicker">Dlaczego lokalnie</span>
+        <h2>Parawan kontra narzędzie w chmurze kontra ręczne czyszczenie</h2>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Kryterium</th>
+              <th class="center col-parawan">Parawan</th>
+              <th class="center">Narzędzie w chmurze</th>
+              <th class="center">Ręcznie w edytorze</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td class="cmp-feat">Dane opuszczają urządzenie</td><td class="center col-parawan"><span class="no">nigdy</span></td><td class="center"><span class="no">tak</span></td><td class="center"><span class="yes">nie</span></td></tr>
+            <tr><td class="cmp-feat">Wymaga konta / logowania</td><td class="center col-parawan"><span class="yes">nie</span></td><td class="center"><span class="no">zwykle tak</span></td><td class="center"><span class="yes">nie</span></td></tr>
+            <tr><td class="cmp-feat">Działa offline</td><td class="center col-parawan"><span class="yes">tak</span></td><td class="center"><span class="no">nie</span></td><td class="center"><span class="yes">tak</span></td></tr>
+            <tr><td class="cmp-feat">Ryzyko wycieku / RODO</td><td class="center col-parawan"><span class="yes">minimalne</span></td><td class="center"><span class="no">wysokie</span></td><td class="center"><span class="mid">błędy ludzkie</span></td></tr>
+            <tr><td class="cmp-feat">Szybkość dla długich pism</td><td class="center col-parawan"><span class="yes">natychmiast</span></td><td class="center"><span class="mid">zależy od sieci</span></td><td class="center"><span class="no">wolno</span></td></tr>
+            <tr><td class="cmp-feat">Przechodzi przez blokady IT</td><td class="center col-parawan"><span class="yes">tak</span></td><td class="center"><span class="no">często blokowane</span></td><td class="center"><span class="yes">tak</span></td></tr>
+            <tr><td class="cmp-feat">Koszt</td><td class="center col-parawan"><span class="yes">darmowy</span></td><td class="center"><span class="mid">często płatny</span></td><td class="center"><span class="yes">darmowy</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ══════════ TRANSPARENTNOŚĆ / BENCHMARK ══════════ -->
+    <section class="section wrap section-tint" aria-label="Transparentność">
+      <div class="split">
+        <div class="split-visual" style="order:2">
+          <span class="kicker">Zmierzone, nie obiecane</span>
+          <h2 style="font-size:24px;margin-top:10px">Skuteczność na naszym benchmarku</h2>
+          <div class="grid g-3" style="margin-top:20px;gap:14px">
+            <div><div class="trust-num">94,2%</div><div class="trust-lbl">recall</div></div>
+            <div><div class="trust-num">99,7%</div><div class="trust-lbl">precyzja*</div></div>
+            <div><div class="trust-num">96,8%</div><div class="trust-lbl">F1</div></div>
+          </div>
+          <p style="font-size:12.5px;color:var(--mut);margin-top:16px">*precyzja-proxy na deterministycznym, w pełni syntetycznym zbiorze (268 zdań, wersja rdzenia 0.29). Metodologia i wyniki: <a href="https://github.com/karolpolikarp/parawan/blob/main/docs/BENCHMARK.md" target="_blank" rel="noopener noreferrer">docs/BENCHMARK.md</a>.</p>
+        </div>
+        <div style="order:1">
+          <span class="kicker">Transparentność</span>
+          <h2>Otwarty kod to nie ozdoba — to dowód</h2>
+          <p>Nie musisz ufać naszym deklaracjom. Możesz przeczytać każdą linijkę, uruchomić testy i benchmark u siebie, a nawet wpiąć własne reguły. To fundament zaufania: brak backdoorów, bo wszystko jest na wierzchu.</p>
+          <ul style="margin-top:18px;list-style:none;display:flex;flex-direction:column;gap:11px">
+            <li class="split li" style="display:flex;gap:11px;font-size:15px"><i class="gi" data-i="regula" style="width:21px;height:21px;flex:none;color:var(--fin);margin-top:2px"></i><span>Deterministyka: reguły, słowniki i sumy kontrolne — <b>zero modeli AI</b></span></li>
+            <li style="display:flex;gap:11px;font-size:15px"><i class="gi" data-i="suma" style="width:21px;height:21px;flex:none;color:var(--fin);margin-top:2px"></i><span>Sumy kontrolne odróżniają prawdziwy numer od przypadkowego ciągu cyfr</span></li>
+            <li style="display:flex;gap:11px;font-size:15px"><i class="gi" data-i="szablon" style="width:21px;height:21px;flex:none;color:var(--fin);margin-top:2px"></i><span>Licencja Apache 2.0 · pakiet npm <code>anonimizator</code> i CLI</span></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════ DLA KOGO ══════════ -->
+    <section class="section wrap" aria-label="Dla kogo">
+      <div class="sec-head center">
+        <span class="kicker">Dla kogo</span>
+        <h2>Wszędzie, gdzie tekst zawiera cudze dane</h2>
+      </div>
+      <div class="grid g-4">
+        <div class="card use"><span class="ic c-person"><i class="gi" data-i="dane-osobowe"></i></span><h3>Prawnicy</h3><p>pisma, umowy i pozwy przed wysłaniem do asystenta AI lub kontrahenta.</p></div>
+        <div class="card use"><span class="ic c-contact"><i class="gi" data-i="login"></i></span><h3>HR i rekrutacja</h3><p>CV, dane kandydatów i pracowników bez ryzyka wycieku.</p></div>
+        <div class="card use"><span class="ic c-fin"><i class="gi" data-i="iban"></i></span><h3>Księgowość</h3><p>faktury, numery kont i PESEL-e w korespondencji i zgłoszeniach.</p></div>
+        <div class="card use"><span class="ic c-ident"><i class="gi" data-i="maskowanie"></i></span><h3>Zdrowie i administracja</h3><p>dane wrażliwe, które nie mają prawa opuścić organizacji.</p></div>
+      </div>
+    </section>
+
+    <!-- ══════════ OGRANICZENIA (UCZCIWIE) ══════════ -->
+    <section class="section wrap" id="ograniczenia">
+      <div class="caveat">
+        <span class="ic"><i class="gi" data-i="ostrzezenie"></i></span>
+        <div>
+          <h3>Ograniczenia — przeczytaj, zanim zaufasz w ciemno</h3>
+          <p>Rozpoznawanie imion i nazwisk jest <strong>heurystyczne</strong>: rzadkie lub obce nazwisko, bez imienia ze słownika i bez podpowiedzi z kontekstu, może się prześlizgnąć. Podobnie numery w bardzo nietypowym zapisie. Traktuj Parawan jako <strong>pomoc, a nie gwarancję</strong>, i zawsze przejrzyj wynik, zanim go wyślesz. Uczciwość jest częścią bezpieczeństwa — dlatego mówimy o tym wprost.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════ FAQ ══════════ -->
+    <section class="section wrap wrap-narrow" id="faq" aria-label="Najczęstsze pytania">
+      <div class="sec-head center">
+        <span class="kicker">FAQ</span>
+        <h2>Najczęstsze pytania</h2>
+      </div>
+      <div class="faq">
+        <details open>
+          <summary>Czy moje dane są gdziekolwiek wysyłane?</summary>
+          <div class="faq-b">Nie. Cała anonimizacja dzieje się w Twojej przeglądarce. Parawan nie ma serwera, do którego cokolwiek mógłby wysłać. Możesz to sprawdzić: odłącz internet albo zajrzyj do zakładki „Sieć” w narzędziach deweloperskich.</div>
+        </details>
+        <details>
+          <summary>Czy działa bez internetu?</summary>
+          <div class="faq-b">Tak, w pełni. Pobrany plik <code>Parawan.html</code> otwierasz z dysku i działa offline — sieć nie jest mu do niczego potrzebna. Nawet ta strona z demo jest jednym plikiem, który zadziała po rozłączeniu internetu.</div>
+        </details>
+        <details>
+          <summary>Jak mogę to zweryfikować samodzielnie?</summary>
+          <div class="faq-b">Na trzy sposoby: (1) rozłącz internet i sprawdź, że narzędzie nadal działa; (2) otwórz narzędzia deweloperskie (F12) → „Sieć” i zobacz brak żądań z danymi; (3) przeczytaj kod na <a href="https://github.com/karolpolikarp/parawan" target="_blank" rel="noopener noreferrer">GitHubie</a> — jest w całości jawny.</div>
+        </details>
+        <details>
+          <summary>Czy dział IT to zablokuje?</summary>
+          <div class="faq-b">Zwykle nie. Parawan to dokument HTML, a nie program do instalacji. Nie jest plikiem <code>.exe</code>, nie potrzebuje uprawnień administratora ani serwera, więc przechodzi przez większość firmowych blokad.</div>
+        </details>
+        <details>
+          <summary>Jakie dokładnie dane wykrywa?</summary>
+          <div class="faq-b">22 typy polskich danych: PESEL, NIP, REGON, numer dowodu i paszportu, KRS, prawo jazdy, nr rejestracyjny, VIN, IP, MAC, token/JWT, login, IBAN/numer konta, e-mail, telefon, adres, kod pocztowy, miejscowość, data urodzenia oraz imię i nazwisko.</div>
+        </details>
+        <details>
+          <summary>Czy jest darmowy? Czy potrzebuję konta?</summary>
+          <div class="faq-b">Jest w pełni darmowy i open source (licencja Apache 2.0). Nie potrzebujesz konta, e-maila ani logowania — po prostu pobierasz plik i używasz.</div>
+        </details>
+        <details>
+          <summary>Co dzieje się z danymi po zamknięciu karty?</summary>
+          <div class="faq-b">Nic nie zostaje. Tekst istnieje tylko w pamięci karty przeglądarki, dopóki jest otwarta. Zamknięcie karty usuwa wszystko — Parawan niczego nie zapisuje na dysku ani w chmurze.</div>
+        </details>
+        <details>
+          <summary>Czy używa sztucznej inteligencji?</summary>
+          <div class="faq-b">Nie. Silnik jest w 100% deterministyczny: reguły, słowniki i sumy kontrolne. Dzięki temu wyniki są powtarzalne i przewidywalne. Opcjonalna warstwa AI to <b>osobne</b> repozytorium (<a href="https://github.com/karolpolikarp/anonimizator-ai" target="_blank" rel="noopener noreferrer">anonimizator-ai</a>) — nie jest częścią tego pliku.</div>
+        </details>
+      </div>
+    </section>
+
+    <!-- ══════════ CTA KOŃCOWE ══════════ -->
+    <section class="section wrap">
+      <div class="finalcta">
+        <h2>Zdejmij dane, zanim tekst gdziekolwiek pojedzie</h2>
+        <p>Jeden plik HTML. Otwierasz i działasz. Za darmo, offline, na zawsze.</p>
+        <div class="hero-cta">
+          <a class="btn btn-cta btn-lg" href="https://github.com/karolpolikarp/parawan/releases/latest" target="_blank" rel="noopener noreferrer"><i class="gi" data-i="anonimizuj"></i>Pobierz Parawan</a>
+          <a class="btn btn-lg" href="https://github.com/karolpolikarp/parawan" target="_blank" rel="noopener noreferrer"><i class="gi" data-i="szablon"></i>Zobacz kod na GitHub</a>
+        </div>
+        <p class="micro">Bez instalacji · bez konta · bez internetu</p>
+      </div>
+    </section>
+
+    <!-- ══════════ STOPKA ══════════ -->
+    <footer class="foot">
+      <div class="wrap">
+        <div class="foot-grid">
+          <div class="foot-brand">
+            <a href="#top" class="nav-brand"><span class="mark"><i class="gi" data-i="parawan-mark"></i></span><b>Parawan</b></a>
+            <p>„Dane za parawanem” — lokalny anonimizator polskich danych osobowych. Wszystko dzieje się na Twoim komputerze.</p>
+          </div>
+          <div class="foot-col">
+            <h4>Produkt</h4>
+            <a href="https://github.com/karolpolikarp/parawan/releases/latest" target="_blank" rel="noopener noreferrer">Pobierz Parawan.html</a>
+            <a href="#demo">Demo na żywo</a>
+            <a href="#faq">FAQ</a>
+          </div>
+          <div class="foot-col">
+            <h4>Kod</h4>
+            <a href="https://github.com/karolpolikarp/parawan" target="_blank" rel="noopener noreferrer">GitHub — parawan</a>
+            <span>npm: <code>anonimizator</code> + CLI</span>
+            <a href="https://github.com/karolpolikarp/anonimizator-ai" target="_blank" rel="noopener noreferrer">Rozszerzenie AI (osobne)</a>
+            <a href="https://github.com/karolpolikarp/parawan/issues" target="_blank" rel="noopener noreferrer">Zgłoś nietrafione wykrycie</a>
+          </div>
+          <div class="foot-col">
+            <h4>Autor</h4>
+            <a href="https://karolwilczynski.com" target="_blank" rel="noopener noreferrer">karolwilczynski.com ↗</a>
+          </div>
+        </div>
+        <div class="foot-legal">
+          <span>Kod: Apache 2.0 · Fonty (Archivo, IBM Plex Mono): SIL OFL 1.1</span>
+          <span>Wersja <span id="ver-foot">…</span> · zbudowane bez żądań do serwerów firm trzecich</span>
+        </div>
+      </div>
+    </footer>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

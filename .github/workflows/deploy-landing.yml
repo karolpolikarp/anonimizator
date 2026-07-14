@@ -1,0 +1,52 @@
+name: Deploy landing (GitHub Pages)
+
+# Publikuje landing page Parawana (apps/landing → jeden plik index.html) na GitHub Pages
+# pod domeną parawan.karolwilczynski.com. Odpala się przy zmianach w landingu lub w rdzeniu
+# (live demo importuje silnik z packages/core), oraz ręcznie z zakładki Actions.
+#
+# Wymagana jednorazowa konfiguracja w repo: Settings → Pages → Source: „GitHub Actions".
+# Domena (CNAME) jest w apps/landing/public/CNAME i trafia do artefaktu przy buildzie.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/landing/**'
+      - 'packages/core/**'
+      - '.github/workflows/deploy-landing.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Nie przerywaj trwającego deployu; kolejkuj po jednym.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm run build -w parawan-landing
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: apps/landing/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

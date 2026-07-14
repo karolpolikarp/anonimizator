@@ -4,7 +4,7 @@
  * Cel: maskować nazwisko WYSTĘPUJĄCE SAMODZIELNIE („Sprawę Kowalskiego przekazano…"),
  * którego nie złapie ani para „Imię Nazwisko", ani wyzwalacz „Pan/Pani…".
  *
- * Zasada bezpieczeństwa: словnik zawiera WYŁĄCZNIE nazwiska jednoznaczne.
+ * Zasada bezpieczeństwa: słownik zawiera WYŁĄCZNIE nazwiska jednoznaczne.
  * Nazwiska-homonimy rzeczowników pospolitych (Baran, Wilk, Lis, Mazur, Sowa, Mucha,
  * Kot, Król, Duda, Mróz, Piątek, Kwiecień…) są ŚWIADOMIE pominięte — samodzielne
  * „Wilk biegał po lesie" nie może być maskowane. Te nazwiska i tak są chronione

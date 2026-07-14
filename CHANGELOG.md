@@ -1,5 +1,32 @@
 # Changelog
 
+## v0.46.9 — 2026-07-14
+
+**Sprzątanie i przejrzystość kodu — zero zmian zachowania.** Runda porządkowa po wydaniu: mniej
+duplikacji, czytelniejsza struktura, narzędzia jakości. Detekcja, wynik redakcji i UI bez zmian
+(potwierdzone golden-master na całym korpusie oraz pełną weryfikacją: testy, tsc, benchmark, zrzuty).
+
+- **Sieć bezpieczeństwa dla refaktoru**: nowy golden-master (`redact-golden.test.ts`) zamraża wynik
+  `redactPII` na całym korpusie benchmarku (warianty domyślny / pseudonimy / filtr typów) i na zbiorze
+  adwersarialnym, plus testy idempotencji. Testy rdzenia 284 → 291.
+- **Rdzeń czytelniej (bez zmiany logiki)**: banery FAZ 0–5 i uporządkowana numeracja kroków w
+  `redactPII` (koniec mylącego „1e przed 1c", „7 zagnieżdżone w 6"); wspólny walidator sum
+  kontrolnych (`weightedChecksum`) zamiast 4 kopii; fabryka „etykieta + wartość" (`maskAfterLabel`)
+  i stała maska (`maskConst`) zamiast powtarzanych callbacków; dwa helpery słownika miast zamiast
+  4 pętli. Usunięty martwy, nigdy niewpięty `NON_CITY_AFTER_RESIDENCE`.
+- **Web: jedno źródło prawdy o typach PII** (`PII_TOKENS`) — kategoria, ikona i opis każdego typu
+  w jednym miejscu; kategorie/ikony przełączników, chipów i legendy są z niego wyprowadzane (koniec
+  powielania w 4 miejscach). Wartości identyczne co do znaku (dowiedzione osobnym testem równoważności).
+- **Usunięty martwy kod po wyciętej warstwie AI**: ikony `ner`/`ustawienia`/`haslo`/`onoff`/`regula`,
+  reguły CSS `.ner-updated` + `@keyframes ner-flash`, `.field*`, `.ic-xl`, `.tg`, pusty katalog `src/icons/`.
+- **Narzędzia i higiena**: dodany Biome (formatter + linter) z bramką `lint` w CI (bez masowego
+  przeformatowania); wspólna baza `tsconfig.base.json` zamiast powtórzeń w 3 konfiguracjach; usunięty
+  osierocony `docker-compose.yml` (wskazywał na nieistniejące `./services/ner`); współdzielony generator
+  minimalnego PDF dla testu i samodiagnostyki `?pdftest`; drobiazgi (cyrylica w komentarzu → „słownik",
+  `@ts-expect-error`, jawny typ `let doc`).
+
+Rdzeń `anonimizator` 0.29.2 → 0.29.3, aplikacja web 0.46.8 → 0.46.9. Bez zmian zachowania detekcji i UI.
+
 ## v0.46.8 — 2026-07-13
 
 **Detekcja rdzenia: imię i nazwisko małymi literami, e-mail z polską diakrytyką, kod pocztowy bez myślnika.**

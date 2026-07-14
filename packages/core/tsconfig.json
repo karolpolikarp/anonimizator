@@ -1,10 +1,7 @@
+// Typecheck rdzenia (bez emisji) — build robi tsconfig.build.json. Rygor z bazy monorepo.
 {
+  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "target": "ES2022",
-    "module": "ESNext",
-    "moduleResolution": "bundler",
-    "strict": true,
-    "skipLibCheck": true,
     "noEmit": true
   },
   "include": ["src"]

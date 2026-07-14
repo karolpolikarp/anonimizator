@@ -168,8 +168,6 @@ kbd {
   box-shadow: none;
 }
 .ic .gi { width: 30px; height: 30px; }
-.ic-xl { width: 56px; height: 56px; border-radius: 15px; }
-.ic-xl .gi { width: 34px; height: 34px; }
 .ic-s { width: 34px; height: 34px; border-radius: 9px; }
 .ic-s .gi { width: 21px; height: 21px; }
 
@@ -328,16 +326,6 @@ details.card::details-content {
 }
 .sw:checked { background: var(--acc); border-color: var(--acc); }
 .sw:checked::after { left: 18px; background: #fff; }
-
-/* pola tekstowe / select */
-.field {
-  height: 38px; padding: 0 11px;
-  background: var(--well); color: var(--text);
-  border: 1px solid var(--line-2); border-radius: var(--r-ctl);
-  font: 500 13px/36px var(--mono);
-}
-.field-inline { width: 230px; flex: none; }
-select.field { font-family: var(--sans); line-height: normal; cursor: pointer; }
 
 /* ============ HERO ============ */
 /* Poziomy lockup marki: znak │ PARAWAN + tagline (mono wersaliki), jak w karcie marki. */
@@ -570,9 +558,6 @@ textarea.editor-ta.dragover {
 .editor.plain { white-space: pre-wrap; padding-left: 14px; }
 
 #output:focus-visible { outline: 2px solid var(--acc-line); outline-offset: 2px; }
-
-.editor.ner-updated { animation: ner-flash .8s ease-out; }
-@keyframes ner-flash { from { box-shadow: 0 0 0 3px var(--acc-soft); } }
 
 /* znaczniki w WYNIKU */
 .pii {
@@ -840,7 +825,6 @@ table .pii { cursor: default; }
 }
 @media (max-width: 640px) {
   .g3 { grid-column: span 12; }
-  .tg { flex-basis: 100%; } /* na wąskich ekranach jeden przełącznik w rzędzie */
   .hero-b { flex-direction: column; align-items: flex-start; }
   .privacy { margin-left: 0; }
   .editor, textarea.editor-ta { min-height: 200px; }

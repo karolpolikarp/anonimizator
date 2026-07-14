@@ -58,6 +58,12 @@ export const ICONS: Record<string, string> = {
   ),
 
   // ── Narzędzia / stany ──
+  haslo: svg('<rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>' + dot(12, 15.5, 1.3)),
+  onoff: svg('<path d="M12 3v8.5"/><path d="M6.8 7.2a8 8 0 1 0 10.4 0"/>'),
+  ustawienia: svg(
+    '<circle cx="12" cy="12" r="3.2"/>' +
+      '<path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M19.4 4.6l-2.1 2.1M6.7 17.3l-2.1 2.1"/>',
+  ),
   // suwaki/przełączniki — dobór, co maskować (dwie ścieżki z gałkami)
   suwaki: svg(
     '<line x1="4" y1="8" x2="20" y2="8"/><line x1="4" y1="16" x2="20" y2="16"/>' +
@@ -77,6 +83,10 @@ export const ICONS: Record<string, string> = {
       '<path d="M6 7v13a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V7"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/>',
   ),
   kopiuj: svg('<rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/>'),
+  regula: svg(
+    '<line x1="12" y1="4" x2="12" y2="20"/><line x1="7" y1="20" x2="17" y2="20"/><line x1="4.5" y1="7" x2="19.5" y2="7"/>' +
+      '<path d="M4.5 7 2 12.5a3 3 0 0 0 5 0z"/><path d="M19.5 7 17 12.5a3 3 0 0 0 5 0z"/>' + dot(12, 4, 1.2),
+  ),
   sprawdz: svg('<circle cx="11" cy="11" r="6.2"/><line x1="20" y1="20" x2="15.6" y2="15.6"/>'),
   suma: svg(
     '<rect x="5" y="3" width="14" height="18" rx="2"/><rect x="8" y="6" width="8" height="3" rx="0.6"/>' +
@@ -92,6 +102,11 @@ export const ICONS: Record<string, string> = {
     '<path d="M12 3 5 6v5c0 4.6 3 7.6 7 9 4-1.4 7-4.4 7-9V6z"/>' +
       '<rect x="9.3" y="11" width="5.4" height="4.6" rx="1"/><path d="M10.4 11v-1a1.6 1.6 0 0 1 3.2 0v1"/>',
   ),
+  ner: svg(
+    '<rect x="6" y="6" width="12" height="12" rx="2"/><rect x="9.5" y="9.5" width="5" height="5" rx="1"/>' +
+      '<path d="M9 3v3M15 3v3M9 18v3M15 18v3M3 9h3M3 15h3M18 9h3M18 15h3"/>',
+  ),
+
   // Znak marki „Parawan" (dwutonowy, stałe barwy) — patrz parawanMark() niżej.
   'parawan-mark': parawanMark(),
 };

@@ -1,6 +1,7 @@
 import { redactPII, type PiiFinding, type PiiType } from 'anonimizator';
 import { extractDocxText } from './docx';
 import { extractPdfText } from './pdf';
+import { buildMinimalPdf } from './pdf-fixture';
 import './style.css';
 
 // Ikony — inline SVG (jedno źródło prawdy, kolor z currentColor). Zero rastrów.
@@ -39,48 +40,62 @@ let viewMode: 'result' | 'compare' = 'result';
 let maskEls: HTMLElement[] = []; // znaczniki w wyniku, w kolejności dokumentu
 let maskIdx = -1; // bieżący znacznik w przeglądaniu (-1 = żaden)
 
-/* ── Kategorie i metadane typów PII (jedna rodzina kolorów w całej aplikacji) ── */
+/* ── JEDNO źródło prawdy o typach PII — z niego wyprowadzamy legendę, znaczniki, chipy
+   i przełączniki (jedna rodzina kolorów i ikon w całej aplikacji). Klucz = TOKEN w [...]. ── */
 
 type Cat = 'person' | 'contact' | 'ident' | 'fin' | 'place';
 
-/** Kategoria wizualna znacznika po nazwie tokenu (spójna z legendą i tabelą). */
-function maskCategory(name: string): Cat {
-  if (name.startsWith('OSOBA-') || name === 'IMIĘ I NAZWISKO' || name === 'DATA-URODZENIA') return 'person';
-  if (name === 'EMAIL' || name === 'TELEFON') return 'contact';
-  if (name === 'NR-KONTA') return 'fin';
-  if (name === 'ADRES' || name === 'KOD-POCZTOWY' || name === 'MIEJSCOWOŚĆ') return 'place';
-  return 'ident'; // PESEL / NIP / REGON / NR-DOWODU
+interface TokenMeta {
+  cat: Cat; // kategoria wizualna (kolor + pas w legendzie/tabeli)
+  icon: string; // nazwa ikony z icons.ts
+  tip: string; // tooltip znacznika w wyniku: „Kategoria · metoda wykrycia"
 }
 
-/** Tooltipy znaczników w wyniku: kategoria · metoda wykrycia. */
-const MASK_TIP: Record<string, string> = {
-  PESEL: 'Identyfikatory · 11 cyfr, suma kontrolna poprawna',
-  NIP: 'Identyfikatory · 10 cyfr, suma kontrolna poprawna',
-  REGON: 'Identyfikatory · suma kontrolna poprawna',
-  'NR-DOWODU': 'Identyfikatory · 3 litery + 6 cyfr, suma kontrolna poprawna',
-  'NR-PASZPORTU': 'Identyfikatory · kontekst „paszport" + 2 litery + 7 cyfr',
-  KRS: 'Identyfikatory · kontekst „KRS" + 10 cyfr',
-  'ZNAK-SPRAWY': 'Identyfikatory · znak sprawy/pisma (JRWA) lub sygnatura akt',
-  'PRAWO-JAZDY': 'Identyfikatory · kontekst „prawo jazdy" + numer z cyfrą',
-  'NR-REJESTRACYJNY': 'Identyfikatory · kontekst „rejestracyjny/tablica" + tablica',
-  VIN: 'Identyfikatory · 17 znaków bez I/O/Q; kontekst „VIN" lub układ VIN',
-  IP: 'Identyfikatory · adres IPv4 (oktety 0–255) lub IPv6',
-  MAC: 'Identyfikatory · 6 par hex (00:1A:2B:3C:4D:5E)',
-  TOKEN: 'Identyfikatory · token/JWT (eyJ…), może dawać dostęp',
-  LOGIN: 'Identyfikatory · kontekst „login/username" + wartość (też w URL i XML/JSON)',
-  'NR-KONTA': 'Finanse · IBAN (mod 97) lub kontekst „konto/rachunek”',
-  EMAIL: 'Kontakt · wzorzec adresu e-mail',
-  TELEFON: 'Kontakt · 9 cyfr, opcjonalnie +48',
-  ADRES: 'Adres i czas · wzorzec ul./al./os./pl. + nazwa + numer',
-  'KOD-POCZTOWY': 'Adres i czas · wzorzec XX-XXX',
-  'MIEJSCOWOŚĆ': 'Adres i czas · miejscowość po kodzie pocztowym',
-  'DATA-URODZENIA': 'Adres i czas · data z kontekstem „ur./urodzony”',
-  'IMIĘ I NAZWISKO': 'Osoby · słownik imion/nazwisk lub wyzwalacz kontekstu',
+/**
+ * Metadane prezentacji per token maski (to, co stoi w [...] w wyniku). To JEDYNE miejsce,
+ * w którym żyje kategoria i ikona danego typu — chipy „Zamaskowano", przełączniki „Co maskować"
+ * i legenda czerpią stąd (żadnej z tych wartości nie powielamy w kilku miejscach).
+ */
+const PII_TOKENS: Record<string, TokenMeta> = {
+  // Identyfikatory
+  PESEL: { cat: 'ident', icon: 'pesel', tip: 'Identyfikatory · 11 cyfr, suma kontrolna poprawna' },
+  NIP: { cat: 'ident', icon: 'nip', tip: 'Identyfikatory · 10 cyfr, suma kontrolna poprawna' },
+  REGON: { cat: 'ident', icon: 'dane-id', tip: 'Identyfikatory · suma kontrolna poprawna' },
+  'NR-DOWODU': { cat: 'ident', icon: 'numer-dok', tip: 'Identyfikatory · 3 litery + 6 cyfr, suma kontrolna poprawna' },
+  'NR-PASZPORTU': { cat: 'ident', icon: 'numer-dok', tip: 'Identyfikatory · kontekst „paszport" + 2 litery + 7 cyfr' },
+  KRS: { cat: 'ident', icon: 'dane-id', tip: 'Identyfikatory · kontekst „KRS" + 10 cyfr' },
+  'ZNAK-SPRAWY': { cat: 'ident', icon: 'numer-dok', tip: 'Identyfikatory · znak sprawy/pisma (JRWA) lub sygnatura akt' },
+  'PRAWO-JAZDY': { cat: 'ident', icon: 'numer-dok', tip: 'Identyfikatory · kontekst „prawo jazdy" + numer z cyfrą' },
+  'NR-REJESTRACYJNY': { cat: 'ident', icon: 'numer-dok', tip: 'Identyfikatory · kontekst „rejestracyjny/tablica" + tablica' },
+  VIN: { cat: 'ident', icon: 'dane-id', tip: 'Identyfikatory · 17 znaków bez I/O/Q; kontekst „VIN" lub układ VIN' },
+  IP: { cat: 'ident', icon: 'dane-id', tip: 'Identyfikatory · adres IPv4 (oktety 0–255) lub IPv6' },
+  MAC: { cat: 'ident', icon: 'dane-id', tip: 'Identyfikatory · 6 par hex (00:1A:2B:3C:4D:5E)' },
+  TOKEN: { cat: 'ident', icon: 'login', tip: 'Identyfikatory · token/JWT (eyJ…), może dawać dostęp' },
+  LOGIN: { cat: 'ident', icon: 'login', tip: 'Identyfikatory · kontekst „login/username" + wartość (też w URL i XML/JSON)' },
+  // Finanse
+  'NR-KONTA': { cat: 'fin', icon: 'iban', tip: 'Finanse · IBAN (mod 97) lub kontekst „konto/rachunek”' },
+  // Kontakt
+  EMAIL: { cat: 'contact', icon: 'login', tip: 'Kontakt · wzorzec adresu e-mail' },
+  TELEFON: { cat: 'contact', icon: 'telefon', tip: 'Kontakt · 9 cyfr, opcjonalnie +48' },
+  // Adres i czas
+  ADRES: { cat: 'place', icon: 'dom', tip: 'Adres i czas · wzorzec ul./al./os./pl. + nazwa + numer' },
+  'KOD-POCZTOWY': { cat: 'place', icon: 'mapa-pl', tip: 'Adres i czas · wzorzec XX-XXX' },
+  'MIEJSCOWOŚĆ': { cat: 'place', icon: 'mapa-pl', tip: 'Adres i czas · miejscowość po kodzie pocztowym' },
+  'DATA-URODZENIA': { cat: 'person', icon: 'kalendarz', tip: 'Adres i czas · data z kontekstem „ur./urodzony”' },
+  // Osoby
+  'IMIĘ I NAZWISKO': { cat: 'person', icon: 'dane-osobowe', tip: 'Osoby · słownik imion/nazwisk lub wyzwalacz kontekstu' },
 };
 
+/** Kategoria wizualna znacznika po nazwie tokenu (OSOBA-* = osoba; nieznany token → identyfikatory). */
+function maskCategory(name: string): Cat {
+  if (name.startsWith('OSOBA-')) return 'person';
+  return PII_TOKENS[name]?.cat ?? 'ident';
+}
+
+/** Tooltip znacznika w wyniku: kategoria · metoda wykrycia. */
 function maskTip(name: string): string {
   if (name.startsWith('OSOBA-')) return `Osoby · spójna etykieta tej samej osoby (${name})`;
-  return MASK_TIP[name] ?? 'Wykryta dana osobowa';
+  return PII_TOKENS[name]?.tip ?? 'Wykryta dana osobowa';
 }
 
 /* ── Przełączniki „Co maskować" (generowane, z ikonami i kodami znaczników) ── */
@@ -96,30 +111,44 @@ interface MaskGroup {
   full?: boolean;
 }
 
-const MASK_GROUPS: MaskGroup[] = [
-  { key: 'pesel', label: 'PESEL', types: ['PESEL'], cat: 'ident', icon: 'pesel', code: '[PESEL]', tip: '11 cyfr + walidacja sumy kontrolnej' },
-  { key: 'nip', label: 'NIP', types: ['NIP'], cat: 'ident', icon: 'nip', code: '[NIP]', tip: '10 cyfr (także z myślnikami) + suma kontrolna' },
-  { key: 'regon', label: 'REGON', types: ['REGON'], cat: 'ident', icon: 'dane-id', code: '[REGON]', tip: '9 lub 14 cyfr + suma kontrolna' },
-  { key: 'dowod', label: 'Nr dowodu osobistego', types: ['DOWOD'], cat: 'ident', icon: 'numer-dok', code: '[NR-DOWODU]', tip: '3 litery + 6 cyfr + suma kontrolna' },
-  { key: 'paszport', label: 'Nr paszportu', types: ['PASZPORT'], cat: 'ident', icon: 'numer-dok', code: '[NR-PASZPORTU]', tip: 'Kontekst „paszport" + 2 litery + 7 cyfr' },
-  { key: 'krs', label: 'Numer KRS', types: ['KRS'], cat: 'ident', icon: 'dane-id', code: '[KRS]', tip: 'Kontekst „KRS" + 10 cyfr' },
-  { key: 'znak', label: 'Znak sprawy / pisma', types: ['ZNAK-SPRAWY'], cat: 'ident', icon: 'numer-dok', code: '[ZNAK-SPRAWY]', tip: 'Znak sprawy/pisma wg JRWA (ABC-def.123.77.2016) lub sygnatura akt („Sygn. akt II CSK 234/19")' },
-  { key: 'prawojazdy', label: 'Nr prawa jazdy', types: ['PRAWO-JAZDY'], cat: 'ident', icon: 'numer-dok', code: '[PRAWO-JAZDY]', tip: 'Kontekst „prawo jazdy" + numer (z cyfrą)' },
-  { key: 'rejestracja', label: 'Nr rejestracyjny', types: ['NR-REJESTRACYJNY'], cat: 'ident', icon: 'numer-dok', code: '[NR-REJESTRACYJNY]', tip: 'Kontekst „rejestracyjny/tablica" + tablica (WI1234K)' },
-  { key: 'vin', label: 'VIN', types: ['VIN'], cat: 'ident', icon: 'dane-id', code: '[VIN]', tip: '17 znaków bez I/O/Q; kontekst „VIN/nadwozia" lub wyraźny układ VIN' },
-  { key: 'ip', label: 'Adres IP', types: ['IP'], cat: 'ident', icon: 'dane-id', code: '[IP]', tip: 'IPv4 (oktety 0–255) oraz IPv6' },
-  { key: 'mac', label: 'Adres MAC', types: ['MAC'], cat: 'ident', icon: 'dane-id', code: '[MAC]', tip: '6 par hex (00:1A:2B:3C:4D:5E)' },
-  { key: 'token', label: 'Token / JWT', types: ['TOKEN'], cat: 'ident', icon: 'login', code: '[TOKEN]', tip: 'Token JWT (eyJ…), może dawać dostęp' },
-  { key: 'login', label: 'Login / nazwa użytkownika', types: ['LOGIN'], cat: 'ident', icon: 'login', code: '[LOGIN]', tip: 'Kontekst „login/username/nazwa użytkownika" + wartość; także w parametrach URL (?user=…) i kluczach XML/JSON' },
-  { key: 'konto', label: 'IBAN / nr konta', types: ['IBAN', 'NR-KONTA'], cat: 'fin', icon: 'iban', code: '[NR-KONTA]', tip: 'Walidacja mod 97 lub kontekst „konto/rachunek”' },
-  { key: 'email', label: 'E-mail', types: ['EMAIL'], cat: 'contact', icon: 'login', code: '[EMAIL]', tip: 'Wzorzec adresu e-mail' },
-  { key: 'telefon', label: 'Telefon', types: ['TELEFON'], cat: 'contact', icon: 'telefon', code: '[TELEFON]', tip: '9 cyfr, opcjonalnie prefiks +48' },
-  { key: 'adres', label: 'Adres', types: ['ADRES'], cat: 'place', icon: 'dom', code: '[ADRES]', tip: 'ul./al./os./pl. + nazwa + numer' },
-  { key: 'kod', label: 'Kod pocztowy', types: ['KOD-POCZTOWY'], cat: 'place', icon: 'mapa-pl', code: '[KOD-POCZTOWY]', tip: 'Wzorzec XX-XXX' },
-  { key: 'miejscowosc', label: 'Miejscowość', types: ['MIEJSCOWOSC'], cat: 'place', icon: 'mapa-pl', code: '[MIEJSCOWOŚĆ]', tip: 'Miejscowość po kodzie pocztowym (w adresie)' },
-  { key: 'imie', label: 'Imię i nazwisko', types: ['IMIE'], cat: 'person', icon: 'dane-osobowe', code: '[IMIĘ I NAZWISKO]', tip: 'Słownik ~200 imion i ~230 nazwisk z odmianą + morfologia i wyzwalacze kontekstu; wykrywanie heurystyczne' },
-  { key: 'dataur', label: 'Data urodzenia', types: ['DATA-UR'], cat: 'person', icon: 'kalendarz', code: '[DATA-URODZENIA]', tip: 'Data z kontekstem „ur./urodzony”' },
+// Definicje przełączników „Co maskować" BEZ kategorii i ikony — te wyprowadzamy z PII_TOKENS
+// po tokenie z `code`. Zostają tu dane swoiste dla przełącznika: klucz, etykieta, mapowane
+// typy rdzenia (`types`), kod znacznika i własny (bardziej szczegółowy niż tooltip) opis.
+type MaskGroupDef = Omit<MaskGroup, 'cat' | 'icon'>;
+const MASK_GROUP_DEFS: MaskGroupDef[] = [
+  { key: 'pesel', label: 'PESEL', types: ['PESEL'], code: '[PESEL]', tip: '11 cyfr + walidacja sumy kontrolnej' },
+  { key: 'nip', label: 'NIP', types: ['NIP'], code: '[NIP]', tip: '10 cyfr (także z myślnikami) + suma kontrolna' },
+  { key: 'regon', label: 'REGON', types: ['REGON'], code: '[REGON]', tip: '9 lub 14 cyfr + suma kontrolna' },
+  { key: 'dowod', label: 'Nr dowodu osobistego', types: ['DOWOD'], code: '[NR-DOWODU]', tip: '3 litery + 6 cyfr + suma kontrolna' },
+  { key: 'paszport', label: 'Nr paszportu', types: ['PASZPORT'], code: '[NR-PASZPORTU]', tip: 'Kontekst „paszport" + 2 litery + 7 cyfr' },
+  { key: 'krs', label: 'Numer KRS', types: ['KRS'], code: '[KRS]', tip: 'Kontekst „KRS" + 10 cyfr' },
+  { key: 'znak', label: 'Znak sprawy / pisma', types: ['ZNAK-SPRAWY'], code: '[ZNAK-SPRAWY]', tip: 'Znak sprawy/pisma wg JRWA (ABC-def.123.77.2016) lub sygnatura akt („Sygn. akt II CSK 234/19")' },
+  { key: 'prawojazdy', label: 'Nr prawa jazdy', types: ['PRAWO-JAZDY'], code: '[PRAWO-JAZDY]', tip: 'Kontekst „prawo jazdy" + numer (z cyfrą)' },
+  { key: 'rejestracja', label: 'Nr rejestracyjny', types: ['NR-REJESTRACYJNY'], code: '[NR-REJESTRACYJNY]', tip: 'Kontekst „rejestracyjny/tablica" + tablica (WI1234K)' },
+  { key: 'vin', label: 'VIN', types: ['VIN'], code: '[VIN]', tip: '17 znaków bez I/O/Q; kontekst „VIN/nadwozia" lub wyraźny układ VIN' },
+  { key: 'ip', label: 'Adres IP', types: ['IP'], code: '[IP]', tip: 'IPv4 (oktety 0–255) oraz IPv6' },
+  { key: 'mac', label: 'Adres MAC', types: ['MAC'], code: '[MAC]', tip: '6 par hex (00:1A:2B:3C:4D:5E)' },
+  { key: 'token', label: 'Token / JWT', types: ['TOKEN'], code: '[TOKEN]', tip: 'Token JWT (eyJ…), może dawać dostęp' },
+  { key: 'login', label: 'Login / nazwa użytkownika', types: ['LOGIN'], code: '[LOGIN]', tip: 'Kontekst „login/username/nazwa użytkownika" + wartość; także w parametrach URL (?user=…) i kluczach XML/JSON' },
+  { key: 'konto', label: 'IBAN / nr konta', types: ['IBAN', 'NR-KONTA'], code: '[NR-KONTA]', tip: 'Walidacja mod 97 lub kontekst „konto/rachunek”' },
+  { key: 'email', label: 'E-mail', types: ['EMAIL'], code: '[EMAIL]', tip: 'Wzorzec adresu e-mail' },
+  { key: 'telefon', label: 'Telefon', types: ['TELEFON'], code: '[TELEFON]', tip: '9 cyfr, opcjonalnie prefiks +48' },
+  { key: 'adres', label: 'Adres', types: ['ADRES'], code: '[ADRES]', tip: 'ul./al./os./pl. + nazwa + numer' },
+  { key: 'kod', label: 'Kod pocztowy', types: ['KOD-POCZTOWY'], code: '[KOD-POCZTOWY]', tip: 'Wzorzec XX-XXX' },
+  { key: 'miejscowosc', label: 'Miejscowość', types: ['MIEJSCOWOSC'], code: '[MIEJSCOWOŚĆ]', tip: 'Miejscowość po kodzie pocztowym (w adresie)' },
+  { key: 'imie', label: 'Imię i nazwisko', types: ['IMIE'], code: '[IMIĘ I NAZWISKO]', tip: 'Słownik ~200 imion i ~230 nazwisk z odmianą + morfologia i wyzwalacze kontekstu; wykrywanie heurystyczne' },
+  { key: 'dataur', label: 'Data urodzenia', types: ['DATA-UR'], code: '[DATA-URODZENIA]', tip: 'Data z kontekstem „ur./urodzony”' },
 ];
+
+/** Token wewnątrz [...] z kodu znacznika, np. „[NR-KONTA]" → „NR-KONTA". */
+const tokenOfCode = (code: string): string => code.slice(1, -1);
+
+// Kategoria i ikona każdego przełącznika pochodzą z PII_TOKENS (po tokenie z `code`) — nie
+// duplikujemy ich. Zweryfikowane: dla każdego kodu para (kategoria, ikona) jest tam zdefiniowana.
+const MASK_GROUPS: MaskGroup[] = MASK_GROUP_DEFS.map((g) => {
+  const meta = PII_TOKENS[tokenOfCode(g.code)];
+  return { ...g, cat: meta.cat, icon: meta.icon };
+});
 
 const maskTogglesEl = $<HTMLSpanElement>('mask-toggles');
 const disabledGroups = new Set<string>(
@@ -310,8 +339,15 @@ function escapeHtml(s: string): string {
     .replace(/'/g, '&#39;');
 }
 
-const MASK_TOKEN_RE =
-  /\[(PESEL|NIP|REGON|NR-KONTA|NR-DOWODU|NR-PASZPORTU|KRS|ZNAK-SPRAWY|PRAWO-JAZDY|NR-REJESTRACYJNY|VIN|IP|MAC|TOKEN|EMAIL|TELEFON|KOD-POCZTOWY|DATA-URODZENIA|ADRES|MIEJSCOWOŚĆ|IMIĘ I NAZWISKO|OSOBA-[A-Z]+)\]/g;
+// Rozpoznaje znaczniki [TOKEN] do podświetlenia/nawigacji w wyniku. Lista tokenów pochodzi
+// z PII_TOKENS (+ dynamiczne OSOBA-A/B…). LOGIN jest POMIJANY — [LOGIN] celowo nie jest dziś
+// podświetlany ani nawigowalny (znany brak z wydania; włączenie byłoby zmianą zachowania UI).
+// Żaden token nie zawiera metaznaków regexu, a każdy jest zakotwiczony nawiasami [...], więc
+// wstawiamy je wprost i kolejność alternatyw nie ma znaczenia.
+const MASK_TOKEN_RE = new RegExp(
+  `\\[(${[...Object.keys(PII_TOKENS).filter((t) => t !== 'LOGIN'), 'OSOBA-[A-Z]+'].join('|')})\\]`,
+  'g',
+);
 
 function maskHtml(name: string): string {
   return `<mark class="pii pii-${maskCategory(name)}" data-tip="${escapeHtml(maskTip(name))}" tabindex="0">[${name}]</mark>`;
@@ -563,24 +599,33 @@ for (const g of grips) g.setAttribute('aria-valuenow', String(input.offsetHeight
 
 /* ── Pasek „Zamaskowano" (chipy z ikonami, licznik, kategorie) ── */
 
-const CHIP_META: Record<string, { label: string; cat: Cat; icon: string }> = {
-  IMIE: { label: 'imię i nazwisko', cat: 'person', icon: 'dane-osobowe' },
-  PESEL: { label: 'PESEL', cat: 'ident', icon: 'pesel' },
-  NIP: { label: 'NIP', cat: 'ident', icon: 'nip' },
-  REGON: { label: 'REGON', cat: 'ident', icon: 'dane-id' },
-  DOWOD: { label: 'nr dowodu', cat: 'ident', icon: 'numer-dok' },
-  PASZPORT: { label: 'nr paszportu', cat: 'ident', icon: 'numer-dok' },
-  KRS: { label: 'numer KRS', cat: 'ident', icon: 'dane-id' },
-  'ZNAK-SPRAWY': { label: 'znak sprawy', cat: 'ident', icon: 'numer-dok' },
-  IBAN: { label: 'nr konta', cat: 'fin', icon: 'iban' },
-  'NR-KONTA': { label: 'nr konta', cat: 'fin', icon: 'iban' },
-  EMAIL: { label: 'e-mail', cat: 'contact', icon: 'login' },
-  TELEFON: { label: 'telefon', cat: 'contact', icon: 'telefon' },
-  ADRES: { label: 'adres', cat: 'place', icon: 'dom' },
-  'KOD-POCZTOWY': { label: 'kod pocztowy', cat: 'place', icon: 'mapa-pl' },
-  MIEJSCOWOSC: { label: 'miejscowość', cat: 'place', icon: 'mapa-pl' },
-  'DATA-UR': { label: 'data urodzenia', cat: 'person', icon: 'kalendarz' },
-};
+// Chipy „Zamaskowano" per typ rdzenia (finding.type). Krótka etykieta jest swoista dla chipa;
+// kategorię i ikonę bierzemy z PII_TOKENS po tokenie (jedno źródło). Typy spoza tej listy
+// (VIN/IP/MAC/TOKEN/LOGIN/…) dostają w renderFindings generyczny chip zapasowy.
+const CHIP_DEFS: Array<{ type: PiiType; token: string; label: string }> = [
+  { type: 'IMIE', token: 'IMIĘ I NAZWISKO', label: 'imię i nazwisko' },
+  { type: 'PESEL', token: 'PESEL', label: 'PESEL' },
+  { type: 'NIP', token: 'NIP', label: 'NIP' },
+  { type: 'REGON', token: 'REGON', label: 'REGON' },
+  { type: 'DOWOD', token: 'NR-DOWODU', label: 'nr dowodu' },
+  { type: 'PASZPORT', token: 'NR-PASZPORTU', label: 'nr paszportu' },
+  { type: 'KRS', token: 'KRS', label: 'numer KRS' },
+  { type: 'ZNAK-SPRAWY', token: 'ZNAK-SPRAWY', label: 'znak sprawy' },
+  { type: 'IBAN', token: 'NR-KONTA', label: 'nr konta' },
+  { type: 'NR-KONTA', token: 'NR-KONTA', label: 'nr konta' },
+  { type: 'EMAIL', token: 'EMAIL', label: 'e-mail' },
+  { type: 'TELEFON', token: 'TELEFON', label: 'telefon' },
+  { type: 'ADRES', token: 'ADRES', label: 'adres' },
+  { type: 'KOD-POCZTOWY', token: 'KOD-POCZTOWY', label: 'kod pocztowy' },
+  { type: 'MIEJSCOWOSC', token: 'MIEJSCOWOŚĆ', label: 'miejscowość' },
+  { type: 'DATA-UR', token: 'DATA-URODZENIA', label: 'data urodzenia' },
+];
+const CHIP_META: Record<string, { label: string; cat: Cat; icon: string }> = Object.fromEntries(
+  CHIP_DEFS.map(({ type, token, label }) => {
+    const meta = PII_TOKENS[token];
+    return [type, { label, cat: meta.cat, icon: meta.icon }];
+  }),
+);
 
 function renderFindings(found: PiiFinding[]): void {
   findingsCard.hidden = false;
@@ -833,26 +878,7 @@ if (params.has('demo')) {
 
 // ?pdftest — samodiagnostyka ścieżki PDF (fake worker w buildzie single-file)
 if (params.has('pdftest')) {
-  const body = 'BT /F1 12 Tf 72 720 Td (PDFTEST PESEL 44051401359) Tj ET';
-  const objs = [
-    '1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj\n',
-    '2 0 obj<</Type/Pages/Kids[3 0 R]/Count 1>>endobj\n',
-    '3 0 obj<</Type/Page/Parent 2 0 R/MediaBox[0 0 612 792]/Contents 4 0 R/Resources<</Font<</F1 5 0 R>>>>>>endobj\n',
-    `4 0 obj<</Length ${body.length}>>stream\n${body}\nendstream endobj\n`,
-    '5 0 obj<</Type/Font/Subtype/Type1/BaseFont/Helvetica>>endobj\n',
-  ];
-  let off = '%PDF-1.4\n'.length;
-  const offs = objs.map((o) => {
-    const cur = off;
-    off += o.length;
-    return cur;
-  });
-  const xref =
-    'xref\n0 6\n0000000000 65535 f \n' +
-    offs.map((o) => `${String(o).padStart(10, '0')} 00000 n \n`).join('');
-  const pdfBytes = new TextEncoder().encode(
-    '%PDF-1.4\n' + objs.join('') + xref + `trailer<</Size 6/Root 1 0 R>>\nstartxref\n${off}\n%%EOF`,
-  );
+  const pdfBytes = buildMinimalPdf('PDFTEST PESEL 44051401359');
   extractPdfText(pdfBytes)
     .then((t) => {
       input.value = `[PDF OK] ${t}`;

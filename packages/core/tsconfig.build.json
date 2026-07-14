@@ -1,10 +1,8 @@
+// Build rdzenia → dist (z deklaracjami). include jest jawny: to publiczne wejścia npm pakietu;
+// surnames.ts i breaker.ts wciągane są tranzytywnie przez importy. Rygor z bazy monorepo.
 {
+  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "target": "ES2022",
-    "module": "ESNext",
-    "moduleResolution": "bundler",
-    "strict": true,
-    "skipLibCheck": true,
     "declaration": true,
     "rootDir": "src",
     "outDir": "dist"

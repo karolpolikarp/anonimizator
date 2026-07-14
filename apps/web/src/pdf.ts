@@ -20,7 +20,7 @@ export async function extractPdfText(buf: Uint8Array): Promise<string> {
     disableFontFace: true,
     useSystemFonts: true,
   });
-  let doc;
+  let doc: Awaited<typeof task.promise>;
   try {
     doc = await task.promise;
   } catch (err) {

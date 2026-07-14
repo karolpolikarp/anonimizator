@@ -130,49 +130,51 @@ const MASK: Record<PiiType, string> = {
 const onlyDigits = (s: string): number[] =>
   s.replace(/\D/g, '').split('').map((d) => parseInt(d, 10));
 
-/** PESEL: 11 cyfr, wagi [1,3,7,9,1,3,7,9,1,3], cyfra kontrolna = (10 − sum%10)%10. */
-export function isValidPesel(s: string): boolean {
+/**
+ * Wspólny szkielet walidacji sumy kontrolnej „waga × cyfra" (PESEL/NIP/REGON).
+ * Sumujemy iloczyny cyfr 0..len-2 z `weights`, a `control(sum)` zwraca oczekiwaną OSTATNIĄ
+ * cyfrę kontrolną — albo `null`, gdy dana suma czyni numer nieważnym (wtedy `null === d[…]`
+ * jest zawsze fałszem). Cztery walidatory różnią się tylko długością, wagami i regułą kontroli.
+ */
+function weightedChecksum(
+  s: string,
+  len: number,
+  weights: number[],
+  control: (sum: number) => number | null,
+): boolean {
   const d = onlyDigits(s);
-  if (d.length !== 11) return false;
-  const w = [1, 3, 7, 9, 1, 3, 7, 9, 1, 3];
+  if (d.length !== len) return false;
   let sum = 0;
-  for (let i = 0; i < 10; i++) sum += d[i] * w[i];
-  const control = (10 - (sum % 10)) % 10;
-  return control === d[10];
+  for (let i = 0; i < weights.length; i++) sum += d[i] * weights[i];
+  return control(sum) === d[len - 1];
 }
 
-/** NIP: 10 cyfr, wagi [6,5,7,2,3,4,5,6,7], kontrola = sum%11 (10 → nieważny). */
+/** PESEL: 11 cyfr, wagi [1,3,7,9,1,3,7,9,1,3], cyfra kontrolna = (10 − sum%10)%10. */
+export function isValidPesel(s: string): boolean {
+  return weightedChecksum(s, 11, [1, 3, 7, 9, 1, 3, 7, 9, 1, 3], (sum) => (10 - (sum % 10)) % 10);
+}
+
+/** NIP: 10 cyfr, wagi [6,5,7,2,3,4,5,6,7], kontrola = sum%11 (10 → numer nieważny). */
 export function isValidNip(s: string): boolean {
-  const d = onlyDigits(s);
-  if (d.length !== 10) return false;
-  const w = [6, 5, 7, 2, 3, 4, 5, 6, 7];
-  let sum = 0;
-  for (let i = 0; i < 9; i++) sum += d[i] * w[i];
-  const control = sum % 11;
-  if (control === 10) return false;
-  return control === d[9];
+  return weightedChecksum(s, 10, [6, 5, 7, 2, 3, 4, 5, 6, 7], (sum) => {
+    const c = sum % 11;
+    return c === 10 ? null : c;
+  });
 }
 
 /** REGON 9-cyfrowy: wagi [8,9,2,3,4,5,6,7], kontrola = sum%11 (10 → 0). */
 export function isValidRegon9(s: string): boolean {
-  const d = onlyDigits(s);
-  if (d.length !== 9) return false;
-  const w = [8, 9, 2, 3, 4, 5, 6, 7];
-  let sum = 0;
-  for (let i = 0; i < 8; i++) sum += d[i] * w[i];
-  const control = sum % 11 === 10 ? 0 : sum % 11;
-  return control === d[8];
+  return weightedChecksum(s, 9, [8, 9, 2, 3, 4, 5, 6, 7], (sum) => (sum % 11 === 10 ? 0 : sum % 11));
 }
 
 /** REGON 14-cyfrowy: wagi [2,4,8,5,0,9,7,3,6,1,2,4,8], kontrola = sum%11 (10 → 0). */
 export function isValidRegon14(s: string): boolean {
-  const d = onlyDigits(s);
-  if (d.length !== 14) return false;
-  const w = [2, 4, 8, 5, 0, 9, 7, 3, 6, 1, 2, 4, 8];
-  let sum = 0;
-  for (let i = 0; i < 13; i++) sum += d[i] * w[i];
-  const control = sum % 11 === 10 ? 0 : sum % 11;
-  return control === d[13];
+  return weightedChecksum(
+    s,
+    14,
+    [2, 4, 8, 5, 0, 9, 7, 3, 6, 1, 2, 4, 8],
+    (sum) => (sum % 11 === 10 ? 0 : sum % 11),
+  );
 }
 
 /** IBAN (dowolny kraj): przenieś 4 pierwsze znaki na koniec, litery→liczby (A=10), mod 97 == 1. */
@@ -324,22 +326,6 @@ const precededByAdminLabel = (t: string, offset: number): boolean =>
   /(?:powiat\w*|gmin[aęyą]|województw[oaeu]m?|dzielnic[aęy])[ \t]*:?[ \t]*\n?[ \t]*$/i.test(
     t.slice(Math.max(0, offset - 24), offset),
   );
-/**
- * Kraje/regiony i lokale mieszkalne — po markerze zamieszkania („zamieszkały w …") NIE są
- * miejscowością-PII: „w Polsce" (za szeroko), „w Domu Opieki" (instytucja, nie miasto).
- */
-const NON_CITY_AFTER_RESIDENCE = new Set<string>(
-  (
-    // kraje / regiony (mianownik + miejscownik)
-    'polska polsce polski niemcy niemczech francja francji anglia anglii wielkiej brytanii ' +
-    'ukraina ukrainie białoruś białorusi litwa litwie czechy czechach słowacja słowacji ' +
-    'unii unia europie europa ' +
-    // lokale / placówki (gdy z wielkiej litery jako nazwa własna)
-    'dom domu mieszkanie mieszkaniu ośrodek ośrodku zakład zakładzie areszt areszcie ' +
-    'więzienie więzieniu szpital szpitalu hotel hotelu hostel hostelu akademik akademiku ' +
-    'internat internacie bursa bursie schronisko schronisku'
-  ).split(/\s+/),
-);
 /** Ostatni wyraz (małą literą) tuż przed pozycją — do sprawdzenia kontekstu nie-osobowego. */
 const prevLowerWord = (text: string, offset: number): string | undefined =>
   text
@@ -691,11 +677,29 @@ export function redactPII(input: string, options?: RedactOptions): RedactionResu
 
   let text = input;
 
+  // Fabryka przebiegu „etykieta + separator + wartość": słowo-etykieta (grupa 1) i separator
+  // (grupa 2) zostają, a wartość (grupa 3) znika pod maską typu. Wspólny kształt dla
+  // NR-KONTA / PESEL / NIP / REGON / ZNAK-SPRAWY / DATA-UR — regex różny, callback identyczny.
+  const maskAfterLabel = (re: RegExp, type: PiiType): void => {
+    text = text.replace(re, (_m, kw: string, sep: string) => {
+      bump(type);
+      return `${kw}${sep}${M[type]}`;
+    });
+  };
+
+  // Callback stałej maski: bump typu + zwrot placeholdera — dla przebiegów BEZ strażnika i BEZ
+  // użycia dopasowania (EMAIL/TOKEN/MAC/LOGIN/ADRES/ZNAK…). Zwraca funkcję gotową dla .replace().
+  const maskConst = (type: PiiType) => (): string => {
+    bump(type);
+    return M[type];
+  };
+
   // Kolejność MA znaczenie: najpierw ochrona URL-i (sentinel), potem e-mail (zawiera @, nie
   // koliduje z cyframi), potem NAJDŁUŻSZE ciągi cyfr (IBAN 26 → PESEL 11 → NIP 10 → REGON),
   // na końcu krótsze (telefon 9, kod 5). Redakcja dłuższego usuwa ciąg, więc krótszy detektor
   // nie „odgryza" jego części.
 
+  // ═══════════════════════ FAZA 0 · OCHRONA URL (sentinel) ═══════════════════════
   // 0) URL — CHRONIMY całe adresy przed pozostałymi przebiegami: bez tego detektory
   // nazwisk/telefonów/PESEL gryzły fragmenty URL-a (realny błąd: cały adres w protokole
   // stawał się „[IMIĘ I NAZWISKO]]"). Najpierw maskujemy PII WEWNĄTRZ (e-maile, wartości
@@ -715,10 +719,7 @@ export function redactPII(input: string, options?: RedactOptions): RedactionResu
     if (on('TOKEN')) {
       // JWT w URL-u (fragment „#access_token=eyJ…") — poza URL-em łapie go krok 1a,
       // ale URL jest sentinelowany WCZEŚNIEJ, więc token trzeba zdjąć już tutaj.
-      url = url.replace(/eyJ[A-Za-z0-9_-]{5,}\.[A-Za-z0-9_-]{5,}\.[A-Za-z0-9_-]{2,}/g, () => {
-        bump('TOKEN');
-        return M.TOKEN;
-      });
+      url = url.replace(/eyJ[A-Za-z0-9_-]{5,}\.[A-Za-z0-9_-]{5,}\.[A-Za-z0-9_-]{2,}/g, maskConst('TOKEN'));
     }
     for (const rule of URL_PARAM_RULES) {
       if (!on(rule.type)) continue;
@@ -732,12 +733,11 @@ export function redactPII(input: string, options?: RedactOptions): RedactionResu
     return `${sentinel}${trail}`;
   });
 
+  // ═════════ FAZA 1 · STRUKTURALNE WYSOKIEJ PRECYZJI (etykieta / wzorzec) ═════════
+  // Sufiksy 1a…1e biegną w tej kolejności literowej (kolejność = kolejność wykonania).
   // 1) E-MAIL
   if (on('EMAIL')) {
-    text = text.replace(RE_EMAIL, () => {
-      bump('EMAIL');
-      return M.EMAIL;
-    });
+    text = text.replace(RE_EMAIL, maskConst('EMAIL'));
   }
 
   // 1a) IDENTYFIKATORY TECHNICZNE / DOKUMENTY (strukturalne, wysoka precyzja). Biegną WCZEŚNIE,
@@ -746,37 +746,25 @@ export function redactPII(input: string, options?: RedactOptions): RedactionResu
   // TOKEN (JWT): eyJ<base64url>.<base64url>.<base64url>. „eyJ" = base64 z „{\"" — znikome FP,
   // a token może dawać dostęp, więc maskujemy w całości.
   if (on('TOKEN')) {
-    text = text.replace(/\beyJ[A-Za-z0-9_-]{5,}\.[A-Za-z0-9_-]{5,}\.[A-Za-z0-9_-]{2,}/g, () => {
-      bump('TOKEN');
-      return M.TOKEN;
-    });
+    text = text.replace(/\beyJ[A-Za-z0-9_-]{5,}\.[A-Za-z0-9_-]{5,}\.[A-Za-z0-9_-]{2,}/g, maskConst('TOKEN'));
     // TOKEN (sekrety prefiksowe): sk_live_/sk_test_ (Stripe), ghp_/gho_/ghs_/ghu_/ghr_ i
     // github_pat_ (GitHub), xox?- (Slack). Prefiks + minimalna długość ≈ zerowe FP, a to
     // najczęstszy wyciek przy wklejaniu logów/konfiguracji do asystenta AI.
     text = text.replace(
       /\b(?:sk_(?:live|test)_[A-Za-z0-9]{8,}|(?:ghp|gho|ghs|ghu|ghr)_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|xox[baprs]-[A-Za-z0-9-]{10,})/g,
-      () => {
-        bump('TOKEN');
-        return M.TOKEN;
-      },
+      maskConst('TOKEN'),
     );
   }
 
   // MAC: 6 par hex po „:"/„-". MUSI biec PRZED IPv6 (MAC pasuje do wzorca grup hex IPv6).
   if (on('MAC')) {
-    text = text.replace(/\b(?:[0-9A-Fa-f]{2}[:-]){5}[0-9A-Fa-f]{2}\b/g, () => {
-      bump('MAC');
-      return M.MAC;
-    });
+    text = text.replace(/\b(?:[0-9A-Fa-f]{2}[:-]){5}[0-9A-Fa-f]{2}\b/g, maskConst('MAC'));
     // MAC w notacji Cisco: „aabb.ccdd.eeff" (3 grupy po 4 hex). Wymagamy ≥1 LITERY hex,
     // żeby nie pożreć czysto cyfrowego ciągu z kropkami (numer wersji/pozycji). Prawa
     // granica dopuszcza kropkę końca zdania, ale nie kolejny człon („.3803" ≠ koniec MAC).
     text = text.replace(
       /\b(?=[0-9A-Fa-f.]*[A-Fa-f])(?:[0-9A-Fa-f]{4}\.){2}[0-9A-Fa-f]{4}(?![:\w-]|\.\w)/g,
-      () => {
-        bump('MAC');
-        return M.MAC;
-      },
+      maskConst('MAC'),
     );
     // Z SILNĄ etykietą „MAC" maskujemy notację Cisco także CZYSTO CYFROWĄ (konwencja
     // projektu: etykieta wygrywa z warunkiem strukturalnym — jak PESEL/NIP ze złą sumą).
@@ -798,10 +786,7 @@ export function redactPII(input: string, options?: RedactOptions): RedactionResu
       `${H}:(?:(?::${H}){1,6})|:(?:(?::${H}){1,7}|:)`;
     // Prawa granica: kropka KOŃCA ZDANIA po adresie jest OK („…fe80::1ff:fe23:4567:890a."),
     // ale kropka z kolejnym znakiem słownym już nie (fragment IPv4-mapped / wersji).
-    text = text.replace(new RegExp(`(?<![:.\\w])(?:${IPV6})(?![:\\w]|\\.\\w)`, 'g'), (m) => {
-      bump('IP');
-      return M.IP;
-    });
+    text = text.replace(new RegExp(`(?<![:.\\w])(?:${IPV6})(?![:\\w]|\\.\\w)`, 'g'), maskConst('IP'));
     // IPv4: 4 oktety 0–255. Nie po „art./poz." ani po „wersja/ver./v" (numer wersji ≠ IP).
     text = text.replace(
       /(?<![\d.])(?:(?:25[0-5]|2[0-4]\d|1?\d?\d)\.){3}(?:25[0-5]|2[0-4]\d|1?\d?\d)(?![\d.])/g,
@@ -879,7 +864,7 @@ export function redactPII(input: string, options?: RedactOptions): RedactionResu
     text = lines.join('\n');
   }
 
-  // 1d) STRUKTURA XML/JSON — tag „<Surname>" / klucz „"lastName"" to kotwica strukturalna
+  // 1c) STRUKTURA XML/JSON — tag „<Surname>" / klucz „"lastName"" to kotwica strukturalna
   // (jak etykieta formularza, tylko po angielsku/technicznie). Maskujemy SAMĄ wartość:
   // tagi, cudzysłowy i przecinki zostają, więc wynik XML/JSON dalej się parsuje.
   // Wartości zawierające „[" (placeholder z wcześniejszego kroku/przebiegu) pomijamy.
@@ -965,7 +950,7 @@ export function redactPII(input: string, options?: RedactOptions): RedactionResu
     );
   }
 
-  // 1e) LOGIN — kotwica „login/username/nazwa użytkownika" + wartość-token, także w NASTĘPNEJ
+  // 1d) LOGIN — kotwica „login/username/nazwa użytkownika" + wartość-token, także w NASTĘPNEJ
   // linii („Login użytkownika:\ntkaminski"). Wartość bywa małymi literami, więc pola
   // formularza (1b, wymagają wielkiej litery) jej nie widzą. Złapaną wartość maskujemy też
   // w pozostałych wystąpieniach w dokumencie (maskuj całość, nie fragment) oraz w wariancie
@@ -1005,14 +990,11 @@ export function redactPII(input: string, options?: RedactOptions): RedactionResu
       },
     );
     for (const v of loginValues) {
-      text = text.replace(new RegExp(`(?<![\\w.-])${escapeRe(v)}(?![\\w.-])`, 'g'), () => {
-        bump('LOGIN');
-        return M.LOGIN;
-      });
+      text = text.replace(new RegExp(`(?<![\\w.-])${escapeRe(v)}(?![\\w.-])`, 'g'), maskConst('LOGIN'));
     }
   }
 
-  // 1c) ZNAK SPRAWY / ZNAK PISMA — sygnatura pisma urzędowego (dla urzędników identyfikuje sprawę
+  // 1e) ZNAK SPRAWY / ZNAK PISMA — sygnatura pisma urzędowego (dla urzędników identyfikuje sprawę
   // i pośrednio osobę). Biegnie WCZEŚNIE, by zamaskować cały znak, zanim krótsze detektory (kod,
   // telefon) odgryzą jego fragmenty cyfrowe. Dwa tryby:
   if (on('ZNAK-SPRAWY')) {
@@ -1027,10 +1009,7 @@ export function redactPII(input: string, options?: RedactOptions): RedactionResu
       // po roku bywa jeszcze człon z inicjałami referenta („WKU.5589.12.2026.AB") — wciągamy
       // do maski (inicjały urzędnika identyfikują; maskuj całość, nie fragment)
       new RegExp(`(?<![A-Za-z0-9./-])${ZNAK_START}${ZNAK_MID}\\.\\d+\\.(?:19|20)\\d{2}(?:\\.[${PL_UP}]{2,3})?(?!\\d)`, 'g'),
-      () => {
-        bump('ZNAK-SPRAWY');
-        return M['ZNAK-SPRAWY'];
-      },
+      maskConst('ZNAK-SPRAWY'),
     );
 
     // (b) Z KONTEKSTEM („Znak sprawy:", „Nasz znak:", „Sygn. akt", „Znak:") — słowo zostaje,
@@ -1041,19 +1020,18 @@ export function redactPII(input: string, options?: RedactOptions): RedactionResu
       // sygn. sądowa; wydział bywa dwuczłonowy z ukośnikiem („II SA/Wa 1234/23")
       `(?:[IVXLCDM]{1,4}[ \\t]+)?[${PL_UP}][A-Za-z${PL_LO}]{0,4}(?:/[${PL_UP}][A-Za-z${PL_LO}]{0,3})?[ \\t]+\\d+[ \\t]*/[ \\t]*\\d{2,4}` +
       `|[A-Za-z0-9${PL_UP}${PL_LO}]+(?:[.\\-/][A-Za-z0-9${PL_UP}${PL_LO}]+)+`; // znak z kropkami/ukośnikiem
-    text = text.replace(
+    maskAfterLabel(
       new RegExp(
         `\\b(znak sprawy|znak pisma|nasz znak|wasz znak|sygn\\.?[ \\t]*akt|sygnatura akt|sygn\\.|znak(?=[ \\t]*:))` +
           `([ \\t]*:?[ \\t]*)(${ZNAK_VALUE})`,
         'gi',
       ),
-      (_m, kw: string, sep: string) => {
-        bump('ZNAK-SPRAWY');
-        return `${kw}${sep}${M['ZNAK-SPRAWY']}`;
-      },
+      'ZNAK-SPRAWY',
     );
   }
 
+  // ═════ FAZA 2 · IDENTYFIKATORY NUMERYCZNE (suma kontrolna / etykieta / długość) ═════
+  // Najdłuższe ciągi cyfr najpierw (IBAN 26 → PESEL 11 → NIP 10 → REGON), potem krótsze.
   // 2) IBAN (z prefiksem kraju, walidacja mod 97). Dopuszcza spacje w grupach.
   if (on('IBAN')) {
     text = text.replace(
@@ -1070,22 +1048,16 @@ export function redactPII(input: string, options?: RedactOptions): RedactionResu
 
   // 3) NR KONTA (NRB) zakotwiczony słowem „konto/rachunek/IBAN" + 26 cyfr (z opcjonalnymi spacjami).
   if (on('NR-KONTA')) {
-    text = text.replace(
+    maskAfterLabel(
       /\b(konto|konta|rachunek|rachunku|rachunek bankowy|nr konta|numer konta|iban)\b([\s:.-]*)((?:\d[ ]?){25}\d)(?![ ]?\d)/gi,
-      (_m, kw, sep) => {
-        bump('NR-KONTA');
-        return `${kw}${sep}${M['NR-KONTA']}`;
-      },
+      'NR-KONTA',
     );
     // (b) z etykietą + wartość w formacie IBAN (2 litery + 2 cyfry + reszta) — maskuj NAWET bez
     //     poprawnej sumy mod-97 (etykieta „konto/rachunek/IBAN" to mocny sygnał; numer bywa fikcyjny).
     //     Łapie też wartość w następnej linii („Konto:\nPL12 1020 5558 …").
-    text = text.replace(
+    maskAfterLabel(
       /\b((?:konto|konta|rachunek|rachunku|nr konta|numer konta|iban)(?:\s+[A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźż]{3,})?)([\s:=.-]+)([A-Z]{2}\d{2}(?:[ ]?[A-Z0-9]){11,30})(?![A-Z0-9])/gi,
-      (_m, kw: string, sep: string) => {
-        bump('NR-KONTA');
-        return `${kw}${sep}${M['NR-KONTA']}`;
-      },
+      'NR-KONTA',
     );
     // (c) NRB BEZ prefiksu „PL" i BEZ etykiety — 26 cyfr z POPRAWNĄ sumą (walidacja mod-97
     //     po dodaniu „PL", NRB = polski IBAN bez prefiksu). Codzienna forma zapisu konta
@@ -1112,12 +1084,9 @@ export function redactPII(input: string, options?: RedactOptions): RedactionResu
     // (b) z SILNĄ etykietą „PESEL" — maskuj 11 cyfr NAWET bez poprawnej sumy (numer bywa celowo
     //     zmieniony/z literówką; etykieta to mocny sygnał). Słowo zostaje. „[\s:=.-]*" łapie też
     //     wartość w NASTĘPNEJ linii („PESEL:\n90010112344").
-    text = text.replace(
+    maskAfterLabel(
       /\b(pesel(?:\s+[A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźż]{3,})?)([\s:=.-]+)(\d{11})(?![\d])/gi,
-      (_m, kw: string, sep: string) => {
-        bump('PESEL');
-        return `${kw}${sep}${M.PESEL}`;
-      },
+      'PESEL',
     );
   }
 
@@ -1140,12 +1109,9 @@ export function redactPII(input: string, options?: RedactOptions): RedactionResu
     );
     // (b) z SILNĄ etykietą „NIP" (opcjonalnie + kwalifikator: „NIP działalności/firmy") — maskuj
     //     10 cyfr (dowolny separator) NAWET bez poprawnej sumy.
-    text = text.replace(
+    maskAfterLabel(
       /\b(nip(?:\s+[A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźż]{3,})?)([\s:=.-]+)((?:PL[- ]?)?(?:\d{3}[- ]\d{3}[- ]\d{2}[- ]\d{2}|\d{3}[- ]\d{2}[- ]\d{2}[- ]\d{3}|\d{10}))(?![\d])/gi,
-      (_m, kw: string, sep: string) => {
-        bump('NIP');
-        return `${kw}${sep}${M.NIP}`;
-      },
+      'NIP',
     );
   }
 
@@ -1159,15 +1125,13 @@ export function redactPII(input: string, options?: RedactOptions): RedactionResu
       return m;
     });
 
-    // 7) REGON z etykietą „REGON" — 9 lub 14 cyfr. Maskuj NAWET bez poprawnej sumy (etykieta to
-    //    mocny sygnał; wcześniej 9-cyfrowy REGON z literówką/na osobnej linii lądował w telefonie).
-    //    Słowo zostaje. „[\s:=.-]*" łapie też wartość w następnej linii („REGON:\n123456784").
-    text = text.replace(
+    // 6a) REGON z etykietą „REGON" — 9 lub 14 cyfr (część kroku 6, wewnątrz bloku REGON).
+    //    Maskuj NAWET bez poprawnej sumy (etykieta to mocny sygnał; wcześniej 9-cyfrowy REGON
+    //    z literówką/na osobnej linii lądował w telefonie). Słowo zostaje. „[\s:=.-]*" łapie też
+    //    wartość w następnej linii („REGON:\n123456784").
+    maskAfterLabel(
       /\b(regon(?:\s+[A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźż]{3,})?)([\s:=.-]+)(\d{14}|\d{9})(?![\d])/gi,
-      (_m, kw: string, sep: string) => {
-        bump('REGON');
-        return `${kw}${sep}${M.REGON}`;
-      },
+      'REGON',
     );
   }
 
@@ -1380,18 +1344,18 @@ export function redactPII(input: string, options?: RedactOptions): RedactionResu
     });
   }
 
+  // ═══════════════════ FAZA 3 · DATA I ADRES / MIEJSCOWOŚĆ ═══════════════════
+  // Adres i miejscowość kotwiczą na już zamaskowanym [KOD-POCZTOWY]/[ADRES] z wcześniejszych
+  // kroków — dlatego „10b) KOD bez myślnika" i miejscowości (12c–12g) biegną tu, a nie w FAZIE 2.
   // 11) DATA URODZENIA — tylko z jawnym kontekstem (ur./urodzony/data urodzenia) + data.
   // UWAGA: bez trailing `\b` — po „ur." granica słowa NIE występuje między kropką a spacją,
   // więc wariant „ur. " nigdy się nie dopasowywał (bug z benchmarku). Separator ogranicza sam.
   if (on('DATA-UR')) {
-    text = text.replace(
+    maskAfterLabel(
       // data: cyfrowa (DD.MM.RRRR / RRRR-MM-DD) albo słowna („5 maja 1985", miesiąc po polsku)
       // Po markerze bywa „dnia" („ur. dnia 31 XII 2010"); miesiąc bywa RZYMSKI (I–XII).
       /\b(ur\.|urodzony|urodzona|urodzeni[ae]|data urodzenia)((?:\s+dnia)?[\s:.,-]*)(\d{1,2}[.\-/]\d{1,2}[.\-/]\d{2,4}|\d{4}-\d{2}-\d{2}|\d{1,2}\s+(?:[IVX]{1,4}|stycznia|lutego|marca|kwietnia|maja|czerwca|lipca|sierpnia|września|października|listopada|grudnia)\s+\d{4})/gi,
-      (_m, kw, sep) => {
-        bump('DATA-UR');
-        return `${kw}${sep}${M['DATA-UR']}`;
-      },
+      'DATA-UR',
     );
   }
 
@@ -1415,10 +1379,7 @@ export function redactPII(input: string, options?: RedactOptions): RedactionResu
           `[${PL_UP}][${PL_LO}${PL_UP}01.-]*(?:[ \\t]+[${PL_UP}0-9][${PL_LO}${PL_UP}0-9.-]*){0,3}[ \\t]+\\d+[A-Za-z]?(?:\\s*(?:/|m\\.?|lok\\.?)\\s*\\d+[A-Za-z]?)?`,
         'g',
       ),
-      () => {
-        bump('ADRES');
-        return M.ADRES;
-      },
+      maskConst('ADRES'),
     );
 
     // 12b) ADRES bez prefiksu „ul." — rozpoznawany po SĄSIEDZTWIE kodu pocztowego.
@@ -1469,6 +1430,28 @@ export function redactPII(input: string, options?: RedactOptions): RedactionResu
   // TYLKO gdy tworzą znaną wielowyrazową miejscowość (słownik) — inaczej zostają nietknięte,
   // żeby nie pożreć następnego zdania („[KOD] Warszawa. Sprawę…" → „Sprawę" zostaje).
   if (on('MIEJSCOWOSC')) {
+    // Dwa wspólne skanery słownika miast (POLISH_CITIES) dla kroków 12d–12g: najdłuższe (do 3
+    // słów) dopasowanie na PREFIKSIE lub SUFIKSIE ciągu wyrazów z wielkiej litery. Zwracają część
+    // NIEzamaskowaną (leftover/prefix) albo null, gdy żadne znane miasto nie pasuje. bump() woła
+    // się dokładnie wtedy, gdy miasto trafione — identycznie jak w rozwiniętych pętlach wcześniej.
+    const cityByPrefix = (words: string[]): { leftover: string } | null => {
+      for (let n = Math.min(3, words.length); n >= 1; n--) {
+        if (POLISH_CITIES.has(words.slice(0, n).join(' ').toLowerCase())) {
+          bump('MIEJSCOWOSC');
+          return { leftover: words.slice(n).join(' ') };
+        }
+      }
+      return null;
+    };
+    const cityBySuffix = (words: string[]): { prefix: string } | null => {
+      for (let n = Math.min(3, words.length); n >= 1; n--) {
+        if (POLISH_CITIES.has(words.slice(words.length - n).join(' ').toLowerCase())) {
+          bump('MIEJSCOWOSC');
+          return { prefix: words.slice(0, words.length - n).join(' ') };
+        }
+      }
+      return null;
+    };
     const KOD = escapeRe(M['KOD-POCZTOWY']);
     text = text.replace(
       new RegExp(`(${KOD}|(?<![\\d-])\\d{2}-\\d{3})([ \\t]+)(${CAP_CITY})((?:[ \\t]+${CAP_CITY}){0,2})`, 'g'),
@@ -1500,16 +1483,8 @@ export function redactPII(input: string, options?: RedactOptions): RedactionResu
     text = text.replace(
       new RegExp(`((?:${CAP_CITY}[ \\t]+){0,2}${CAP_CITY})([ \\t]*,?[ \\t]+)(${ADR}|ul\\.|al\\.|os\\.|pl\\.)`, 'g'),
       (m, capRun: string, sep: string, anchor: string) => {
-        const words = capRun.split(/\s+/);
-        for (let n = Math.min(3, words.length); n >= 1; n--) {
-          const cand = words.slice(words.length - n).join(' ').toLowerCase();
-          if (POLISH_CITIES.has(cand)) {
-            bump('MIEJSCOWOSC');
-            const prefix = words.slice(0, words.length - n).join(' ');
-            return `${prefix ? prefix + ' ' : ''}${M.MIEJSCOWOSC}${sep}${anchor}`;
-          }
-        }
-        return m;
+        const r = cityBySuffix(capRun.split(/\s+/));
+        return r ? `${r.prefix ? r.prefix + ' ' : ''}${M.MIEJSCOWOSC}${sep}${anchor}` : m;
       },
     );
 
@@ -1521,15 +1496,8 @@ export function redactPII(input: string, options?: RedactOptions): RedactionResu
     text = text.replace(
       new RegExp(`(${ADR})([ \\t]*,[ \\t]*|[ \\t]+[Ww]e?[ \\t]+|[ \\t]*\\n(?:[ \\t]*\\n)?[ \\t]*)((?:${CAP_CITY}[ \\t]+){0,2}${CAP_CITY})`, 'g'),
       (m, adr: string, sep: string, run: string) => {
-        const words = run.split(/[ \t]+/);
-        for (let n = Math.min(3, words.length); n >= 1; n--) {
-          if (POLISH_CITIES.has(words.slice(0, n).join(' ').toLowerCase())) {
-            bump('MIEJSCOWOSC');
-            const leftover = words.slice(n).join(' ');
-            return `${adr}${sep}${M.MIEJSCOWOSC}${leftover ? ' ' + leftover : ''}`;
-          }
-        }
-        return m;
+        const r = cityByPrefix(run.split(/[ \t]+/));
+        return r ? `${adr}${sep}${M.MIEJSCOWOSC}${r.leftover ? ' ' + r.leftover : ''}` : m;
       },
     );
 
@@ -1551,15 +1519,9 @@ export function redactPII(input: string, options?: RedactOptions): RedactionResu
         'g',
       ),
       (m, marker: string, run: string) => {
-        const words = run.split(/[ \t]+/);
-        for (let n = Math.min(3, words.length); n >= 1; n--) {
-          if (POLISH_CITIES.has(words.slice(0, n).join(' ').toLowerCase())) {
-            bump('MIEJSCOWOSC');
-            const leftover = words.slice(n).join(' ');
-            return `${marker}${M.MIEJSCOWOSC}${leftover ? ' ' + leftover : ''}`;
-          }
-        }
-        return m; // nieznane miasto po markerze (instytucja/ulica) → nie ruszaj
+        const r = cityByPrefix(run.split(/[ \t]+/));
+        // nieznane miasto po markerze (instytucja/ulica) → nie ruszaj
+        return r ? `${marker}${M.MIEJSCOWOSC}${r.leftover ? ' ' + r.leftover : ''}` : m;
       },
     );
 
@@ -1575,19 +1537,13 @@ export function redactPII(input: string, options?: RedactOptions): RedactionResu
         'g',
       ),
       (m, marker: string, run: string) => {
-        const words = run.split(/[ \t]+/);
-        for (let n = Math.min(3, words.length); n >= 1; n--) {
-          if (POLISH_CITIES.has(words.slice(0, n).join(' ').toLowerCase())) {
-            bump('MIEJSCOWOSC');
-            const leftover = words.slice(n).join(' ');
-            return `${marker}${M.MIEJSCOWOSC}${leftover ? ' ' + leftover : ''}`;
-          }
-        }
-        return m;
+        const r = cityByPrefix(run.split(/[ \t]+/));
+        return r ? `${marker}${M.MIEJSCOWOSC}${r.leftover ? ' ' + r.leftover : ''}` : m;
       },
     );
   }
 
+  // ═══════════════════ FAZA 4 · IMIĘ I NAZWISKO (heurystyka) ═══════════════════
   // 13) IMIĘ I NAZWISKO — heurystyka:
   //   (a) ZNANE imię ze słownika + następne słowo z wielkiej litery (nazwisko);
   //   (b) wyzwalacz kontekstu („nazywam się", „imię i nazwisko", „Pan/Pani") + 1–2 słowa z wielkiej litery.
@@ -1912,6 +1868,7 @@ export function redactPII(input: string, options?: RedactOptions): RedactionResu
     );
   }
 
+  // ══════ FAZA 5 · DOMKNIĘCIA OSÓB · STABILNA NUMERACJA · PRZYWRÓCENIE URL ══════
   // DOMKNIĘCIE: imię słownikowe tuż przed zamaskowaną osobą — także złączone PODKREŚLENIEM
   // lub myślnikiem, jak w nazwach plików („Umowa_Adam_[OSOBA-C].pdf", „skan_Jan_[OSOBA-B].jpg")
   // — wciągane do maski: wyciek imienia obok maski to złamanie zasady „maskuj całość".
