@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.46.13 — 2026-07-14
+
+**UI: „Karta płatnicza" i „IBAN / nr konta" w jednym rzędzie w „Co maskować".** Przełącznik nowej
+karty stał wcześniej pod IBAN-em (osobny wiersz). Pas Kontakt+Finanse zajmuje teraz cały rząd
+(e-mail · telefon · IBAN · karta) na szerokich ekranach; poniżej ~1240px spłaszcza się czytelnie
+(nagłówki na całą szerokość, elementy pod spodem) — bez wypadania karty poza pas. Tylko CSS.
+
+Aplikacja web 0.46.12 → 0.46.13. Rdzeń i landing bez zmian.
+
 ## v0.46.12 — 2026-07-14
 
 **Nowy typ: karta płatnicza (Visa/Mastercard/Amex/Discover/Diners/JCB/Maestro).** 23. typ danych.
