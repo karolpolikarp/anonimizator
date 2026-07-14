@@ -1,5 +1,18 @@
 # Changelog
 
+## v0.46.11 — 2026-07-14
+
+**Landing (parawan.karolwilczynski.com): przepisane copy — mniej marketingu, więcej konkretu.**
+Bez zmian w narzędziu ani silniku; tylko treść strony produktowej.
+
+- Usunięte tellów „AI slop": potrójne pytanie retoryczne na wejściu, sloganowe nagłówki
+  („Otwarty kod to nie ozdoba — to dowód", „Zmierzone, nie obiecane", „Nie ma serwera do
+  zhakowania — bo nie ma żadnego serwera"), klisze („na zawsze").
+- Bardziej konkretne scenariusze w „Dla kogo", mniej powtórzeń tezy o offline, żywszy i mniej
+  sprzedażowy ton w sekcjach: problem, bezpieczeństwo, transparentność, ograniczenia, demo, kroki.
+
+Landing 0.46.8 → 0.46.11 (tylko copy). Rdzeń i aplikacja web bez zmian.
+
 ## v0.46.10 — 2026-07-14
 
 **Dekompozycja silnika, [LOGIN] podświetlany, tabela „Co wykrywa" z jednego źródła.** Dalsze
