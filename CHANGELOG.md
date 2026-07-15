@@ -1,5 +1,19 @@
 # Changelog
 
+## v0.46.14 — 2026-07-15
+
+**Landing (parawan.karolwilczynski.com): pomysły z projektu w Claude Design.** Dwie zmiany
+wizualne, wyłącznie HTML/CSS — bez zmian w narzędziu ani silniku.
+
+- **Hero „Redakcja na żywo" (kierunek 1a):** dokument w wizualu hero dostał animowaną bursztynową
+  linię skanującą, sunącą po piśmie („analiza na bieżąco"). Szanuje `prefers-reduced-motion`
+  (linia znika). Nagłówek, CTA i box prywatności bez zmian.
+- **„Co znika za parawanem" — chmura tagów:** sekcja „Co wykrywa" zamiast 6 kart pokazuje wszystkie
+  23 typy jako jedną, skanowalną chmurę kolorowych chipów (kolory 5 kategorii + legenda). Notka
+  o sumach kontrolnych zachowana (przekaz „precyzja > nadmaskowanie").
+
+Landing 0.46.12 → 0.46.14. Rdzeń i aplikacja web bez zmian.
+
 ## v0.46.13 — 2026-07-14
 
 **UI: „Karta płatnicza" i „IBAN / nr konta" w jednym rzędzie w „Co maskować".** Przełącznik nowej

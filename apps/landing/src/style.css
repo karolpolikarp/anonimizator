@@ -201,9 +201,25 @@ p { text-wrap: pretty; }
 .hd-title span { font-size: 11.5px; color: var(--mut); font-family: var(--mono); }
 .hd-badge { margin-left: auto; display: inline-flex; align-items: center; gap: 6px; font-family: var(--mono); font-size: 10.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #f4f6f1; background: var(--acc); border-radius: 999px; padding: 5px 11px; white-space: nowrap; }
 .hd-badge .gi { width: 14px; height: 14px; }
-.hd-body { padding: 20px 22px; font-family: var(--mono); font-size: 14px; line-height: 2.1; }
-.hd-body p { margin: 0; }
+.hd-body { position: relative; padding: 20px 22px; font-family: var(--mono); font-size: 14px; line-height: 2.1; }
+.hd-body p { margin: 0; position: relative; }
 .hd-body .pii { font-size: .92em; }
+/* linia skanująca — bursztynowy pasek „analizy na bieżąco" sunący po dokumencie (kierunek 1a).
+   Element nad tekstem, ale pod znacznikami (p ma position:relative). Przycina go overflow .hero-doc. */
+.hd-scan {
+  position: absolute; left: 14px; right: 14px; top: 14px; height: 26px;
+  border-radius: 4px; pointer-events: none;
+  background: linear-gradient(180deg, rgba(185, 121, 31, .26), transparent);
+  border-top: 2px solid rgba(185, 121, 31, .7);
+  animation: scan 3.6s cubic-bezier(.5, 0, .5, 1) infinite;
+}
+@keyframes scan {
+  0%   { transform: translateY(0);     opacity: 0; }
+  12%  { opacity: 1; }
+  88%  { opacity: 1; }
+  100% { transform: translateY(150px); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) { .hd-scan { display: none; } }
 .privacy {
   display: flex; align-items: center; gap: 12px;
   padding: 13px 16px; border-radius: var(--r-ctl);
@@ -335,6 +351,15 @@ textarea.editor:focus-visible { outline: none; border-color: var(--acc-line); bo
 .ct-ident   { color: var(--ident);   border-color: rgba(154,106,0,.4);  background: rgba(154,106,0,.07); }
 .ct-fin     { color: var(--fin);     border-color: rgba(18,112,73,.4);  background: rgba(18,112,73,.07); }
 .ct-place   { color: var(--place);   border-color: rgba(47,95,192,.4);  background: rgba(47,95,192,.07); }
+
+/* chmura tagów „Co znika za parawanem" — wszystkie typy jako kolorowe chipy (kierunek 1a) */
+.tag-legend { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-bottom: 22px; }
+.tag-legend .tl { font-family: var(--mono); font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; padding: 5px 12px; border-radius: 999px; border: 1px solid; }
+.tagcloud { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; max-width: 860px; margin: 0 auto; }
+.tagcloud .chip-t { font-size: 13px; padding: 7px 14px; border-radius: 8px; }
+.checksum-note { max-width: 760px; margin: 30px auto 0; display: flex; align-items: flex-start; gap: 12px; padding: 14px 18px; border: 1px solid var(--acc-line); background: var(--acc-soft); border-radius: var(--r-ctl); color: var(--acc); font-size: 14px; }
+.checksum-note .gi { width: 22px; height: 22px; flex: none; margin-top: 1px; color: var(--acc); }
+.checksum-note b { font-weight: 700; }
 
 /* ============ TABELE ============ */
 .table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--r-card); background: var(--card); }

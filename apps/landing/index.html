@@ -75,6 +75,7 @@
               <span class="hd-badge"><i class="gi" data-i="walidacja"></i>zanonimizowano</span>
             </div>
             <div class="hd-body">
+              <span class="hd-scan" aria-hidden="true"></span>
               <p>Nazywam się <mark class="pii pii-person">[IMIĘ&nbsp;I&nbsp;NAZWISKO]</mark>,</p>
               <p>PESEL <mark class="pii pii-ident">[PESEL]</mark>, tel. <mark class="pii pii-contact">[TELEFON]</mark>.</p>
               <p>Adres: <mark class="pii pii-place">[ADRES]</mark>,</p>
@@ -223,41 +224,51 @@
     <!-- ══════════ CO WYKRYWA ══════════ -->
     <section class="section wrap section-tint" aria-label="Co wykrywa">
       <div class="sec-head center">
-        <span class="kicker">Co wykrywa</span>
+        <span class="kicker">Co znika za parawanem</span>
         <h2>23 typy polskich danych w 5 kategoriach</h2>
         <p>Każdy typ z walidacją sumy kontrolnej albo kotwicą kontekstową — stąd mało fałszywych trafień.</p>
       </div>
-      <div class="grid g-3">
-        <div class="card cat-card cat-ident">
-          <div class="cat-head"><span class="ic c-ident"><i class="gi" data-i="pesel"></i></span><h3>Identyfikatory</h3><span class="n">14 typów</span></div>
-          <div class="cat-chips">
-            <span class="chip-t ct-ident">PESEL</span><span class="chip-t ct-ident">NIP</span><span class="chip-t ct-ident">REGON</span>
-            <span class="chip-t ct-ident">nr dowodu</span><span class="chip-t ct-ident">paszport</span><span class="chip-t ct-ident">KRS</span>
-            <span class="chip-t ct-ident">znak sprawy</span><span class="chip-t ct-ident">prawo jazdy</span><span class="chip-t ct-ident">nr rej.</span>
-            <span class="chip-t ct-ident">VIN</span><span class="chip-t ct-ident">IP</span><span class="chip-t ct-ident">MAC</span>
-            <span class="chip-t ct-ident">token/JWT</span><span class="chip-t ct-ident">login</span>
-          </div>
-        </div>
-        <div class="card cat-card cat-fin">
-          <div class="cat-head"><span class="ic c-fin"><i class="gi" data-i="iban"></i></span><h3>Finanse</h3><span class="n">2 typy</span></div>
-          <div class="cat-chips"><span class="chip-t ct-fin">IBAN / nr konta</span><span class="chip-t ct-fin">karta płatnicza</span></div>
-        </div>
-        <div class="card cat-card cat-contact">
-          <div class="cat-head"><span class="ic c-contact"><i class="gi" data-i="telefon"></i></span><h3>Kontakt</h3><span class="n">2 typy</span></div>
-          <div class="cat-chips"><span class="chip-t ct-contact">e-mail</span><span class="chip-t ct-contact">telefon</span></div>
-        </div>
-        <div class="card cat-card cat-place">
-          <div class="cat-head"><span class="ic c-place"><i class="gi" data-i="dom"></i></span><h3>Adres</h3><span class="n">3 typy</span></div>
-          <div class="cat-chips"><span class="chip-t ct-place">adres</span><span class="chip-t ct-place">kod pocztowy</span><span class="chip-t ct-place">miejscowość</span></div>
-        </div>
-        <div class="card cat-card cat-person">
-          <div class="cat-head"><span class="ic c-person"><i class="gi" data-i="dane-osobowe"></i></span><h3>Osoby</h3><span class="n">2 typy</span></div>
-          <div class="cat-chips"><span class="chip-t ct-person">imię i nazwisko</span><span class="chip-t ct-person">data urodzenia</span></div>
-        </div>
-        <div class="card cat-card" style="border-top-color: var(--acc); display:flex; flex-direction:column; justify-content:center;">
-          <div class="cat-head"><span class="ic"><i class="gi" data-i="suma"></i></span><h3>Sumy kontrolne</h3></div>
-          <p style="font-size:13.5px;color:var(--mut-2)">PESEL, NIP, REGON, IBAN i numer dowodu są sprawdzane matematycznie — przypadkowy ciąg cyfr (sygnatura akt, numer przepisu) nie spełnia sumy i zostaje nietknięty.</p>
-        </div>
+
+      <!-- legenda kolorów kategorii (chipy niżej mają te same barwy) -->
+      <div class="tag-legend">
+        <span class="tl ct-ident">Identyfikatory · 14</span>
+        <span class="tl ct-fin">Finanse · 2</span>
+        <span class="tl ct-contact">Kontakt · 2</span>
+        <span class="tl ct-place">Adres · 3</span>
+        <span class="tl ct-person">Osoby · 2</span>
+      </div>
+
+      <!-- chmura 23 typów, kolorowana kategoriami -->
+      <div class="tagcloud">
+        <span class="chip-t ct-ident">PESEL</span>
+        <span class="chip-t ct-ident">NIP</span>
+        <span class="chip-t ct-ident">REGON</span>
+        <span class="chip-t ct-ident">nr dowodu</span>
+        <span class="chip-t ct-ident">paszport</span>
+        <span class="chip-t ct-ident">KRS</span>
+        <span class="chip-t ct-ident">znak sprawy</span>
+        <span class="chip-t ct-ident">prawo jazdy</span>
+        <span class="chip-t ct-ident">nr rejestracyjny</span>
+        <span class="chip-t ct-ident">VIN</span>
+        <span class="chip-t ct-ident">IP</span>
+        <span class="chip-t ct-ident">MAC</span>
+        <span class="chip-t ct-ident">token/JWT</span>
+        <span class="chip-t ct-ident">login</span>
+        <span class="chip-t ct-fin">IBAN / nr konta</span>
+        <span class="chip-t ct-fin">karta płatnicza</span>
+        <span class="chip-t ct-contact">e-mail</span>
+        <span class="chip-t ct-contact">telefon</span>
+        <span class="chip-t ct-place">adres</span>
+        <span class="chip-t ct-place">kod pocztowy</span>
+        <span class="chip-t ct-place">miejscowość</span>
+        <span class="chip-t ct-person">imię i nazwisko</span>
+        <span class="chip-t ct-person">data urodzenia</span>
+      </div>
+
+      <!-- notka o sumach kontrolnych — sedno przekazu „precyzja > nadmaskowanie" -->
+      <div class="checksum-note">
+        <i class="gi" data-i="suma"></i>
+        <span><b>Sumy kontrolne.</b> PESEL, NIP, REGON, IBAN i numer dowodu są sprawdzane matematycznie — przypadkowy ciąg cyfr (sygnatura akt, numer przepisu) nie spełnia sumy i zostaje nietknięty.</span>
       </div>
     </section>
 
