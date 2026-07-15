@@ -268,6 +268,12 @@ export function buildDataset() {
   osp('Pan Wiśniewski nie odpowiada na wezwania.', ['Wiśniewski'], ['nie odpowiada', 'wezwania']);
   osp('Proszę przekazać dokumenty pani Kowalskiej.', ['Kowalskiej'], ['dokumenty']);
   osp('Imię i nazwisko: Adrian Borkowski.', ['Adrian', 'Borkowski'], []);
+  // v0.29.6: nietypowa WIELKOŚĆ LITER imienia/nazwiska w KONTEKŚCIE (self-ID, pole, para)
+  osp('nazywam się pAMELA nOWAK i czekam na odpowiedź.', ['pAMELA', 'nOWAK'], ['odpowiedź']);
+  osp('Nazywam się PAMELA NOWAK, proszę o kontakt telefoniczny.', ['PAMELA', 'NOWAK'], ['kontakt']);
+  osp('mam na imię PAMELA i dzwonię w sprawie faktury.', ['PAMELA'], ['faktury']);
+  osp('Imię: pamela\nNazwisko: nowak', ['pamela', 'nowak'], []);
+  osp('PAMELA NOWAK złożyła wniosek w urzędzie miasta.', ['PAMELA', 'NOWAK'], ['wniosek']);
 
   // ──────────────────────────────────────────────────────────────────────────
   // OSOBY-ODMIANA — samo nazwisko w przypadku zależnym (bez imienia, bez wyzwalacza)
@@ -612,6 +618,12 @@ export function buildDataset() {
   // proza małymi literami — sąsiedztwa mylące, ale zero nadmaskowania (krok 13a4 wymaga imienia+nazwiska)
   neg('polski rynek pracy zmienia się, a wąski segment rośnie.', ['polski', 'wąski']);
   neg('mam ochotę na kawę, ala woli herbatę, ola pije wodę.', ['ochotę', 'ala', 'ola']);
+  // v0.29.6: granice precyzji przy poluzowaniu WIELKOŚCI LITER w imionach/nazwiskach —
+  // po „Pan/Pani" bywa czasownik, „nazywam się" bez nazwy własnej/słownika to nie identyfikacja,
+  // a nagłówek WERSALIKAMI to nie osoba (dopisane na KOŃCU bloku, by nie przenumerować neg-NN)
+  neg('Pan był wczoraj w urzędzie, a Pani ma rację w tej sprawie.', ['Pan był', 'Pani ma rację']);
+  neg('nazywam się tak, jak trzeba, i nic więcej nie dodam.', ['nazywam się tak', 'trzeba']);
+  neg('USTAWA O OCHRONIE DANYCH OSOBOWYCH obowiązuje wszystkich.', ['USTAWA O OCHRONIE DANYCH OSOBOWYCH']);
 
   // ── Kontrola spójności zbioru ──
   const ids = new Set();

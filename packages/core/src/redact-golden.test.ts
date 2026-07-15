@@ -83,6 +83,21 @@ const ADVERSARIAL: Record<string, string> = {
   'dowod-walidacja': 'Dowód osobisty ABA300000 oraz kwota PLN 300000 do wypłaty.',
   'data-urodzenia': 'Ur. 12 marca 1985 r. w Krakowie, obecnie emeryt.',
   'vin-mac-ip': 'VIN: 1HGCM82633A004352, MAC 00:1A:2B:3C:4D:5E, IP 192.168.1.1.',
+  // ── Wielkość liter w imionach/nazwiskach (v0.29.6) ──
+  // must-mask: imię/nazwisko po silnym wyzwalaczu lub w polu — NIEZALEŻNIE od wielkości liter
+  'casing-self-mixed': 'Dzień dobry, nazywam się pAMELA nOWAK i piszę w sprawie umowy.',
+  'casing-self-caps': 'Nazywam się PAMELA NOWAK, proszę o kontakt.',
+  'casing-self-lower': 'nazywam się pamela nowak, mam pytanie do urzędu.',
+  'casing-imie-caps': 'mam na imię PAMELA i dzwonię w sprawie faktury.',
+  'casing-form-lower': 'Imię: pamela\nNazwisko: nowak\nOddział: kardiologia',
+  'casing-pair-caps': 'PAMELA NOWAK złożyła wniosek w urzędzie miasta.',
+  'casing-pair-lower': 'pisała do nas pamela nowak w sprawie zwrotu nadpłaty.',
+  'casing-json-lower': '{"firstName":"pamela","lastName":"nowak"}',
+  // must-NOT-mask: granice precyzji przy poluzowaniu casingu
+  'casing-pan-czasownik': 'Pan był wczoraj w urzędzie, a Pani ma rację w tej sprawie.',
+  'casing-self-nie-nazwa': 'nazywam się tak, jak trzeba, i nic więcej nie dodam.',
+  'casing-naglowek-caps': 'USTAWA O OCHRONIE DANYCH OSOBOWYCH — SĄD OKRĘGOWY W WARSZAWIE.',
+  'casing-homonim-lower': 'to jest jagoda, a obok rośnie kalina i róża pnąca.',
 };
 
 test('golden: zbiór adwersarialny — wariant domyślny', () => {

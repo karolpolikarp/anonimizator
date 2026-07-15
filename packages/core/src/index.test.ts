@@ -149,6 +149,42 @@ test('redactPII — wyzwalacz NIE pożera kolejnego małego słowa (zachowuje se
   expect(r.redacted.includes('Wiśniewski')).toBe(false);
   expect(r.redacted).toContain('nie zapłacił');
 });
+
+// ── Wielkość liter w imionach/nazwiskach (v0.29.6): łapiemy nietypowy zapis w KONTEKŚCIE ──
+test('casing — self-ID łapie imię/nazwisko niezależnie od wielkości liter', () => {
+  for (const s of [
+    'nazywam się pAMELA nOWAK',   // mieszana
+    'Nazywam się PAMELA NOWAK',   // WERSALIKI
+    'nazywam się pamela nowak',   // małe litery
+    'mam na imię PAMELA',         // pojedyncze imię WERSALIKAMI
+    'mam na imię pAMELA',         // pojedyncze imię mieszaną
+  ]) {
+    expect(redactPII(s).redacted, s).toContain('[IMIĘ I NAZWISKO]');
+  }
+});
+test('casing — pole formularza / klucz JSON łapie wartość małą literą', () => {
+  expect(redactPII('Imię: pamela').redacted).toContain('[IMIĘ I NAZWISKO]');
+  expect(redactPII('Nazwisko: nowak').redacted).toContain('[IMIĘ I NAZWISKO]');
+  expect(redactPII('{"firstName":"pamela","lastName":"nowak"}').redacted).toContain('[IMIĘ I NAZWISKO]');
+});
+test('casing — para imię+nazwisko WERSALIKAMI i małymi literami maskowana', () => {
+  expect(redactPII('PAMELA NOWAK złożyła wniosek').redacted).toContain('[IMIĘ I NAZWISKO]');
+  expect(redactPII('pisała do nas pamela nowak w tej sprawie').redacted).toContain('[IMIĘ I NAZWISKO]');
+});
+test('casing — precyzja: „Pan/Pani" + czasownik NIE jest maskowane', () => {
+  for (const s of ['Pan był wczoraj w urzędzie', 'Pani ma rację', 'Pana prawa są chronione']) {
+    expect(redactPII(s).redacted, s).toBe(s);
+  }
+});
+test('casing — precyzja: „nazywam się" bez nazwy własnej ani słownika zostaje', () => {
+  const s = 'nazywam się tak, jak trzeba';
+  expect(redactPII(s).redacted).toBe(s);
+});
+test('casing — precyzja: nagłówki WERSALIKAMI i homonimy małą literą zostają', () => {
+  expect(redactPII('USTAWA O OCHRONIE DANYCH').redacted).toBe('USTAWA O OCHRONIE DANYCH');
+  expect(redactPII('SĄD OKRĘGOWY W WARSZAWIE').redacted).toBe('SĄD OKRĘGOWY W WARSZAWIE');
+  expect(redactPII('to jest jagoda i kalina').redacted).toBe('to jest jagoda i kalina');
+});
 test('redactPII — kod pocztowy i dowód maskowane', () => {
   const r = redactPII('Adres 00-950, dowód ABA300000');
   expect(r.redacted).toContain('[KOD-POCZTOWY]');

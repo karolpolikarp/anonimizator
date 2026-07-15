@@ -306,7 +306,10 @@ const POLISH_FIRST_NAMES = new Set<string>(
     'oktawia paula rozalia sara wioletta wiola bogna bożena elwira ewelina emilia lena maja pola nadzieja ' +
     'alan borys cyprian damian dionizy erwin ernest fabian gustaw ignacy kajetan kornel ksawery leon lech ' +
     'marceli maurycy maksymilian olaf remigiusz rudolf seweryn teodor tobiasz walenty wit zenon jeremi jędrzej ' +
-    'krystian leonard iwo alojzy bruno feliks gerard konstanty maksym miron przemek roch salomon tymon tymoteusz'
+    'krystian leonard iwo alojzy bruno feliks gerard konstanty maksym miron przemek roch salomon tymon tymoteusz ' +
+    // uzupełnienie: częste imiona wcześniej pomijane — bez nich pary „imię nazwisko" pisane
+    // WERSALIKAMI lub małymi literami nie były łapane (detekcja par zależy od słownika imion)
+    'pamela melania kornelia apolonia sonia tamara żaklina walentyna celina aurelia benedykt alfred edmund herbert oktawian klemens'
   ).split(/\s+/),
 );
 
@@ -418,7 +421,10 @@ const FORM_FIELDS: FormField[] = [
   { re: /^(?:nr|numer)\s+(?:domu|lokalu|mieszkania)$/i, type: 'ADRES', kind: 'addr', mask: '[ADRES]' },
 ];
 /** Wartości „puste" pola — nie maskujemy (nie są danymi). */
-const FORM_EMPTY_VALUES = new Set(['brak', 'niedotyczy', 'nd', 'n/d', 'bd', 'x', 'bez', '.', '-', '–', '—', '']);
+const FORM_EMPTY_VALUES = new Set([
+  'brak', 'niedotyczy', 'nd', 'n/d', 'bd', 'x', 'bez', '.', '-', '–', '—', '',
+  'nieznane', 'nieznana', 'nieznany', 'niepodano', 'niepodane',
+]);
 /**
  * Pierwsze słowa TYPOWYCH etykiet/nagłówków formularza (lowercase). Służy TYLKO do rozpoznania,
  * że „wartość" pustego pola PII to w istocie kolejna etykieta/nagłówek sekcji (a nie dana) —
@@ -454,10 +460,16 @@ const isValidFormValue = (value: string, kind: FormKind): boolean => {
   if (!t || t.length > 70) return false;
   if (FORM_EMPTY_VALUES.has(t.toLowerCase().replace(/\s+/g, '').replace(/\.$/, ''))) return false;
   if (/^\d+[.)]\s/.test(t)) return false; // kolejna etykieta numerowana
-  if (/^(nie\b|do ustalenia|brak\b|b\/d)/i.test(t)) return false; // frazy proceduralne
-  if (kind === 'name' || kind === 'place') {
-    // 1–4 wyrazy, KAŻDY z wielkiej litery lub WERSALIKAMI (nazwa własna) — proza ma małe litery/spójniki
+  if (/^(nie\b|nieznan|niepodan|do ustalenia|brak\b|b\/d)/i.test(t)) return false; // frazy proceduralne
+  if (kind === 'place') {
+    // miejscowość: nazwa własna — pierwsza litera wielka lub WERSALIKI (proza ma małe litery/spójniki)
     return /^\p{Lu}[\p{L}'’.‑-]*(?:[ \t]+\p{Lu}[\p{L}'’.‑-]*){0,3}$/u.test(t);
+  }
+  if (kind === 'name') {
+    // Etykieta pola / klucz strukturalny („Imię:", „firstName") to MOCNA kotwica — maskujemy imię/
+    // nazwisko NIEZALEŻNIE od wielkości liter („Imię: pamela", „pAMELA"). Nadal 1–4 wyrazy z samych
+    // liter (bez cyfr i prozy); WERSALIKI działały już wcześniej, tu dochodzi zapis małą/mieszaną literą.
+    return /^\p{L}[\p{L}'’.‑-]*(?:[ \t]+\p{L}[\p{L}'’.‑-]*){0,3}$/u.test(t);
   }
   if (kind === 'date') return /\d{4}|\d{1,2}[-.\/]\d{1,2}/.test(t);
   // addr: ulica (nazwa własna) lub nr domu (cyfry). Odrzuć zdanie: KAŻDY wyraz musi być nazwą
@@ -1576,6 +1588,39 @@ function passPersonTrigger(ctx: RedactCtx): void {
   });
 }
 
+// (b2) SILNE wyzwalacze self-ID („nazywam się", „mam na imię") — po nich w polszczyźnie ZAWSZE
+// następuje imię/nazwisko, więc łapiemy je NIEZALEŻNIE od wielkości liter („nazywam się pAMELA
+// nOWAK", „PAMELA", „pamela"). Świadomie NIE obejmuje „Pan/Pani" (po nich bywa czasownik: „Pan był").
+// Precyzja: ufamy wyzwalaczowi tylko gdy kandydat wygląda na nazwę własną (wielka pierwsza litera
+// któregoś członu) LUB słownik/morfologia potwierdza imię/nazwisko — inaczej „nazywam się tak jak
+// trzeba" (same małe litery, brak potwierdzenia) zostaje nietknięte.
+function passPersonStrongTrigger(ctx: RedactCtx): void {
+  if (!ctx.on('IMIE')) return;
+  const AC = `[${PL_UP}${PL_LO}]`;
+  const CAND = `${AC}{2,}(?:-${AC}{2,})?`;
+  const re = new RegExp(
+    `\\b(nazywam się|mam na imię)([ \\t:]+)(${CAND}(?:[ \\t]+${CAND}){0,2})(?![${PL_UP}${PL_LO}])`,
+    'gi',
+  );
+  const startsUpper = (w: string): boolean => new RegExp(`^[${PL_UP}]`).test(w.split('-')[0]);
+  ctx.text = ctx.text.replace(re, (m, kw: string, sep: string, name: string) => {
+    const words = name.split(/[ \t]+/);
+    let s = 0;
+    while (s < words.length && (ROLE_WORDS.has(words[s].toLowerCase()) || TITLE_WORDS.has(words[s].toLowerCase()))) s++;
+    if (s >= words.length) return m;
+    const last = words[words.length - 1];
+    const ll = last.toLowerCase();
+    if (LEGAL_ENTITY_WORDS.has(words[s].toLowerCase()) || LEGAL_ENTITY_WORDS.has(ll) || NON_SURNAME_ADJ.has(ll)) return m;
+    const cand = words.slice(s);
+    const properCase = cand.some(startsUpper); // Titlecase/WERSALIK → traktuj jak nazwę własną
+    const dictOk = cand.some((w) => isFirstNameLike(w)) || !!surnameBase(last) || looksLikeSurname(last);
+    if (!properCase && !dictOk) return m;
+    ctx.bump('IMIE');
+    const kept = words.slice(0, s).join(' ');
+    return `${kw}${sep}${kept ? kept + ' ' : ''}${ctx.personMask(last)}`;
+  });
+}
+
 // (c) SAMODZIELNE nazwisko ze słownika najczęstszych nazwisk (z odmianą).
 function passPersonSoloDict(ctx: RedactCtx): void {
   if (!ctx.on('IMIE')) return;
@@ -1808,6 +1853,7 @@ export function redactPII(input: string, options?: RedactOptions): RedactionResu
   // ═══════════════════ FAZA 4 · IMIĘ I NAZWISKO (heurystyka) ═══════════════════
   passPersonPairs(ctx);
   passPersonTrigger(ctx);
+  passPersonStrongTrigger(ctx);
   passPersonSoloDict(ctx);
   passPersonInitial(ctx);
   passPersonForeign(ctx);

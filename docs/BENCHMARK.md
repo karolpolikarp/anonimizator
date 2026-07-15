@@ -1,8 +1,8 @@
 # Benchmark anonimizacji — precision / recall
 
-- **Data uruchomienia:** 2026-07-14
+- **Data uruchomienia:** 2026-07-15
 - **Wersja rdzenia (`anonimizator`):** 0.29.5
-- **Zbiór ewaluacyjny:** 268 syntetycznych zdań (deterministyczny, seed `20260704`), 258 elementów do zamaskowania (mustMask), 294 elementów do zachowania (mustKeep)
+- **Zbiór ewaluacyjny:** 276 syntetycznych zdań (deterministyczny, seed `20260704`), 267 elementów do zamaskowania (mustMask), 303 elementów do zachowania (mustKeep)
 - **Reprodukcja:** `npm run build -w anonimizator && node scripts/benchmark/run.mjs`
 
 ## Metodologia
@@ -20,7 +20,7 @@ Wszystkie identyfikatory w zbiorze mają **poprawne sumy kontrolne** policzone w
 (PESEL, NIP, REGON, IBAN mod-97, nr dowodu), a negatywy zawierają m.in. ciągi o celowo
 **błędnych** sumach kontrolnych — silnik ma je zostawić w spokoju.
 
-Liczności kategorii: osoby-podstawowe — 26, osoby-odmiana — 32, osoby-rzadkie — 24, strukturalne — 80, negatywy — 77, osoby-rzadkie-ner — 19, osoby-slownik — 10.
+Liczności kategorii: osoby-podstawowe — 31, osoby-odmiana — 32, osoby-rzadkie — 24, strukturalne — 80, negatywy — 80, osoby-rzadkie-ner — 19, osoby-slownik — 10.
 
 ### Warstwy
 
@@ -33,7 +33,7 @@ Liczności kategorii: osoby-podstawowe — 26, osoby-odmiana — 32, osoby-rzadk
 
 | Warstwa | Recall (łącznie) | Precision-proxy (łącznie) | F1 | Porażki (przypadki) | Czas | Wynik ≠ core |
 |---|---|---|---|---|---|---|
-| T0+T1 core | 94.2% (243/258) | 99.7% (293/294) | 96.8% | 16 | 0.0 s | — |
+| T0+T1 core | 94.4% (252/267) | 99.7% (302/303) | 97.0% | 16 | 0.0 s | — |
 
 F1 liczone jako średnia harmoniczna recall i precision-proxy (łącznie po wszystkich kategoriach
 z oboma rodzajami elementów; kategoria „negatywy" nie ma recall, więc nie wchodzi do składowej recall).
@@ -54,7 +54,7 @@ z oboma rodzajami elementów; kategoria „negatywy" nie ma recall, więc nie wc
 
 | Warstwa | osoby-podstawowe | osoby-odmiana | osoby-rzadkie | strukturalne | negatywy | osoby-rzadkie-ner | osoby-slownik |
 |---|---|---|---|---|---|---|---|
-| T0+T1 core | 100.0% | 100.0% | 100.0% | 100.0% | 98.9% | 100.0% | 100.0% |
+| T0+T1 core | 100.0% | 100.0% | 100.0% | 100.0% | 99.0% | 100.0% | 100.0% |
 
 („—" = brak elementów danego rodzaju w kategorii, np. negatywy nie mają mustMask.)
 
@@ -85,7 +85,7 @@ Legenda: **przeszło** = element mustMask pozostał w wyniku (wyciek PII);
 
 **Nadmaskowania (zjedzono 1 elem. w 1 przypadkach):**
 
-- `neg-52` (negatywy): zjedzono „Tadeusz" — wynik: _Pan [IMIĘ I NAZWISKO] to najsłynniejsza polska epopeja narodowa._
+- `neg-55` (negatywy): zjedzono „Tadeusz" — wynik: _Pan [IMIĘ I NAZWISKO] to najsłynniejsza polska epopeja narodowa._
 
 ## Uwagi
 

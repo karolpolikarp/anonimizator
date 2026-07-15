@@ -1,5 +1,31 @@
 # Changelog
 
+## v0.46.15 — 2026-07-15
+
+**Rdzeń: imiona i nazwiska wykrywane niezależnie od wielkości liter — ale tylko w kontekście.**
+Wcześniej „pAMELA", „PAMELA" czy „pamela" prześlizgiwały się, bo regexy wyłuskujące kandydata
+wymagały Titlecase. Teraz poluzowaliśmy to **wyłącznie tam, gdzie kontekst już gwarantuje, że to
+imię** — Titlecase + wymóg pary pozostają jedyną tarczą precyzji dla solo-nazwisk (homonimy jak
+„jagoda", „maja", „kalina" nietknięte).
+
+- **Silne wyzwalacze self-ID** („nazywam się", „mam na imię") — nowy pass łapie następujące po nich
+  imię/nazwisko w dowolnej wielkości liter („nazywam się pAMELA nOWAK", „mam na imię PAMELA").
+  Ufa wyzwalaczowi tylko, gdy kandydat wygląda na nazwę własną albo słownik/morfologia go potwierdza
+  — „nazywam się tak, jak trzeba" zostaje. **„Pan/Pani" świadomie NIE poluzowane** (po nich bywa
+  czasownik: „Pan był", „Pani ma").
+- **Pola formularza i klucze strukturalne** („Imię:", „Nazwisko:", JSON `firstName`/`lastName`) —
+  wartość maskowana też małą i mieszaną literą (etykieta/klucz to mocna kotwica). WERSALIKI działały
+  już wcześniej. Miejscowość (`place`) celowo bez zmian.
+- **Słownik imion** uzupełniony o częste pozycje (Pamela, Melania, Kornelia, Apolonia, Sonia…) —
+  odblokowuje pary „imię nazwisko" pisane WERSALIKAMI i małymi literami przez istniejące passy.
+
+Precyzja bez regresji: benchmark precision-proxy 99,7% (bez zmian), recall 100% na kategoriach
+deterministycznych, golden-master i testy zielone (nowe przypadki must-mask + must-not-mask casingu).
+Znane ograniczenie (bez zmian): all-capsowe imię+nazwisko w ciągu z tytułem („SSO JAN KOWALSKI")
+nadal bywa pomijane — to osobna luka `passPersonOcrPair`, nietknięta tą zmianą.
+
+Rdzeń `anonimizator` 0.29.5 → 0.29.6, aplikacja web 0.46.13 → 0.46.15, landing 0.46.14 → 0.46.15.
+
 ## v0.46.14 — 2026-07-15
 
 **Landing (parawan.karolwilczynski.com): pomysły z projektu w Claude Design.** Dwie zmiany

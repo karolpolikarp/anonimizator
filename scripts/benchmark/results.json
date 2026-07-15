@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-07-14T14:55:28.868Z",
+  "generatedAt": "2026-07-15T05:05:39.215Z",
   "seed": 20260704,
   "coreVersion": "0.29.5",
-  "casesTotal": 268,
-  "mustMaskTotal": 258,
-  "mustKeepTotal": 294,
+  "casesTotal": 276,
+  "mustMaskTotal": 267,
+  "mustKeepTotal": 303,
   "skippedLayers": [
     {
       "name": "core+spacy",
@@ -26,26 +26,26 @@
     {
       "name": "T0+T1 core",
       "desc": "redactPII() — regex + sumy kontrolne + słownik (in-process, offline)",
-      "elapsedMs": 32,
+      "elapsedMs": 37,
       "changedVsCore": null,
-      "recall": 0.9418604651162791,
-      "precision": 0.9965986394557823,
-      "f1": 0.9684567044805353,
+      "recall": 0.9438202247191011,
+      "precision": 0.9966996699669967,
+      "f1": 0.9695394611121727,
       "agg": {
-        "maskTotal": 258,
-        "maskHit": 243,
-        "keepTotal": 294,
-        "keepHit": 293
+        "maskTotal": 267,
+        "maskHit": 252,
+        "keepTotal": 303,
+        "keepHit": 302
       },
       "perCategory": {
         "osoby-podstawowe": {
           "recall": 1,
           "precision": 1,
           "f1": 1,
-          "maskTotal": 50,
-          "maskHit": 50,
-          "keepTotal": 28,
-          "keepHit": 28
+          "maskTotal": 59,
+          "maskHit": 59,
+          "keepTotal": 32,
+          "keepHit": 32
         },
         "osoby-odmiana": {
           "recall": 1,
@@ -76,12 +76,12 @@
         },
         "negatywy": {
           "recall": null,
-          "precision": 0.9893617021276596,
+          "precision": 0.98989898989899,
           "f1": null,
           "maskTotal": 0,
           "maskHit": 0,
-          "keepTotal": 94,
-          "keepHit": 93
+          "keepTotal": 99,
+          "keepHit": 98
         },
         "osoby-rzadkie-ner": {
           "recall": 0.21052631578947367,
@@ -104,7 +104,7 @@
       },
       "failures": [
         {
-          "id": "neg-52",
+          "id": "neg-55",
           "category": "negatywy",
           "text": "Pan Tadeusz to najsłynniejsza polska epopeja narodowa.",
           "leaked": [],
@@ -392,6 +392,31 @@
         },
         {
           "id": "os-p-26",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-p-27",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-p-28",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-p-29",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-p-30",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-p-31",
           "leaked": [],
           "eaten": []
         },
@@ -1041,6 +1066,21 @@
           "eaten": []
         },
         {
+          "id": "neg-33",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-34",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-35",
+          "leaked": [],
+          "eaten": []
+        },
+        {
           "id": "str-42",
           "leaked": [],
           "eaten": []
@@ -1111,7 +1151,7 @@
           "eaten": []
         },
         {
-          "id": "neg-33",
+          "id": "neg-36",
           "leaked": [],
           "eaten": []
         },
@@ -1171,7 +1211,7 @@
           "eaten": []
         },
         {
-          "id": "neg-34",
+          "id": "neg-37",
           "leaked": [],
           "eaten": []
         },
@@ -1182,21 +1222,6 @@
         },
         {
           "id": "str-68",
-          "leaked": [],
-          "eaten": []
-        },
-        {
-          "id": "neg-35",
-          "leaked": [],
-          "eaten": []
-        },
-        {
-          "id": "neg-36",
-          "leaked": [],
-          "eaten": []
-        },
-        {
-          "id": "neg-37",
           "leaked": [],
           "eaten": []
         },
@@ -1273,9 +1298,7 @@
         {
           "id": "neg-52",
           "leaked": [],
-          "eaten": [
-            "Tadeusz"
-          ]
+          "eaten": []
         },
         {
           "id": "neg-53",
@@ -1290,7 +1313,9 @@
         {
           "id": "neg-55",
           "leaked": [],
-          "eaten": []
+          "eaten": [
+            "Tadeusz"
+          ]
         },
         {
           "id": "neg-56",
@@ -1349,6 +1374,21 @@
         },
         {
           "id": "neg-67",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-68",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-69",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-70",
           "leaked": [],
           "eaten": []
         },
@@ -1538,7 +1578,7 @@
           "eaten": []
         },
         {
-          "id": "neg-68",
+          "id": "neg-71",
           "leaked": [],
           "eaten": []
         },
@@ -1548,7 +1588,7 @@
           "eaten": []
         },
         {
-          "id": "neg-69",
+          "id": "neg-72",
           "leaked": [],
           "eaten": []
         },
@@ -1558,7 +1598,7 @@
           "eaten": []
         },
         {
-          "id": "neg-70",
+          "id": "neg-73",
           "leaked": [],
           "eaten": []
         },
@@ -1568,7 +1608,7 @@
           "eaten": []
         },
         {
-          "id": "neg-71",
+          "id": "neg-74",
           "leaked": [],
           "eaten": []
         },
@@ -1578,7 +1618,7 @@
           "eaten": []
         },
         {
-          "id": "neg-72",
+          "id": "neg-75",
           "leaked": [],
           "eaten": []
         },
@@ -1593,12 +1633,12 @@
           "eaten": []
         },
         {
-          "id": "neg-73",
+          "id": "neg-76",
           "leaked": [],
           "eaten": []
         },
         {
-          "id": "neg-74",
+          "id": "neg-77",
           "leaked": [],
           "eaten": []
         },
@@ -1618,7 +1658,7 @@
           "eaten": []
         },
         {
-          "id": "neg-75",
+          "id": "neg-78",
           "leaked": [],
           "eaten": []
         },
@@ -1628,12 +1668,12 @@
           "eaten": []
         },
         {
-          "id": "neg-76",
+          "id": "neg-79",
           "leaked": [],
           "eaten": []
         },
         {
-          "id": "neg-77",
+          "id": "neg-80",
           "leaked": [],
           "eaten": []
         }
