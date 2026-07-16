@@ -1371,7 +1371,9 @@ function passAddress(ctx: RedactCtx): void {
   if (!ctx.on('ADRES')) return;
   ctx.text = ctx.text.replace(
     new RegExp(
-      `\\b([Uu][lI1]\\.|[Uu]lic[aiy]|[Aa]l\\.|[Aa]le[ij][aię]?|[Oo]s\\.|[Oo]siedl[eau]|[Pp]l\\.|[Pp]lac[ua]?)\\s+` +
+      // każda litera skrótu case-insensitive — łapie też WERSALIKI ze skanów/OCR („UL. KWIATOWA 5",
+      // „AL. JANA PAWŁA II 12"). Bez tego adres OSOBY zapisany WERSALIKAMI wyciekał (case-sensitive „ul.").
+      `\\b([Uu][lLI1]\\.|[Uu][Ll][Ii][Cc][AaIiYy]|[Aa][Ll]\\.|[Aa][Ll][Ee][IiJj][AaIiĘę]?|[Oo][Ss]\\.|[Oo][Ss][Ii][Ee][Dd][Ll][EeAaUu]|[Pp][Ll]\\.|[Pp][Ll][Aa][Cc][UuAa]?)\\s+` +
         `(?:(?:\\d+|gen|płk|ppłk|mjr|kpt|por|ks|św|bp|abp|kard|marsz|prof|dr|inż|hr)\\.?\\s+|[A-ZĄĆĘŁŃÓŚŹŻ]\\.\\s+){0,2}` +
         `[${PL_UP}][${PL_LO}${PL_UP}01.-]*(?:[ \\t]+[${PL_UP}0-9][${PL_LO}${PL_UP}0-9.-]*){0,3}[ \\t]+\\d+[A-Za-z]?(?:\\s*(?:/|m\\.?|lok\\.?)\\s*\\d+[A-Za-z]?)?`,
       'g',
@@ -1430,6 +1432,25 @@ function passCity(ctx: RedactCtx): void {
       ctx.bump('MIEJSCOWOSC');
       const leftover = rest.slice(take).join(' ');
       return `${anchor}${sep}${ctx.M.MIEJSCOWOSC}${leftover ? ' ' + leftover : ''}`;
+    },
+  );
+  // 12h) MIEJSCOWOŚĆ z anotacją rodzaju jednostki TERYT: „Gliwice (miasto)", „Nowa Sól (miasto)",
+  //   „Zabłudów (gmina miejsko-wiejska)". Etykieta „(miasto)/(gmina …)/(wieś)" pochodzi z pól
+  //   słownikowych systemów e-urzędowych (ePUAP, FINN) — to MOCNA kotwica, że poprzedzający wyraz
+  //   z wielkiej to nazwa miejscowości, a nie proza. Dzięki temu znika niespójność, w której ta sama
+  //   miejscowość była maskowana po kodzie/adresie, a w osobnej linii „Gliwice (miasto)" wyciekała.
+  const TERYT_UNIT =
+    `\\([ \\t]*(?:[Mm]iasto(?:[ \\t]+na[ \\t]+prawach[ \\t]+powiatu)?|[Gg]mina(?:[ \\t]+(?:miejska|wiejska|miejsko-wiejska))?|[Ww]ieś|[Oo]sada)[ \\t]*\\)`;
+  ctx.text = ctx.text.replace(
+    new RegExp(`(?:(${CAP_CITY})[ \\t]+)?(${CAP_CITY})([ \\t]*${TERYT_UNIT})`, 'g'),
+    (m, pre: string | undefined, city: string, tag: string) => {
+      const cl = city.toLowerCase();
+      // ostatni wyraz przed etykietą musi wyglądać na miejscowość, nie na człon nazwy instytucji/roli
+      if (LEGAL_ENTITY_WORDS.has(cl) || ROLE_WORDS.has(cl) || NON_SURNAME_ADJ.has(cl)) return m;
+      ctx.bump('MIEJSCOWOSC');
+      // dwuczłonowa nazwa własna („Nowa Sól") — cała pod jedną maskę; inny poprzednik zostaje
+      if (pre && MULTIWORD_CITIES.has(`${pre.toLowerCase()} ${cl}`)) return `${ctx.M.MIEJSCOWOSC}${tag}`;
+      return `${pre ? pre + ' ' : ''}${ctx.M.MIEJSCOWOSC}${tag}`;
     },
   );
   // 12d) MIEJSCOWOŚĆ przed adresem BEZ kodu pocztowego — „Warszawa, ul. …".

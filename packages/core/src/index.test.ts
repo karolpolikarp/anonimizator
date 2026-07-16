@@ -1456,3 +1456,46 @@ test('OCR: wielkie I w środku nazwiska („KowaIski") — całe słowo w masce,
   const neg = 'Urządzenie McIntosh IIe działa poprawnie.';
   expect(redactPII(neg, { pseudonyms: true }).redacted).toBe(neg);
 });
+
+// ── Petycja do Urzędu Marszałkowskiego — nad/niedomaskowania z realnego pisma (v0.46.17) ──
+// „Urząd/Urzędu Marszałkowski/ego" to nazwa instytucji, NIE osoba — „marszałkowski" trafił do
+// NON_SURNAME_ADJ. Osoba nazwiskiem „Marszałkowski" NADAL łapana w parze z imieniem.
+test('przymiotnik urzędowy „Marszałkowskiego" nie jest osobą; instytucja zostaje', () => {
+  const t = 'platformach społecznościowych Urzędu Marszałkowskiego Województwa Śląskiego w Katowicach';
+  expect(redactPII(t, { pseudonyms: true }).redacted).toBe(t);
+  expect(redactPII('Zarząd Marszałkowski przyjął uchwałę', { pseudonyms: true }).redacted).toBe(
+    'Zarząd Marszałkowski przyjął uchwałę',
+  );
+});
+test('osoba o nazwisku „Marszałkowski" w parze z imieniem NADAL maskowana', () => {
+  const r = redactPII('Petycję podpisał Jan Marszałkowski, przewodniczący.', { pseudonyms: true });
+  expect(r.redacted.includes('Marszałkowski,')).toBe(false);
+  expect(r.redacted).toContain('[OSOBA-A]');
+  // forma żeńska też (Anna Marszałkowska)
+  expect(redactPII('Wniosek złożyła Anna Marszałkowska.', { pseudonyms: true }).redacted.includes('Marszałkowska.')).toBe(
+    false,
+  );
+});
+test('adres WERSALIKAMI (skan/OCR) maskowany jak zapis małą literą', () => {
+  for (const t of ['UL. JULIUSZA LIGONIA 46', 'AL. JANA PAWŁA II 12', 'OS. TYSIĄCLECIA 3', 'PL. DEFILAD 1']) {
+    const r = redactPII(t, { pseudonyms: true });
+    expect(r.redacted).toBe('[ADRES]');
+  }
+  // adres OSOBY WERSALIKAMI (dawniej wyciekał) — zamaskowany w całości
+  const os = redactPII('Zamieszkały UL. KWIATOWA 5', { pseudonyms: true });
+  expect(os.redacted.includes('KWIATOWA')).toBe(false);
+  // „UL" bez kropki i numeru to nie adres (brak FP)
+  expect(redactPII('UL to skrót od ulica', { pseudonyms: true }).redacted).toBe('UL to skrót od ulica');
+});
+test('miejscowość z anotacją jednostki TERYT „(miasto)/(gmina …)" maskowana', () => {
+  expect(redactPII('Gliwice (miasto)', { pseudonyms: true }).redacted).toBe('[MIEJSCOWOŚĆ] (miasto)');
+  expect(redactPII('Nowa Sól (miasto)', { pseudonyms: true }).redacted).toBe('[MIEJSCOWOŚĆ] (miasto)');
+  expect(redactPII('Zabłudów (gmina miejsko-wiejska)', { pseudonyms: true }).redacted).toBe(
+    '[MIEJSCOWOŚĆ] (gmina miejsko-wiejska)',
+  );
+  // kotwica „(miasto)" nie maskuje nazwy instytucji ani przymiotnika
+  expect(redactPII('Sąd Rejonowy (miasto)', { pseudonyms: true }).redacted).toBe('Sąd Rejonowy (miasto)');
+  expect(redactPII('Śląski (miasto)', { pseudonyms: true }).redacted).toBe('Śląski (miasto)');
+  // inny rodzaj nawiasu (nie jednostka TERYT) nie wyzwala maski miejscowości
+  expect(redactPII('Wisła (rzeka)', { pseudonyms: true }).redacted).toBe('Wisła (rzeka)');
+});

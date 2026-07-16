@@ -635,6 +635,17 @@ export function buildDataset() {
   neg('PREZES ZARZĄDU SPÓŁKI podpisał uchwałę o połączeniu.', ['PREZES ZARZĄDU SPÓŁKI']);
   neg('SĘDZIA SĄDU REJONOWEGO rozpoznał sprawę na posiedzeniu.', ['SĘDZIA SĄDU REJONOWEGO']);
 
+  // v0.46.17: nad/niedomaskowania z realnej petycji do Urzędu Marszałkowskiego.
+  // „marszałkowski" to przymiotnik URZĘDOWY (instytucja), NIE nazwisko — nie wolno maskować…
+  neg('platformach społecznościowych Urzędu Marszałkowskiego Województwa Śląskiego.', ['Marszałkowskiego']);
+  neg('Petycję rozpatrzył Urząd Marszałkowski Województwa Śląskiego.', ['Marszałkowski']);
+  // …ale OSOBA o nazwisku „Marszałkowski" w parze z imieniem MUSI zniknąć (recall zachowany).
+  str('Petycję podpisał Jan Marszałkowski, przewodniczący stowarzyszenia.', ['Jan Marszałkowski'], ['przewodniczący']);
+  // adres WERSALIKAMI ze skanu (kotwica „UL." case-insensitive) — dawniej wyciekał
+  str('Adres do doręczeń: UL. JULIUSZA LIGONIA 46 w budynku.', ['JULIUSZA LIGONIA 46'], ['doręczeń']);
+  // miejscowość z anotacją jednostki TERYT „(miasto)" — pole słownikowe e-urzędowe
+  str('W rejestrze figuruje Gliwice (miasto) jako jednostka.', ['Gliwice'], ['(miasto)', 'jednostka']);
+
   // ── Kontrola spójności zbioru ──
   const ids = new Set();
   for (const c of cases) {

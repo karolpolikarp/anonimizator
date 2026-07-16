@@ -178,7 +178,10 @@ export const NON_SURNAME_ADJ = new Set<string>((
   'warszawski krakowski gdański poznański wrocławski szczeciński bydgoski katowicki radomski ' +
   'toruński kielecki rzeszowski olsztyński gliwicki tarnowski płocki częstochowski gdyński ' +
   // ogólne / instytucjonalne / relacyjne przymiotniki na -ski/-cki/-dzki
-  'miejski wiejski wojewódzki morski nadmorski królewski cesarski papieski biskupi diecezjalny ' +
+  // „marszałkowski" — przymiotnik URZĘDOWY (Urząd/Sejmik/Zarząd Marszałkowski), nie nazwisko;
+  //   realny FP na pismach samorządu wojewódzkiego („Urzędu Marszałkowskiego" → osoba). Osoba
+  //   nazwiskiem „Marszałkowski" NADAL łapana w parze z imieniem (słownikowy pas imię+nazwisko).
+  'miejski wiejski wojewódzki marszałkowski morski nadmorski królewski cesarski papieski biskupi diecezjalny ' +
   'boski niebiański ziemski świecki damski męski żeński ludzki dziecięcy ojcowski macierzyński ' +
   'lekarski adwokacki nauczycielski rybacki rycerski sąsiedzki ' +
   // relacyjne (nazwy komitetów/związków/funduszy): „Komitet Obywatelski", „Hufiec Harcerski"

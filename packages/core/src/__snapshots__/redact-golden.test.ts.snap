@@ -86,6 +86,8 @@ exports[`golden: korpus benchmarku — filtr types (tylko strukturalne) 1`] = `
   "neg-82": "UNIWERSYTET WARSZAWSKI ogłosił nabór na nowy kierunek.",
   "neg-83": "PREZES ZARZĄDU SPÓŁKI podpisał uchwałę o połączeniu.",
   "neg-84": "SĘDZIA SĄDU REJONOWEGO rozpoznał sprawę na posiedzeniu.",
+  "neg-85": "platformach społecznościowych Urzędu Marszałkowskiego Województwa Śląskiego.",
+  "neg-86": "Petycję rozpatrzył Urząd Marszałkowski Województwa Śląskiego.",
   "os-o-01": "Sprawę Nowaka umorzono z braku dowodów.",
   "os-o-02": "Sąd doręczył Nowakowi odpis wyroku.",
   "os-o-03": "Ugoda zawarta z Nowakiem obowiązuje od stycznia.",
@@ -287,6 +289,9 @@ Nazwisko: nowak",
   "str-78": "Zgłosił się Jan KowaIski po odbiór dokumentów.",
   "str-79": "Adres korespondencyjny: ul. Krótka 5, 65048 Zielona Góra.",
   "str-80": "Kontakt: [EMAIL] w sprawie umowy.",
+  "str-81": "Petycję podpisał Jan Marszałkowski, przewodniczący stowarzyszenia.",
+  "str-82": "Adres do doręczeń: UL. JULIUSZA LIGONIA 46 w budynku.",
+  "str-83": "W rejestrze figuruje Gliwice (miasto) jako jednostka.",
 }
 `;
 
@@ -376,6 +381,8 @@ exports[`golden: korpus benchmarku — pseudonimizacja osób ([OSOBA-A]…) 1`] 
   "neg-82": "UNIWERSYTET WARSZAWSKI ogłosił nabór na nowy kierunek.",
   "neg-83": "PREZES ZARZĄDU SPÓŁKI podpisał uchwałę o połączeniu.",
   "neg-84": "SĘDZIA SĄDU REJONOWEGO rozpoznał sprawę na posiedzeniu.",
+  "neg-85": "platformach społecznościowych Urzędu Marszałkowskiego Województwa Śląskiego.",
+  "neg-86": "Petycję rozpatrzył Urząd Marszałkowski Województwa Śląskiego.",
   "os-o-01": "Sprawę [OSOBA-A] umorzono z braku dowodów.",
   "os-o-02": "Sąd doręczył [OSOBA-A] odpis wyroku.",
   "os-o-03": "Ugoda zawarta z [OSOBA-A] obowiązuje od stycznia.",
@@ -577,6 +584,9 @@ Nazwisko: [IMIĘ I NAZWISKO]",
   "str-78": "Zgłosił się [OSOBA-A] po odbiór dokumentów.",
   "str-79": "Adres korespondencyjny: [ADRES], [KOD-POCZTOWY] [MIEJSCOWOŚĆ].",
   "str-80": "Kontakt: [EMAIL] w sprawie umowy.",
+  "str-81": "Petycję podpisał [OSOBA-A], przewodniczący stowarzyszenia.",
+  "str-82": "Adres do doręczeń: [ADRES] w budynku.",
+  "str-83": "W rejestrze figuruje [MIEJSCOWOŚĆ] (miasto) jako jednostka.",
 }
 `;
 
@@ -666,6 +676,8 @@ exports[`golden: korpus benchmarku — wariant domyślny (wszystkie typy) 1`] = 
   "neg-82": "UNIWERSYTET WARSZAWSKI ogłosił nabór na nowy kierunek.",
   "neg-83": "PREZES ZARZĄDU SPÓŁKI podpisał uchwałę o połączeniu.",
   "neg-84": "SĘDZIA SĄDU REJONOWEGO rozpoznał sprawę na posiedzeniu.",
+  "neg-85": "platformach społecznościowych Urzędu Marszałkowskiego Województwa Śląskiego.",
+  "neg-86": "Petycję rozpatrzył Urząd Marszałkowski Województwa Śląskiego.",
   "os-o-01": "Sprawę [IMIĘ I NAZWISKO] umorzono z braku dowodów.",
   "os-o-02": "Sąd doręczył [IMIĘ I NAZWISKO] odpis wyroku.",
   "os-o-03": "Ugoda zawarta z [IMIĘ I NAZWISKO] obowiązuje od stycznia.",
@@ -867,6 +879,9 @@ Nazwisko: [IMIĘ I NAZWISKO]",
   "str-78": "Zgłosił się [IMIĘ I NAZWISKO] po odbiór dokumentów.",
   "str-79": "Adres korespondencyjny: [ADRES], [KOD-POCZTOWY] [MIEJSCOWOŚĆ].",
   "str-80": "Kontakt: [EMAIL] w sprawie umowy.",
+  "str-81": "Petycję podpisał [IMIĘ I NAZWISKO], przewodniczący stowarzyszenia.",
+  "str-82": "Adres do doręczeń: [ADRES] w budynku.",
+  "str-83": "W rejestrze figuruje [MIEJSCOWOŚĆ] (miasto) jako jednostka.",
 }
 `;
 

@@ -1,5 +1,31 @@
 # Changelog
 
+## v0.46.17 — 2026-07-16
+
+**Rdzeń: trzy poprawki nad/niedomaskowania z realnej petycji do Urzędu Marszałkowskiego.**
+Audyt pisma („System FINN 8 SQL", petycja stowarzyszenia) ujawnił jedną jaskrawą niespójność:
+fraza „Urzędu Marszałkowskiego Województwa Śląskiego" była raz maskowana jako osoba
+(„Urzędu [OSOBA-A]"), raz nie — zależnie od łamania wiersza.
+
+- **Nadmaskowanie „Marszałkowski/ego":** przymiotnik URZĘDOWY (Urząd/Sejmik/Zarząd Marszałkowski)
+  trafił do stoplisty `NON_SURNAME_ADJ` — analogicznie do „wojewódzki", „królewski", „lekarski".
+  Osoba o nazwisku „Marszałkowski"/„Marszałkowska" w parze z imieniem (np. „Jan Marszałkowski")
+  **jest nadal maskowana** — łapie ją słownikowy detektor imię+nazwisko, niezależny od stoplisty.
+- **Niedomaskowanie adresu WERSALIKAMI:** kotwica ulicy była case-sensitive („ul." tak, „UL." nie),
+  więc adresy ze skanów/OCR („UL. KWIATOWA 5", „AL. JANA PAWŁA II 12", „OS. TYSIĄCLECIA 3",
+  „PL. DEFILAD 1") wyciekały. Każda litera skrótu jest teraz case-insensitive — adres OSOBY
+  zapisany WERSALIKAMI już nie ucieka.
+- **Niedomaskowanie miejscowości z anotacją TERYT:** nowy pass 12h maskuje „Gliwice (miasto)",
+  „Nowa Sól (miasto)", „Zabłudów (gmina miejsko-wiejska)" — etykieta rodzaju jednostki
+  („(miasto)/(gmina …)/(wieś)") to mocna kotwica pola słownikowego systemów e-urzędowych.
+  Strażniki `LEGAL_ENTITY_WORDS`/`NON_SURNAME_ADJ` chronią „Sąd Rejonowy (miasto)" i „Śląski (miasto)".
+
+Bez regresji: 308 testów zielonych (4 nowe), golden-master czysto addytywny, bramka benchmarku
+bez regresji (strukturalne 100%/100%). Zmiany zweryfikowane adwersarialnie wieloagentowo na
+realistycznych pismach urzędowych — zero nowych nad/niedomaskowań z powyższych trzech zmian.
+
+Rdzeń `anonimizator` 0.29.7 → 0.29.8, aplikacja web 0.46.16 → 0.46.17, landing 0.46.16 → 0.46.17.
+
 ## v0.46.16 — 2026-07-15
 
 **Rdzeń: imię/nazwisko WERSALIKAMI po tytule lub roli.** Domknięcie luki zapowiedzianej w v0.46.15:
