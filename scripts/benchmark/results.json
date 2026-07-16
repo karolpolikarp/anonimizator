@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-07-15T05:05:39.215Z",
+  "generatedAt": "2026-07-16T06:46:31.186Z",
   "seed": 20260704,
-  "coreVersion": "0.29.5",
-  "casesTotal": 276,
-  "mustMaskTotal": 267,
-  "mustKeepTotal": 303,
+  "coreVersion": "0.29.6",
+  "casesTotal": 284,
+  "mustMaskTotal": 271,
+  "mustKeepTotal": 314,
   "skippedLayers": [
     {
       "name": "core+spacy",
@@ -26,26 +26,26 @@
     {
       "name": "T0+T1 core",
       "desc": "redactPII() — regex + sumy kontrolne + słownik (in-process, offline)",
-      "elapsedMs": 37,
+      "elapsedMs": 34,
       "changedVsCore": null,
-      "recall": 0.9438202247191011,
-      "precision": 0.9966996699669967,
-      "f1": 0.9695394611121727,
+      "recall": 0.9446494464944649,
+      "precision": 0.9968152866242038,
+      "f1": 0.970031536193987,
       "agg": {
-        "maskTotal": 267,
-        "maskHit": 252,
-        "keepTotal": 303,
-        "keepHit": 302
+        "maskTotal": 271,
+        "maskHit": 256,
+        "keepTotal": 314,
+        "keepHit": 313
       },
       "perCategory": {
         "osoby-podstawowe": {
           "recall": 1,
           "precision": 1,
           "f1": 1,
-          "maskTotal": 59,
-          "maskHit": 59,
-          "keepTotal": 32,
-          "keepHit": 32
+          "maskTotal": 63,
+          "maskHit": 63,
+          "keepTotal": 39,
+          "keepHit": 39
         },
         "osoby-odmiana": {
           "recall": 1,
@@ -76,12 +76,12 @@
         },
         "negatywy": {
           "recall": null,
-          "precision": 0.98989898989899,
+          "precision": 0.9902912621359223,
           "f1": null,
           "maskTotal": 0,
           "maskHit": 0,
-          "keepTotal": 99,
-          "keepHit": 98
+          "keepTotal": 103,
+          "keepHit": 102
         },
         "osoby-rzadkie-ner": {
           "recall": 0.21052631578947367,
@@ -104,7 +104,7 @@
       },
       "failures": [
         {
-          "id": "neg-55",
+          "id": "neg-52",
           "category": "negatywy",
           "text": "Pan Tadeusz to najsłynniejsza polska epopeja narodowa.",
           "leaked": [],
@@ -417,6 +417,26 @@
         },
         {
           "id": "os-p-31",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-p-32",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-p-33",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-p-34",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-p-35",
           "leaked": [],
           "eaten": []
         },
@@ -1066,21 +1086,6 @@
           "eaten": []
         },
         {
-          "id": "neg-33",
-          "leaked": [],
-          "eaten": []
-        },
-        {
-          "id": "neg-34",
-          "leaked": [],
-          "eaten": []
-        },
-        {
-          "id": "neg-35",
-          "leaked": [],
-          "eaten": []
-        },
-        {
           "id": "str-42",
           "leaked": [],
           "eaten": []
@@ -1151,7 +1156,7 @@
           "eaten": []
         },
         {
-          "id": "neg-36",
+          "id": "neg-33",
           "leaked": [],
           "eaten": []
         },
@@ -1211,7 +1216,7 @@
           "eaten": []
         },
         {
-          "id": "neg-37",
+          "id": "neg-34",
           "leaked": [],
           "eaten": []
         },
@@ -1222,6 +1227,21 @@
         },
         {
           "id": "str-68",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-35",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-36",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-37",
           "leaked": [],
           "eaten": []
         },
@@ -1298,7 +1318,9 @@
         {
           "id": "neg-52",
           "leaked": [],
-          "eaten": []
+          "eaten": [
+            "Tadeusz"
+          ]
         },
         {
           "id": "neg-53",
@@ -1313,9 +1335,7 @@
         {
           "id": "neg-55",
           "leaked": [],
-          "eaten": [
-            "Tadeusz"
-          ]
+          "eaten": []
         },
         {
           "id": "neg-56",
@@ -1374,21 +1394,6 @@
         },
         {
           "id": "neg-67",
-          "leaked": [],
-          "eaten": []
-        },
-        {
-          "id": "neg-68",
-          "leaked": [],
-          "eaten": []
-        },
-        {
-          "id": "neg-69",
-          "leaked": [],
-          "eaten": []
-        },
-        {
-          "id": "neg-70",
           "leaked": [],
           "eaten": []
         },
@@ -1578,7 +1583,7 @@
           "eaten": []
         },
         {
-          "id": "neg-71",
+          "id": "neg-68",
           "leaked": [],
           "eaten": []
         },
@@ -1588,7 +1593,7 @@
           "eaten": []
         },
         {
-          "id": "neg-72",
+          "id": "neg-69",
           "leaked": [],
           "eaten": []
         },
@@ -1598,7 +1603,7 @@
           "eaten": []
         },
         {
-          "id": "neg-73",
+          "id": "neg-70",
           "leaked": [],
           "eaten": []
         },
@@ -1608,7 +1613,7 @@
           "eaten": []
         },
         {
-          "id": "neg-74",
+          "id": "neg-71",
           "leaked": [],
           "eaten": []
         },
@@ -1618,7 +1623,7 @@
           "eaten": []
         },
         {
-          "id": "neg-75",
+          "id": "neg-72",
           "leaked": [],
           "eaten": []
         },
@@ -1633,12 +1638,12 @@
           "eaten": []
         },
         {
-          "id": "neg-76",
+          "id": "neg-73",
           "leaked": [],
           "eaten": []
         },
         {
-          "id": "neg-77",
+          "id": "neg-74",
           "leaked": [],
           "eaten": []
         },
@@ -1658,12 +1663,27 @@
           "eaten": []
         },
         {
-          "id": "neg-78",
+          "id": "neg-75",
           "leaked": [],
           "eaten": []
         },
         {
           "id": "str-80",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-76",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-77",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-78",
           "leaked": [],
           "eaten": []
         },
@@ -1674,6 +1694,26 @@
         },
         {
           "id": "neg-80",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-81",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-82",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-83",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-84",
           "leaked": [],
           "eaten": []
         }

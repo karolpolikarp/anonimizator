@@ -1,5 +1,27 @@
 # Changelog
 
+## v0.46.16 — 2026-07-15
+
+**Rdzeń: imię/nazwisko WERSALIKAMI po tytule lub roli.** Domknięcie luki zapowiedzianej w v0.46.15:
+zapis w całości WIELKIMI literami po tytule/roli („SSO JAN KOWALSKI", „PANEM MARKIEM WIŚNIEWSKIM",
+„PAN KOWALSKI", „POZWANY JAN KOWALSKI") był pomijany — reguły Titlecase go nie łapały, a detektor
+par WERSALIKAMI odrzucał kandydatów zaczynających się od tytułu.
+
+- Nowy pass `passPersonOcrTitle`: „[TYTUŁ/ROLA WERSALIKAMI] [IMIĘ?] [NAZWISKO WERSALIKAMI]" →
+  maska; **tytuł/rola zostaje** (sens wiersza zachowany). Uruchamiany przed detektorem par, by ten
+  nie sparował zachłannie „tytuł + imię" i nie osierocił nazwiska.
+- Precyzja utrzymana: wymagany **rozpoznany tytuł/rola** (Pan/Pani w odmianie, SSO/SSR/SSA, dr/prof/
+  mec, sędzia/prokurator/pozwany/świadek…) **oraz nazwisko potwierdzone** słownikiem/morfologią i
+  niebędące encją prawną ani przymiotnikiem odmiejscowym. Dzięki temu nagłówki instytucji
+  WERSALIKAMI zostają nietknięte („SĄD OKRĘGOWY W WARSZAWIE", „UNIWERSYTET WARSZAWSKI",
+  „WOJEWODA MAZOWIECKI", „PREZES ZARZĄDU SPÓŁKI").
+
+Bez regresji: benchmark precision-proxy 99,7% (bez zmian), recall 100% na kategoriach
+deterministycznych, golden-master czysto addytywny (żaden istniejący przypadek się nie zmienił),
+304 testy zielone (nowe must-mask + must-not-mask WERSALIKAMI).
+
+Rdzeń `anonimizator` 0.29.6 → 0.29.7, aplikacja web 0.46.15 → 0.46.16, landing 0.46.15 → 0.46.16.
+
 ## v0.46.15 — 2026-07-15
 
 **Rdzeń: imiona i nazwiska wykrywane niezależnie od wielkości liter — ale tylko w kontekście.**

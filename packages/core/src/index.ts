@@ -1700,6 +1700,57 @@ function passPersonSoloMorph(ctx: RedactCtx): void {
   });
 }
 
+// Tytuły/role, po których (WERSALIKAMI) stoi imię/nazwisko. Baza: TITLE_WORDS + ROLE_WORDS;
+// dopełnione o „Pan" w narzędniku/l.mn. (TITLE_WORDS ma tylko mianownik/wołacz) i skróty sędziowskie.
+const ALLCAPS_TITLES = new Set<string>([
+  ...TITLE_WORDS,
+  ...ROLE_WORDS,
+  'panem', 'panów', 'panom', 'panami', 'paniom',
+  'sso', 'ssr', 'ssa', 'mec', 'adw',
+]);
+
+// (c2b) TYTUŁ/ROLA + IMIĘ/NAZWISKO — wszystko WERSALIKAMI („SSO JAN KOWALSKI",
+// „PANEM MARKIEM WIŚNIEWSKIM", „PAN KOWALSKI"). Zapis Titlecase obsługują wyzwalacze/pary; tu
+// domykamy WERSALIKI, których reguły Titlecase nie łapią, a `passPersonOcrPair` odrzuca (pierwszy
+// token to tytuł). Precyzja: wymagany ROZPOZNANY tytuł + nazwisko POTWIERDZONE słownikiem/morfologią
+// i NIE będące encją prawną/rolą ani przymiotnikiem odmiejscowym — dzięki temu nagłówki instytucji
+// WERSALIKAMI („SĄD OKRĘGOWY…", „UNIWERSYTET WARSZAWSKI") zostają nietknięte. Uruchamiane PRZED
+// passPersonOcrPair, żeby ten nie sparował zachłannie „tytuł + imię" i nie osierocił nazwiska.
+function passPersonOcrTitle(ctx: RedactCtx): void {
+  if (!ctx.on('IMIE')) return;
+  const UPW = `[${PL_UP}]{2,}`;
+  const NAMEW = `[${PL_UP}]{2,}(?:-[${PL_UP}]{2,})?`;
+  const confirmedSurname = (l: string): boolean =>
+    !!surnameBase(l) ||
+    looksLikeSurname(l) ||
+    (l.includes('-') && l.split('-').some((p) => !!surnameBase(p) || looksLikeSurname(p)));
+  ctx.text = ctx.text.replace(
+    new RegExp(
+      `(?<![${PL_UP}${PL_LO}0-9.\\-])(${UPW})[ \\t]+(${NAMEW}(?:[ \\t]+${NAMEW})?)(?![${PL_UP}${PL_LO}0-9\\-])`,
+      'g',
+    ),
+    (m, title: string, name: string, offset: number) => {
+      if (!ALLCAPS_TITLES.has(title.toLowerCase())) return m;
+      if (precededByPatron(ctx.text, offset)) return m;
+      const nameWords = name.split(/[ \t]+/);
+      // żaden człon nazwy nie może być rolą/tytułem/encją prawną (chroni „PREZES ZARZĄDU SPÓŁKI")
+      if (
+        nameWords.some((w) => {
+          const l = w.toLowerCase();
+          return LEGAL_ENTITY_WORDS.has(l) || ROLE_WORDS.has(l) || TITLE_WORDS.has(l);
+        })
+      )
+        return m;
+      const last = nameWords[nameWords.length - 1];
+      const ll = last.toLowerCase();
+      if (NON_SURNAME_ADJ.has(ll)) return m; // „WOJEWODA MAZOWIECKI" — przymiotnik odmiejscowy, nie nazwisko
+      if (!confirmedSurname(ll)) return m; // nazwisko MUSI być potwierdzone (chroni nagłówki instytucji)
+      ctx.bump('IMIE');
+      return `${title} ${ctx.personMask(last)}`;
+    },
+  );
+}
+
 // (c3) OCR/WERSALIKI: „J0AN K0WALSKI", „JAN KOWALSKI" — para tokenów WERSALIKAMI z homoglifami.
 function passPersonOcrPair(ctx: RedactCtx): void {
   if (!ctx.on('IMIE')) return;
@@ -1858,6 +1909,7 @@ export function redactPII(input: string, options?: RedactOptions): RedactionResu
   passPersonInitial(ctx);
   passPersonForeign(ctx);
   passPersonSoloMorph(ctx);
+  passPersonOcrTitle(ctx);
   passPersonOcrPair(ctx);
   passPersonOcrMix(ctx);
 

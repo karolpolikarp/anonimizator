@@ -98,6 +98,12 @@ const ADVERSARIAL: Record<string, string> = {
   'casing-self-nie-nazwa': 'nazywam się tak, jak trzeba, i nic więcej nie dodam.',
   'casing-naglowek-caps': 'USTAWA O OCHRONIE DANYCH OSOBOWYCH — SĄD OKRĘGOWY W WARSZAWIE.',
   'casing-homonim-lower': 'to jest jagoda, a obok rośnie kalina i róża pnąca.',
+  // ── Tytuł/rola + imię/nazwisko WERSALIKAMI (v0.29.7) ──
+  'allcaps-sso': 'W składzie: przewodniczący SSO JAN KOWALSKI wydał wyrok.',
+  'allcaps-panem': 'Rozmawiałem z PANEM MARKIEM WIŚNIEWSKIM w tej sprawie.',
+  'allcaps-pan-surname': 'Wezwanie otrzymał PAN KOWALSKI dnia wczorajszego.',
+  'allcaps-rola': 'POZWANY JAN KOWALSKI oraz ŚWIADEK ANNA NOWAK stawili się.',
+  'allcaps-instytucje-keep': 'SĄD OKRĘGOWY W WARSZAWIE oraz UNIWERSYTET WARSZAWSKI, WOJEWODA MAZOWIECKI.',
 };
 
 test('golden: zbiór adwersarialny — wariant domyślny', () => {

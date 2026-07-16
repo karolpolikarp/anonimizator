@@ -274,6 +274,11 @@ export function buildDataset() {
   osp('mam na imię PAMELA i dzwonię w sprawie faktury.', ['PAMELA'], ['faktury']);
   osp('Imię: pamela\nNazwisko: nowak', ['pamela', 'nowak'], []);
   osp('PAMELA NOWAK złożyła wniosek w urzędzie miasta.', ['PAMELA', 'NOWAK'], ['wniosek']);
+  // v0.29.7: TYTUŁ/ROLA + imię/nazwisko WERSALIKAMI (tytuł zostaje, nazwisko potwierdzone słownikiem)
+  osp('W składzie SSO JAN KOWALSKI wydał wyrok.', ['JAN KOWALSKI'], ['składzie', 'wyrok']);
+  osp('Rozmawiałem z PANEM MARKIEM WIŚNIEWSKIM osobiście.', ['MARKIEM WIŚNIEWSKIM'], ['osobiście']);
+  osp('POZWANY JAN KOWALSKI nie stawił się na rozprawie.', ['JAN KOWALSKI'], ['POZWANY', 'rozprawie']);
+  osp('Wezwanie otrzymał PAN KOWALSKI dnia wczorajszego.', ['KOWALSKI'], ['Wezwanie', 'wczorajszego']);
 
   // ──────────────────────────────────────────────────────────────────────────
   // OSOBY-ODMIANA — samo nazwisko w przypadku zależnym (bez imienia, bez wyzwalacza)
@@ -624,6 +629,11 @@ export function buildDataset() {
   neg('Pan był wczoraj w urzędzie, a Pani ma rację w tej sprawie.', ['Pan był', 'Pani ma rację']);
   neg('nazywam się tak, jak trzeba, i nic więcej nie dodam.', ['nazywam się tak', 'trzeba']);
   neg('USTAWA O OCHRONIE DANYCH OSOBOWYCH obowiązuje wszystkich.', ['USTAWA O OCHRONIE DANYCH OSOBOWYCH']);
+  // v0.29.7: nagłówki/instytucje WERSALIKAMI NIE są nazwiskami mimo poprzedzającego słowa
+  neg('NACZELNY SĄD ADMINISTRACYJNY oddalił skargę kasacyjną.', ['NACZELNY SĄD ADMINISTRACYJNY']);
+  neg('UNIWERSYTET WARSZAWSKI ogłosił nabór na nowy kierunek.', ['UNIWERSYTET WARSZAWSKI']);
+  neg('PREZES ZARZĄDU SPÓŁKI podpisał uchwałę o połączeniu.', ['PREZES ZARZĄDU SPÓŁKI']);
+  neg('SĘDZIA SĄDU REJONOWEGO rozpoznał sprawę na posiedzeniu.', ['SĘDZIA SĄDU REJONOWEGO']);
 
   // ── Kontrola spójności zbioru ──
   const ids = new Set();

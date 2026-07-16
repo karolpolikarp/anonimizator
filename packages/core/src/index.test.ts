@@ -185,6 +185,37 @@ test('casing — precyzja: nagłówki WERSALIKAMI i homonimy małą literą zost
   expect(redactPII('SĄD OKRĘGOWY W WARSZAWIE').redacted).toBe('SĄD OKRĘGOWY W WARSZAWIE');
   expect(redactPII('to jest jagoda i kalina').redacted).toBe('to jest jagoda i kalina');
 });
+
+// ── Tytuł/rola + imię/nazwisko WERSALIKAMI (v0.29.7): „SSO JAN KOWALSKI", „PANEM …", „PAN KOWALSKI" ──
+test('all-caps: tytuł/rola WERSALIKAMI + nazwisko maskowane (tytuł zostaje)', () => {
+  for (const s of [
+    'SSO JAN KOWALSKI',
+    'z PANEM MARKIEM WIŚNIEWSKIM',
+    'PAN KOWALSKI',
+    'POZWANY JAN KOWALSKI',
+    'ŚWIADEK ANNA NOWAK',
+    'SĘDZIA TRZEBIATOWSKI',
+  ]) {
+    expect(redactPII(s).redacted, s).toContain('[IMIĘ I NAZWISKO]');
+  }
+  // tytuł/rola nie znika (sens wiersza zachowany)
+  expect(redactPII('SSO JAN KOWALSKI').redacted).toContain('SSO');
+  expect(redactPII('PAN KOWALSKI').redacted).toContain('PAN');
+});
+test('all-caps: precyzja — nagłówki instytucji WERSALIKAMI NIE są maskowane', () => {
+  for (const s of [
+    'SĄD OKRĘGOWY W WARSZAWIE',
+    'NACZELNY SĄD ADMINISTRACYJNY',
+    'MINISTERSTWO SPRAWIEDLIWOŚCI',
+    'UNIWERSYTET WARSZAWSKI',
+    'WOJEWODA MAZOWIECKI',
+    'SĘDZIA SĄDU REJONOWEGO',
+    'PREZES ZARZĄDU SPÓŁKI',
+    'NARODOWY BANK POLSKI',
+  ]) {
+    expect(redactPII(s).redacted, s).toBe(s);
+  }
+});
 test('redactPII — kod pocztowy i dowód maskowane', () => {
   const r = redactPII('Adres 00-950, dowód ABA300000');
   expect(r.redacted).toContain('[KOD-POCZTOWY]');

@@ -1,8 +1,8 @@
 # Benchmark anonimizacji — precision / recall
 
-- **Data uruchomienia:** 2026-07-15
-- **Wersja rdzenia (`anonimizator`):** 0.29.5
-- **Zbiór ewaluacyjny:** 276 syntetycznych zdań (deterministyczny, seed `20260704`), 267 elementów do zamaskowania (mustMask), 303 elementów do zachowania (mustKeep)
+- **Data uruchomienia:** 2026-07-16
+- **Wersja rdzenia (`anonimizator`):** 0.29.6
+- **Zbiór ewaluacyjny:** 284 syntetycznych zdań (deterministyczny, seed `20260704`), 271 elementów do zamaskowania (mustMask), 314 elementów do zachowania (mustKeep)
 - **Reprodukcja:** `npm run build -w anonimizator && node scripts/benchmark/run.mjs`
 
 ## Metodologia
@@ -20,7 +20,7 @@ Wszystkie identyfikatory w zbiorze mają **poprawne sumy kontrolne** policzone w
 (PESEL, NIP, REGON, IBAN mod-97, nr dowodu), a negatywy zawierają m.in. ciągi o celowo
 **błędnych** sumach kontrolnych — silnik ma je zostawić w spokoju.
 
-Liczności kategorii: osoby-podstawowe — 31, osoby-odmiana — 32, osoby-rzadkie — 24, strukturalne — 80, negatywy — 80, osoby-rzadkie-ner — 19, osoby-slownik — 10.
+Liczności kategorii: osoby-podstawowe — 35, osoby-odmiana — 32, osoby-rzadkie — 24, strukturalne — 80, negatywy — 84, osoby-rzadkie-ner — 19, osoby-slownik — 10.
 
 ### Warstwy
 
@@ -33,7 +33,7 @@ Liczności kategorii: osoby-podstawowe — 31, osoby-odmiana — 32, osoby-rzadk
 
 | Warstwa | Recall (łącznie) | Precision-proxy (łącznie) | F1 | Porażki (przypadki) | Czas | Wynik ≠ core |
 |---|---|---|---|---|---|---|
-| T0+T1 core | 94.4% (252/267) | 99.7% (302/303) | 97.0% | 16 | 0.0 s | — |
+| T0+T1 core | 94.5% (256/271) | 99.7% (313/314) | 97.0% | 16 | 0.0 s | — |
 
 F1 liczone jako średnia harmoniczna recall i precision-proxy (łącznie po wszystkich kategoriach
 z oboma rodzajami elementów; kategoria „negatywy" nie ma recall, więc nie wchodzi do składowej recall).
@@ -85,7 +85,7 @@ Legenda: **przeszło** = element mustMask pozostał w wyniku (wyciek PII);
 
 **Nadmaskowania (zjedzono 1 elem. w 1 przypadkach):**
 
-- `neg-55` (negatywy): zjedzono „Tadeusz" — wynik: _Pan [IMIĘ I NAZWISKO] to najsłynniejsza polska epopeja narodowa._
+- `neg-52` (negatywy): zjedzono „Tadeusz" — wynik: _Pan [IMIĘ I NAZWISKO] to najsłynniejsza polska epopeja narodowa._
 
 ## Uwagi
 
