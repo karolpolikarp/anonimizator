@@ -1,5 +1,34 @@
 # Changelog
 
+## v0.46.18 — 2026-07-16
+
+**Rdzeń: dwie wady wykryte audytem adwersarialnym v0.46.17 — eponimy uliczne i telefon 2-3-2-2.**
+Domknięcie w duchu „precyzja > nadmaskowanie": jedna poprawka precyzji (mniej nadmaskowania),
+jedna recall (więcej trafnego maskowania), obie bez nowych fałszywych trafień.
+
+- **Nadmaskowanie eponimów ulicznych (patronów):** para „imię nazwisko" BEZPOŚREDNIO po wyrazie
+  ULICZNYM („ulica Tadeusza Kościuszki", „Rondo Romana Dmowskiego", „ul. gen. Andersa") była
+  maskowana jako osoba. Nowy strażnik `precededByStreetEponym` (+ `RE_STREET_WORD` dla wyrazu
+  ulicznego wciągniętego do dopasowania) dodany do detektora PAR (13a/a2) oraz do detektorów SOLO
+  (13c/13c1a/13c2/OCR). Pokrywa: końcówki diakrytyczne kotwicy („aleją/ulicą" — granice Unicode
+  `\p{L}` zamiast ASCII-owego `\b`), RANGI między kotwicą a nazwą („ul. gen. Andersa", „ul. ks.
+  Popiełuszki") i krótką formę solo („Ronda Dmowskiego"). Strażnik jest **zachowawczy**: działa
+  tylko w JEDNEJ LINII, tuż po kotwicy, BEZ mostkowania spójników „oraz/i", przecinka, nowej linii
+  i kropki — każdy z nich wchłaniał REALNĄ osobę z następnej klauzuli/wiersza („ulicy X oraz Jan
+  Kowalski", „skwer X\nOsoba") — więc „choroba Jana Kowalskiego", „na ulicy spotkałem Jana
+  Kowalskiego", „gen. Jan Kowalski" (bez ulicy) to nadal OSOBA (recall utrzymany). Cena: DRUGI
+  patron w wyliczeniu „ulic X oraz Y" bywa nadmaskowany (zamaskowana nazwa ulicy, nie wyciek PII).
+- **Niedomaskowanie telefonu 2-3-2-2 po kotwicy pośredniej:** „kontakt telefoniczny pod numerem
+  32 774 91 55" wyciekał, bo między kotwicą a cyframi stało „pod numerem". Grupa separatora trybu
+  kotwicowego (b) przyjmuje teraz most „pod/numer…". Numer 2-3-2-2 **bez** kotwicy telefonicznej
+  CELOWO zostaje jawny (kontekstowy fallback dawał FP na „Pozycja 32 774 91 55 w wykazie" — zasada
+  „nadmaskowanie gorsze niż drobny wyciek").
+
+Bez regresji: 312 testów zielonych (4 nowe), golden-master czysto addytywny, bramka benchmarku bez
+regresji (recall 94,5→94,6%, precyzja 99,7% utrzymana). Zweryfikowane adwersarialnie wieloagentowo.
+
+Rdzeń `anonimizator` 0.29.8 → 0.29.9, aplikacja web 0.46.17 → 0.46.18, landing 0.46.17 → 0.46.18.
+
 ## v0.46.17 — 2026-07-16
 
 **Rdzeń: trzy poprawki nad/niedomaskowania z realnej petycji do Urzędu Marszałkowskiego.**

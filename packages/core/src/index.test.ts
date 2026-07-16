@@ -1499,3 +1499,69 @@ test('miejscowość z anotacją jednostki TERYT „(miasto)/(gmina …)" maskowa
   // inny rodzaj nawiasu (nie jednostka TERYT) nie wyzwala maski miejscowości
   expect(redactPII('Wisła (rzeka)', { pseudonyms: true }).redacted).toBe('Wisła (rzeka)');
 });
+
+// ── Eponimy uliczne (patroni) BEZPOŚREDNIO po kotwicy NIE są osobą (v0.46.18) ──
+// „ulica/rondo/plac X" (też z rangą „ul. gen. X") — to nazwa ulicy, nie człowiek. Strażnik jest
+// ZACHOWAWCZY: chroni patrona tuż po kotwicy w jednej linii, bez mostkowania spójników (to
+// wchłaniało realne osoby — patrz test regresji niżej). Drugi człon wyliczenia „X oraz Y" bywa
+// nadmaskowany — to zamaskowana nazwa ulicy, nie wyciek PII (dopuszczalne).
+test('patron ulicy bezpośrednio po kotwicy nie jest osobą', () => {
+  for (const s of [
+    'Mieszkam przy ulicy Stefana Batorego.',
+    'Rondo Romana Dmowskiego było zamknięte.',
+    'Plac Marszałka Piłsudskiego odnowiono.',
+    // kotwica z końcówką diakrytyczną (JS \b jest ASCII-only — wcześniej martwa)
+    'Jadąc aleją Tadeusza Kościuszki minął sygnalizację.',
+    // ranga między kotwicą a nazwą („ul. gen. …", „ul. ks. …")
+    'Parafia przy ul. ks. Jerzego Popiełuszki.',
+    'Mieszka przy ul. gen. Władysława Andersa w tym mieście.',
+    // krótka forma solo („Ronda Dmowskiego"), obok pełnej i mostu
+    'Na odcinku od Ronda Dmowskiego do mostu Piłsudskiego objazd.',
+  ]) {
+    expect(redactPII(s, { pseudonyms: true }).redacted).toBe(s);
+  }
+  // wyliczenie: PIERWSZY patron (tuż po kotwicy) zawsze chroniony
+  const enl = 'Do kolizji doszło u zbiegu ulic Jana Kilińskiego oraz Stefana Batorego.';
+  expect(redactPII(enl, { pseudonyms: true }).redacted).toContain('Jana Kilińskiego');
+});
+// REGRESJA (audyt v0.46.18): osoba w NASTĘPNEJ klauzuli/wierszu po eponimie MUSI być maskowana —
+// strażnik uliczny działa tylko w obrębie jednej linii i nie wchłania osoby przez „,"/„\n"/kropkę.
+test('osoba po eponimie ulicznym (nowa linia/przecinek/kropka) NADAL maskowana', () => {
+  const a = redactPII('Miejsce: skwer Wojciecha Korfantego\nRoman Dmowski zeznał, że tam był.', { pseudonyms: true }).redacted;
+  expect(a.includes('Roman Dmowski')).toBe(false);
+  const b = redactPII('Na rogu ulicy Tadeusza Kościuszki, Krzysztof Anders oddalił się z miejsca.', { pseudonyms: true }).redacted;
+  expect(b.includes('Krzysztof Anders')).toBe(false);
+  const c = redactPII('Parafia przy al. Jana Pawła II\nProboszcz ks. Tadeusz Zieliński potwierdził zdarzenie.', { pseudonyms: true }).redacted;
+  expect(c.includes('Tadeusz Zieliński')).toBe(false);
+  // kropka kończąca zdanie nie może przedłużać kotwicy ulicznej na kolejne zdanie
+  const d = redactPII('Mieszka przy ulicy Tadeusza Kościuszki. Krzysztof Anders był świadkiem.', { pseudonyms: true }).redacted;
+  expect(d.includes('Krzysztof Anders')).toBe(false);
+});
+test('REGRESJA: realna osoba w sąsiedztwie słowa „ulica" NADAL maskowana', () => {
+  // kotwica uliczna zwęża się do „ulica <Nazwa>"; „na ulicy <czasownik> <Osoba>" to człowiek
+  const a = redactPII('Na ulicy spotkałem Jana Kowalskiego.', { pseudonyms: true }).redacted;
+  expect(a.includes('Jana Kowalskiego')).toBe(false);
+  const b = redactPII('Zdiagnozowano chorobę Jana Kowalskiego w szpitalu.', { pseudonyms: true }).redacted;
+  expect(b.includes('Jana Kowalskiego')).toBe(false);
+  const c = redactPII('Obecni byli Jan Kowalski oraz Anna Nowak.', { pseudonyms: true }).redacted;
+  expect(c.includes('Jan Kowalski')).toBe(false);
+  expect(c.includes('Anna Nowak')).toBe(false);
+  // ranga/tytuł BEZ kotwicy ulicznej NIE chroni osoby (gen./ks. to człowiek, nie patron ulicy)
+  expect(redactPII('Rozkaz wydał gen. Jan Kowalski osobiście.', { pseudonyms: true }).redacted.includes('Jan Kowalski')).toBe(false);
+  expect(redactPII('Mszę odprawił ks. Jan Kowalski.', { pseudonyms: true }).redacted.includes('Jan Kowalski')).toBe(false);
+  // ulica Z NUMEREM (adres) + nowa linia + osoba — osoba nadal maskowana (adres to [ADRES], nie kotwica)
+  expect(redactPII('Biuro: ul. Zielona 5\nJan Kowalski złożył wniosek.', { pseudonyms: true }).redacted.includes('Jan Kowalski')).toBe(false);
+});
+
+// ── Telefon: most „pod numerem" po kotwicy; bez kotwicy 2-3-2-2 świadomie NIE maskowany (v0.46.18) ──
+test('telefon 2-3-2-2 po kotwicy „kontakt … pod numerem" (też przez nową linię)', () => {
+  const t = 'Prosimy o kontakt telefoniczny pod numerem\n32 774 91 55 lub adresem.';
+  const r = redactPII(t, { pseudonyms: true }).redacted;
+  expect(r.includes('32 774 91 55')).toBe(false);
+  expect(r).toContain('[TELEFON]');
+});
+test('REGRESJA: liczba 2-3-2-2 bez kontekstu telefonicznego NIE jest telefonem', () => {
+  // „nadmaskowanie gorsze niż drobny wyciek" — numer pozycji/inwentarza zostaje jawny
+  const t = 'Pozycja 32 774 91 55 w wykazie inwentarza magazynowego.';
+  expect(redactPII(t, { pseudonyms: true }).redacted).toBe(t);
+});

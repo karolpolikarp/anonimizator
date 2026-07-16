@@ -391,6 +391,43 @@ const prevLowerWord = (text: string, offset: number): string | undefined =>
  *  z inicjałem imienia? prevLowerWord tego nie widzi (kropka po skrócie). */
 const precededByPatron = (t: string, offset: number): boolean =>
   /\b(?:im|ul|al|pl|os)\.[ \t]+(?:[A-ZĄĆĘŁŃÓŚŹŻ]\.[ \t]*)?$/i.test(t.slice(Math.max(0, offset - 12), offset));
+/**
+ * Czy para „imię nazwisko" na pozycji `offset` to PATRON ULICY/placu/ronda (eponim), a nie osoba?
+ * „ulica Tadeusza Kościuszki", „rondo Jana Pawła II", a także WYLICZENIE „u zbiegu ulic … oraz …"
+ * (drugi patron poprzedzony spójnikiem — skan wstecz przez nazwy własne i spójniki aż do wyrazu
+ * ulicznego). Świadomie TYLKO konteksty ULICZNE/dedykacyjne — kontekstu medycznego („choroba Jana
+ * Kowalskiego") NIE obejmuje, bo tam para z imieniem bywa realną osobą (recall). Uzupełnia
+ * `precededByPatron` (skróty ul./al./im.) o pełne wyrazy i wyliczenia; strażnik detektora PAR
+ * (kroki 13a/a2), których solo-detektory już pilnują przez NON_PERSON_CONTEXT.
+ */
+// Kotwica wyrazu ulicznego (rdzeń + dowolna odmiana przez \p{L}*; pierwsza litera też WERSALIK).
+// Granice Unicode (?<![\p{L}]) / (?![\p{L}]) zamiast \b — JS \b jest ASCII-only nawet z /u, więc
+// „aleją/ulicą" (końcówka diakrytyczna) traciły granicę i strażnik był martwy.
+const STREET_ANCHOR_SRC =
+  `(?:[Uu]lic\\p{L}*|[Aa]lej\\p{L}*|[Aa]lei|[Pp]lac\\p{L}*|[Rr]ond\\p{L}*|[Mm]ost\\p{L}*|[Oo]siedl\\p{L}*|` +
+  `[Ss]kwer\\p{L}*|[Bb]ulwar\\p{L}*|[Pp]ark\\p{L}*|[Zz]bieg\\p{L}*|[Rr]og\\p{L}*|[Rr]óg|[Ii]mienia|` +
+  `[Ii]m|[Uu]l|[Aa]l|[Pp]l|[Oo]s)`;
+// ZACHOWAWCZO: strażnik uznaje patrona TYLKO bezpośrednio po kotwicy, w JEDNEJ LINII, przez ciąg
+// nazw własnych i RANG/skrótów tytułów („ul. gen. Andersa", „al. ks. Popiełuszki"). ŚWIADOMIE BEZ
+// mostkowania spójników „oraz/i", przecinka, nowej linii i kropki w tokenie nazwy — każdy z nich
+// pozwalał wchłonąć REALNĄ osobę z następnej klauzuli/wiersza/zdania („ulicy X oraz Jan Kowalski",
+// „ulic X, Osoba", „skwer X\nOsoba", „X. Osoba") = udokumentowana regresja (wyciek osoby). Cena:
+// DRUGI patron w wyliczeniu „ulic X oraz Y" bywa nadmaskowany (zamaskowana nazwa ulicy, NIE wyciek
+// PII — dopuszczalne wg zasady „precyzja"). PIERWSZY patron (tuż po kotwicy) jest zawsze chroniony.
+const RE_STREET_EPONYM_TAIL = new RegExp(
+  `(?<![\\p{L}])${STREET_ANCHOR_SRC}(?![\\p{L}])\\.?` +
+    `(?:[ \\t]+(?:[${PL_UP}][${PL_LO}${PL_UP}'’-]*|[IVXLCDM]+|` +
+    `(?:gen|pułk|płk|ppłk|mjr|kpt|por|ks|św|bp|abp|kard|marsz|prof|dr|inż|hr)\\.?))*` +
+    `[ \\t]*$`,
+  'u',
+);
+const precededByStreetEponym = (t: string, offset: number): boolean =>
+  RE_STREET_EPONYM_TAIL.test(t.slice(Math.max(0, offset - 220), offset));
+/** Pojedynczy wyraz oznaczający ulicę/plac/obiekt (dowolna odmiana) — gdy stoi tuż PRZED imieniem
+ *  w ciągu „Rondo Romana Dmowskiego" (kapitalizowany, wciągnięty do dopasowania pary), para to
+ *  patron, nie osoba. Uzupełnia `precededByStreetEponym` (który patrzy PRZED całym dopasowaniem). */
+const RE_STREET_WORD =
+  /^(?:ulic\p{L}*|alej\p{L}*|alei|plac\p{L}*|rond\p{L}*|most\p{L}*|osiedl\p{L}*|skwer\p{L}*|bulwar\p{L}*|park\p{L}*|zbieg\p{L}*|rog\p{L}*|róg|imienia|im|ul|al|pl|os)$/iu;
 /** Kody walut — „PLN 123456" to kwota, nie dowód (wyjątek w kroku DOWÓD bez kontekstu). */
 const CURRENCY_CODES = new Set([
   'PLN', 'EUR', 'USD', 'GBP', 'CHF', 'CZK', 'SEK', 'NOK', 'DKK', 'JPY', 'UAH', 'RUB',
@@ -1204,7 +1241,7 @@ function passPhone(ctx: RedactCtx): void {
   if (!ctx.on('TELEFON')) return;
   // (b) słowo kontekstowe + 9 cyfr (zachowujemy słowo, maskujemy numer), także wyliczenie.
   ctx.text = ctx.text.replace(
-    /\b(te[li]\.?|telefon\w{0,4}|kom\.?|komórk[aiwy]|fax|faks|nr te[li]\.?|kontakt\w{0,4})((?:\s+(?:kontaktow\w+|stacjonarn\w+|służbow\w+|komórkow\w+|domow\w+|telefoniczn\w+))?[\s:.=-]*)((?:\+?48[\s.-]{1,3})?(?:[\s\-().]{0,3}\d){9}(?:\s*(?:,|\boraz\b|\bi\b)\s*(?:(?:kontaktow\w+|stacjonarn\w+|służbow\w+|komórkow\w+|domow\w+|kom\.?|tel\.?)\s+)?(?:\+?48[\s.-]{1,3})?(?:[\s\-().]{0,3}\d){9})*)(?!\.?\d)/gi,
+    /\b(te[li]\.?|telefon\w{0,4}|kom\.?|komórk[aiwy]|fax|faks|nr te[li]\.?|kontakt\w{0,4})((?:\s+(?:kontaktow\w+|stacjonarn\w+|służbow\w+|komórkow\w+|domow\w+|telefoniczn\w+|pod|numer\w*))*[\s:.=-]*)((?:\+?48[\s.-]{1,3})?(?:[\s\-().]{0,3}\d){9}(?:\s*(?:,|\boraz\b|\bi\b)\s*(?:(?:kontaktow\w+|stacjonarn\w+|służbow\w+|komórkow\w+|domow\w+|kom\.?|tel\.?)\s+)?(?:\+?48[\s.-]{1,3})?(?:[\s\-().]{0,3}\d){9})*)(?!\.?\d)/gi,
     (m, kw: string, sep: string, nums: string) => {
       const parts = nums.split(/\s*(?:,|\boraz\b|\bi\b)\s*/i);
       const validPart = (p: string) => {
@@ -1231,6 +1268,9 @@ function passPhone(ctx: RedactCtx): void {
     },
   );
   // (c) fallback bez kontekstu — klasyczne 3-3-3, 9 cyfr ciągiem lub kierunkowy w nawiasie.
+  // ŚWIADOMIE bez grupowania 2-3-2-2 bez kontekstu: „Pozycja 32 774 91 55 w wykazie" to numer
+  // pozycji, nie telefon — kontekstowy fallback dałby FP (zasada: nadmaskowanie gorsze niż wyciek).
+  // Stacjonarny 2-3-2-2 łapie tryb kotwicowy (b) — tam wymagane jest słowo „tel./kontakt/pod numerem".
   ctx.text = ctx.text.replace(
     /(?<![\d.])(?:\(\d{2}\)[ \t]?\d{3}[ \t-]?\d{2}[ \t-]?\d{2}|\d{3}[\s-]?\d{3}[\s-]?\d{3})(?!\.?\d)(?![ \t]*(?:,\d{2})?[ \t]*(?:zł|PLN|EUR|USD|gr\b))/g,
     (m, offset: number) => {
@@ -1511,11 +1551,15 @@ function passPersonPairs(ctx: RedactCtx): void {
     return `${ctx.personMask(c)} i ${ctx.personMask(c)}`; // wspólne nazwisko = ten sam klucz osoby
   });
   // (a) IMIĘ/IMIONA + NAZWISKO — jedno lub dwa imiona (mianownik LUB odmiana) + nazwisko.
-  ctx.text = ctx.text.replace(RE_NAME_SEQ, (m) => {
+  ctx.text = ctx.text.replace(RE_NAME_SEQ, (m, offset: number) => {
+    // patron ulicy/placu (też wyliczenie „ulic X oraz Y") to eponim, nie osoba
+    if (precededByPatron(ctx.text, offset) || precededByStreetEponym(ctx.text, offset)) return m;
     const words = m.split(/\s+/);
     let start = 0;
     while (start < words.length && !isFirstNameLike(words[start])) start++;
     if (start >= words.length) return m; // brak imienia w ciągu → zostaw
+    // wyraz uliczny wciągnięty do dopasowania („Rondo Romana Dmowskiego") → patron, nie osoba
+    if (start > 0 && RE_STREET_WORD.test(words[start - 1])) return m;
     let k = start;
     while (k < words.length && isFirstNameLike(words[k]) && !LEGAL_ENTITY_WORDS.has(words[k].toLowerCase())) k++;
     if (k >= words.length) return m; // same imiona, brak nazwiska po nich → zostaw
@@ -1527,8 +1571,11 @@ function passPersonPairs(ctx: RedactCtx): void {
     return [prefix, ctx.personMask(surname), rest].filter(Boolean).join(' ');
   });
   // (a2) para „Wyraz Nazwisko(morfologiczne)" — sufiks -ski/-cki/-icz/-czyk spoza słownika.
-  ctx.text = ctx.text.replace(RE_PAIR, (m, w1: string, w2: string) => {
+  ctx.text = ctx.text.replace(RE_PAIR, (m, w1: string, w2: string, offset: number) => {
     if (!looksLikeSurname(w2)) return m;
+    // „ulica Tadeusza Kościuszki", „ul. Jana Kilińskiego" (też wyliczenie) → patron, nie osoba;
+    // w1 będące wyrazem ulicznym („Ronda Dmowskiego", „mostu Piłsudskiego") też → patron
+    if (precededByPatron(ctx.text, offset) || precededByStreetEponym(ctx.text, offset) || RE_STREET_WORD.test(w1)) return m;
     const w1l = w1.toLowerCase();
     if (RE_SURNAME_OBLIQUE.test(w2.toLowerCase())) {
       ctx.bump('IMIE'); // dzierżawczy dopełniacz → rzeczownik/imię w w1 zostaje
@@ -1649,7 +1696,7 @@ function passPersonSoloDict(ctx: RedactCtx): void {
     if (LEGAL_ENTITY_WORDS.has(m.toLowerCase())) return m;
     if (!surnameBase(m)) return m;
     // „choroba Kowalskiego", „ulica Kwiatkowska", „im. Mickiewicza" — kontekst nie-osobowy
-    if (precededByPatron(ctx.text, offset)) return m;
+    if (precededByPatron(ctx.text, offset) || precededByStreetEponym(ctx.text, offset)) return m;
     if (precededByAdminLabel(ctx.text, offset)) return m; // „Powiat: …", „Gmina: …"
     const prev = prevLowerWord(ctx.text, offset);
     if (prev && NON_PERSON_CONTEXT.has(prev)) return m;
@@ -1669,7 +1716,7 @@ function passPersonInitial(ctx: RedactCtx): void {
     (m, w2: string, offset: number) => {
       const wl = w2.toLowerCase();
       if (LEGAL_ENTITY_WORDS.has(wl) || NON_SURNAME_ADJ.has(wl) || TITLE_WORDS.has(wl) || ROLE_WORDS.has(wl)) return m;
-      if (precededByPatron(ctx.text, offset)) return m;
+      if (precededByPatron(ctx.text, offset) || precededByStreetEponym(ctx.text, offset)) return m;
       const prev = prevLowerWord(ctx.text, offset);
       if (prev && NON_PERSON_CONTEXT.has(prev)) return m;
       if (!surnameBase(w2) && !looksLikeSurname(w2) && !HOMOGRAPH_SURNAMES.has(normalizeSurnameKey(w2))) return m;
@@ -1712,7 +1759,7 @@ function passPersonSoloMorph(ctx: RedactCtx): void {
     // drugi człon złożenia z wielkiej litery (np. „… Warszawski") → to przymiotnik nazwy.
     if (PRECEDED_BY_CAP.test(ctx.text.slice(Math.max(0, offset - 40), offset))) return m;
     // eponim/ulica po wyrazie z małej litery oraz patron instytucji
-    if (precededByPatron(ctx.text, offset)) return m;
+    if (precededByPatron(ctx.text, offset) || precededByStreetEponym(ctx.text, offset)) return m;
     if (precededByAdminLabel(ctx.text, offset)) return m;
     const prev = prevLowerWord(ctx.text, offset);
     if (prev && NON_PERSON_CONTEXT.has(prev)) return m;
@@ -1752,7 +1799,7 @@ function passPersonOcrTitle(ctx: RedactCtx): void {
     ),
     (m, title: string, name: string, offset: number) => {
       if (!ALLCAPS_TITLES.has(title.toLowerCase())) return m;
-      if (precededByPatron(ctx.text, offset)) return m;
+      if (precededByPatron(ctx.text, offset) || precededByStreetEponym(ctx.text, offset)) return m;
       const nameWords = name.split(/[ \t]+/);
       // żaden człon nazwy nie może być rolą/tytułem/encją prawną (chroni „PREZES ZARZĄDU SPÓŁKI")
       if (
@@ -1789,7 +1836,7 @@ function passPersonOcrPair(ctx: RedactCtx): void {
       if (LEGAL_ENTITY_WORDS.has(n1) || ROLE_WORDS.has(n1) || TITLE_WORDS.has(n1)) return m;
       if (LEGAL_ENTITY_WORDS.has(n2) || NON_SURNAME_ADJ.has(n2)) return m;
       if (!surnameBase(n2) && !looksLikeSurname(n2)) return m;
-      if (precededByPatron(ctx.text, offset)) return m;
+      if (precededByPatron(ctx.text, offset) || precededByStreetEponym(ctx.text, offset)) return m;
       if (!isFirstNameLike(n1) && !homo1) {
         // pierwszy token to nie imię — maskuj SAMO nazwisko, o ile zawiera homoglif
         if (!homo2) return m;

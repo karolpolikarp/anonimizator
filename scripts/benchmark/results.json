@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-07-16T11:16:21.753Z",
+  "generatedAt": "2026-07-16T16:42:58.407Z",
   "seed": 20260704,
-  "coreVersion": "0.29.8",
-  "casesTotal": 289,
-  "mustMaskTotal": 274,
-  "mustKeepTotal": 320,
+  "coreVersion": "0.29.9",
+  "casesTotal": 297,
+  "mustMaskTotal": 276,
+  "mustKeepTotal": 328,
   "skippedLayers": [
     {
       "name": "core+spacy",
@@ -26,16 +26,16 @@
     {
       "name": "T0+T1 core",
       "desc": "redactPII() — regex + sumy kontrolne + słownik (in-process, offline)",
-      "elapsedMs": 65,
+      "elapsedMs": 88,
       "changedVsCore": null,
-      "recall": 0.9452554744525548,
-      "precision": 0.996875,
-      "f1": 0.9703792443301269,
+      "recall": 0.9456521739130435,
+      "precision": 0.9969512195121951,
+      "f1": 0.9706243602865916,
       "agg": {
-        "maskTotal": 274,
-        "maskHit": 259,
-        "keepTotal": 320,
-        "keepHit": 319
+        "maskTotal": 276,
+        "maskHit": 261,
+        "keepTotal": 328,
+        "keepHit": 327
       },
       "perCategory": {
         "osoby-podstawowe": {
@@ -51,10 +51,10 @@
           "recall": 1,
           "precision": 1,
           "f1": 1,
-          "maskTotal": 36,
-          "maskHit": 36,
-          "keepTotal": 35,
-          "keepHit": 35
+          "maskTotal": 37,
+          "maskHit": 37,
+          "keepTotal": 36,
+          "keepHit": 36
         },
         "osoby-rzadkie": {
           "recall": 1,
@@ -69,19 +69,19 @@
           "recall": 1,
           "precision": 1,
           "f1": 1,
-          "maskTotal": 111,
-          "maskHit": 111,
-          "keepTotal": 88,
-          "keepHit": 88
+          "maskTotal": 112,
+          "maskHit": 112,
+          "keepTotal": 89,
+          "keepHit": 89
         },
         "negatywy": {
           "recall": null,
-          "precision": 0.9904761904761905,
+          "precision": 0.990990990990991,
           "f1": null,
           "maskTotal": 0,
           "maskHit": 0,
-          "keepTotal": 105,
-          "keepHit": 104
+          "keepTotal": 111,
+          "keepHit": 110
         },
         "osoby-rzadkie-ner": {
           "recall": 0.21052631578947367,
@@ -1739,6 +1739,46 @@
         },
         {
           "id": "str-83",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-87",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-88",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-89",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-90",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-91",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-o-33",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-84",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "neg-92",
           "leaked": [],
           "eaten": []
         }

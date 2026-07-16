@@ -645,6 +645,22 @@ export function buildDataset() {
   str('Adres do doręczeń: UL. JULIUSZA LIGONIA 46 w budynku.', ['JULIUSZA LIGONIA 46'], ['doręczeń']);
   // miejscowość z anotacją jednostki TERYT „(miasto)" — pole słownikowe e-urzędowe
   str('W rejestrze figuruje Gliwice (miasto) jako jednostka.', ['Gliwice'], ['(miasto)', 'jednostka']);
+  // v0.46.18: eponimy uliczne (patroni) — para imię+nazwisko po „ulic/rondo" to NAZWA ULICY, nie osoba…
+  // strażnik chroni PIERWSZEGO patrona (tuż po kotwicy); drugi po „oraz" bywa nadmaskowany — świadomy
+  // kompromis (mostkowanie spójnika wchłaniało realne osoby: „ulicy X oraz Jan Kowalski")
+  neg('Zdarzenie miało miejsce u zbiegu ulic Tadeusza Kościuszki oraz świadka.', ['Tadeusza Kościuszki']);
+  neg('Rondo Romana Dmowskiego było wczoraj zamknięte.', ['Romana Dmowskiego']);
+  // luki domknięte w audycie: końcówka diakrytyczna kotwicy, ranga „gen." między kotwicą a nazwą,
+  // krótka forma solo „Ronda Dmowskiego"
+  neg('Jadąc aleją Tadeusza Kościuszki minął sygnalizację świetlną.', ['Tadeusza Kościuszki']);
+  neg('Sklep mieści się na rogu ul. gen. Władysława Andersa.', ['Władysława Andersa']);
+  neg('Na odcinku od Ronda Dmowskiego wprowadzono objazd.', ['Dmowskiego']);
+  // …ale realna osoba w sąsiedztwie słowa „ulica" (czasownik między) MUSI zniknąć (recall).
+  oso('Na ulicy spotkałem wczoraj Jana Kowalskiego.', ['Jana Kowalskiego'], ['spotkałem']);
+  // telefon 2-3-2-2 po kotwicy „kontakt … pod numerem" (most kotwicowy); bez kotwicy — patrz neg niżej
+  str('Kontakt telefoniczny pod numerem 32 774 91 55 w godzinach pracy.', ['32 774 91 55'], ['godzinach']);
+  // liczba w kształcie 2-3-2-2 BEZ kontekstu telefonicznego to numer pozycji — zostaje jawna
+  neg('Pozycja 32 774 91 55 w wykazie inwentarza magazynowego.', ['32 774 91 55']);
 
   // ── Kontrola spójności zbioru ──
   const ids = new Set();
