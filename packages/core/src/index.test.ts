@@ -1580,6 +1580,35 @@ test('kotwica IBAN nie zjada liter następnego słowa (diakrytyk po IBAN)', () =
   expect(r).toContain('wpłynęły'); // słowo nietknięte (dawniej „[NR-KONTA]łynęły")
   expect(r.includes('[NR-KONTA]łynęły')).toBe(false); // brak zjedzenia „wp"
 });
+
+// ── Domknięcia z audytu v0.46.20: imię osierocone (newline / panieńskie „z"), REGON wielowyrazowy ──
+test('imię na końcu wiersza przed potwierdzonym nazwiskiem w następnej linii — maskowane w całości', () => {
+  for (const t of ['Jan\nWiśniewski złożył wniosek.', 'Starosta Jan\nWiśniewski przeprowadził kontrolę.']) {
+    const r = redactPII(t, { pseudonyms: true }).redacted;
+    expect(/\bJan\b/.test(r)).toBe(false);
+    expect(r.includes('Wiśniewski')).toBe(false);
+  }
+  // proza na końcu wiersza (nie imię) NIE jest wciągana do maski
+  expect(redactPII('protokół\nKowalski podpisał.', { pseudonyms: true }).redacted).toContain('protokół');
+});
+test('nazwisko panieńskie „Imię z Nazwiskoskich"/„z domu" — jedna osoba; narzędnik „z Kowalskim" — dwie', () => {
+  for (const t of ['Gosia z Lewandowskich głosowała przeciw.', 'Anna z Kowalskich była obecna.', 'Barbara\nz Nowaków była obecna.']) {
+    const r = redactPII(t, { pseudonyms: true }).redacted;
+    expect(/\b(Gosia|Anna|Barbara)\b/.test(r)).toBe(false); // imię NIE osierocone (też po łamaniu wiersza)
+    expect(/Lewandowskich|Kowalskich|Nowaków/.test(r)).toBe(false);
+  }
+  expect(redactPII('Maria Nowak z domu Zielińska przyszła.', { pseudonyms: true }).redacted.includes('Zielińska')).toBe(false);
+  // REGRESJA: narzędnik „z Kowalskim" = „z kimś" (DWIE osoby) — imię MUSI zostać
+  const instr = redactPII('Anna rozmawiała z Kowalskim wczoraj.', { pseudonyms: true }).redacted;
+  expect(instr).toContain('Anna');
+  // miejsce po „z" nie jest osobą
+  expect(redactPII('Jan wrócił z Krakowa wieczorem.', { pseudonyms: true }).redacted).toContain('z Krakowa');
+});
+test('REGON/PESEL po ETYKIECIE z wieloma wyrazami wtrącenia maskowane', () => {
+  expect(redactPII('REGON zakładu opiekuńczego wynosi 012345675', { pseudonyms: true }).redacted).toContain('[REGON]');
+  // bez etykiety liczba nie jest maskowana jako REGON
+  expect(redactPII('Rozliczenie za rok 2023 i pozycja 012345675 gotowe.', { pseudonyms: true }).redacted).toContain('012345675');
+});
 test('przymiotnik ODMIEJSCOWY powiatowy po roli to nie nazwisko; realne nazwisko po roli — tak', () => {
   expect(redactPII('Z upoważnienia Starosty Wołomińskiego', { pseudonyms: true }).redacted).toBe('Z upoważnienia Starosty Wołomińskiego');
   expect(redactPII('Decyzja Wojewody Mazowieckiego', { pseudonyms: true }).redacted).toBe('Decyzja Wojewody Mazowieckiego');

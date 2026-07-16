@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-07-16T21:20:15.540Z",
+  "generatedAt": "2026-07-16T21:58:55.570Z",
   "seed": 20260704,
-  "coreVersion": "0.29.10",
-  "casesTotal": 305,
-  "mustMaskTotal": 281,
-  "mustKeepTotal": 336,
+  "coreVersion": "0.29.11",
+  "casesTotal": 309,
+  "mustMaskTotal": 287,
+  "mustKeepTotal": 341,
   "skippedLayers": [
     {
       "name": "core+spacy",
@@ -26,16 +26,16 @@
     {
       "name": "T0+T1 core",
       "desc": "redactPII() — regex + sumy kontrolne + słownik (in-process, offline)",
-      "elapsedMs": 41,
+      "elapsedMs": 45,
       "changedVsCore": null,
-      "recall": 0.9466192170818505,
-      "precision": 0.9970238095238095,
-      "f1": 0.9711679408863774,
+      "recall": 0.9477351916376306,
+      "precision": 0.9970674486803519,
+      "f1": 0.9717756341550553,
       "agg": {
-        "maskTotal": 281,
-        "maskHit": 266,
-        "keepTotal": 336,
-        "keepHit": 335
+        "maskTotal": 287,
+        "maskHit": 272,
+        "keepTotal": 341,
+        "keepHit": 340
       },
       "perCategory": {
         "osoby-podstawowe": {
@@ -51,10 +51,10 @@
           "recall": 1,
           "precision": 1,
           "f1": 1,
-          "maskTotal": 37,
-          "maskHit": 37,
-          "keepTotal": 36,
-          "keepHit": 36
+          "maskTotal": 39,
+          "maskHit": 39,
+          "keepTotal": 37,
+          "keepHit": 37
         },
         "osoby-rzadkie": {
           "recall": 1,
@@ -69,10 +69,10 @@
           "recall": 1,
           "precision": 1,
           "f1": 1,
-          "maskTotal": 115,
-          "maskHit": 115,
-          "keepTotal": 92,
-          "keepHit": 92
+          "maskTotal": 119,
+          "maskHit": 119,
+          "keepTotal": 96,
+          "keepHit": 96
         },
         "negatywy": {
           "recall": null,
@@ -1819,6 +1819,26 @@
         },
         {
           "id": "str-87",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "os-o-34",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-88",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-89",
+          "leaked": [],
+          "eaten": []
+        },
+        {
+          "id": "str-90",
           "leaked": [],
           "eaten": []
         }

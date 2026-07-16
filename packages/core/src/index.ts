@@ -310,6 +310,8 @@ const POLISH_FIRST_NAMES = new Set<string>(
     // uzupełnienie: częste imiona wcześniej pomijane — bez nich pary „imię nazwisko" pisane
     // WERSALIKAMI lub małymi literami nie były łapane (detekcja par zależy od słownika imion)
     'pamela melania kornelia apolonia sonia tamara żaklina walentyna celina aurelia benedykt alfred edmund herbert oktawian klemens ' +
+    // uzupełnienie częstych imion pełnych brakujących w słowniku (luka recall wykryta audytem v0.46.20)
+    'barbara genowefa czesław bronisław eugeniusz ' +
     // ZDROBNIENIA/spieszczenia (v0.46.19) — imiona są maskowane TYLKO w parze z nazwiskiem/po
     // wyzwalaczu, więc dodanie zdrobnień podnosi recall („Janek Kowalski") bez FP na samo zdrobnienie.
     // Kuratorowane z listy wygenerowanej adwersarialnie: mianownik, ≥4 znaki, bez kolizji z wyrazem
@@ -1161,7 +1163,7 @@ function passAccount(ctx: RedactCtx): void {
   // liter etykiety wyliczone jawnie; lookahead (?![A-Za-z0-9]) domyka wartość na granicy słowa.
   maskAfterLabel(
     ctx,
-    /\b((?:konto|Konto|KONTO|konta|Konta|rachunek|Rachunek|RACHUNEK|rachunku|Rachunku|nr konta|Nr konta|numer konta|Numer konta|iban|Iban|IBAN)(?:\s+(?:to|o|nr|[A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźż]{3,})){0,2})([\s:=.-]+)([A-Z]{2}\d{2}(?:[ ]?[A-Z0-9]){11,30})(?![A-Za-z0-9])/g,
+    /\b((?:konto|Konto|KONTO|konta|Konta|rachunek|Rachunek|RACHUNEK|rachunku|Rachunku|nr konta|Nr konta|numer konta|Numer konta|iban|Iban|IBAN)(?:\s+(?:to|o|nr|[A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźż]{3,})){0,3})([\s:=.-]+)([A-Z]{2}\d{2}(?:[ ]?[A-Z0-9]){11,30})(?![A-Za-z0-9])/g,
     'NR-KONTA',
   );
   // (c) NRB BEZ prefiksu „PL" i BEZ etykiety — 26 cyfr z POPRAWNĄ sumą (walidacja po dodaniu „PL").
@@ -1188,7 +1190,7 @@ function passPesel(ctx: RedactCtx): void {
   // (b) z SILNĄ etykietą „PESEL" — maskuj 11 cyfr NAWET bez poprawnej sumy (etykieta to sygnał).
   maskAfterLabel(
     ctx,
-    /\b(pesel(?:\s+(?:to|o|nr|[A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźż]{3,})){0,2})([\s:=.-]+)(\d{11})(?![\d])/gi,
+    /\b(pesel(?:\s+(?:to|o|nr|[A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźż]{3,})){0,3})([\s:=.-]+)(\d{11})(?![\d])/gi,
     'PESEL',
   );
 }
@@ -1211,7 +1213,7 @@ function passNip(ctx: RedactCtx): void {
   // (b) z SILNĄ etykietą „NIP" — maskuj 10 cyfr (dowolny separator) NAWET bez poprawnej sumy.
   maskAfterLabel(
     ctx,
-    /\b(nip(?:\s+(?:to|o|nr|[A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźż]{3,})){0,2})([\s:=.-]+)((?:PL[- ]?)?(?:\d{3}[- ]\d{3}[- ]\d{2}[- ]\d{2}|\d{3}[- ]\d{2}[- ]\d{2}[- ]\d{3}|\d{10}))(?![\d])/gi,
+    /\b(nip(?:\s+(?:to|o|nr|[A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźż]{3,})){0,3})([\s:=.-]+)((?:PL[- ]?)?(?:\d{3}[- ]\d{3}[- ]\d{2}[- ]\d{2}|\d{3}[- ]\d{2}[- ]\d{2}[- ]\d{3}|\d{10}))(?![\d])/gi,
     'NIP',
   );
 }
@@ -1229,7 +1231,7 @@ function passRegon(ctx: RedactCtx): void {
   // 6a) REGON z etykietą „REGON" — 9 lub 14 cyfr. Maskuj NAWET bez poprawnej sumy.
   maskAfterLabel(
     ctx,
-    /\b(regon(?:\s+(?:to|o|nr|[A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźż]{3,})){0,2})([\s:=.-]+)(\d{14}|\d{9})(?![\d])/gi,
+    /\b(regon(?:\s+(?:to|o|nr|[A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźż]{3,})){0,3})([\s:=.-]+)(\d{14}|\d{9})(?![\d])/gi,
     'REGON',
   );
 }
@@ -1664,6 +1666,29 @@ function passPersonPairs(ctx: RedactCtx): void {
     }
     return changed ? words.join('') : m;
   });
+  // (a5) NAZWISKO PANIEŃSKIE: „Imię z Nazwiskoskich" / „Imię z domu Nazwisko" — JEDNA osoba (maskuj
+  // całość, nie osieroć imienia). Po gołym „z" WYMÓG dopełniacza l.mn. (-skich/-ckich/-dzkich/-ich/
+  // -ych/-ów) ODRÓŻNIA panieńskie od narzędnika („Anna z Kowalskim" = „z kimś", DWIE osoby → -im) i od
+  // miejsca („z Krakowa" → -owa). „z domu" to jawna kotwica — po niej dowolna forma nazwiska.
+  ctx.text = ctx.text.replace(
+    new RegExp(
+      // [ \t\n] wokół „z" obejmuje łamanie wiersza („Gosia\nz Lewandowskich"); tylko białe znaki
+      // między wyrazami, więc proza między imieniem a „z" nie pasuje. Strażnik dopełniacza l.mn.
+      // nadal odróżnia od narzędnika, niezależnie od typu białego znaku.
+      `\\b(${CAP_WORD})[ \\t\\n]+z[ \\t\\n]+` +
+        `(?:domu[ \\t\\n]+([${PL_UP}][${PL_LO}]+(?:-[${PL_UP}][${PL_LO}]+)?)` +
+        `|([${PL_UP}][${PL_LO}]+(?:skich|ckich|dzkich|ich|ych|ów)))` +
+        `(?![${PL_UP}${PL_LO}])`,
+      'g',
+    ),
+    (m, first: string, domuSurname: string | undefined, genplSurname: string | undefined) => {
+      if (!isFirstNameLike(first)) return m;
+      const surname = domuSurname ?? genplSurname ?? '';
+      if (!surname || LEGAL_ENTITY_WORDS.has(surname.toLowerCase())) return m;
+      ctx.bump('IMIE');
+      return ctx.personMask(surname); // klucz tożsamości = nazwisko panieńskie
+    },
+  );
 }
 
 // (b) wyzwalacze kontekstu — łapią nazwiska spoza listy imion („Pan Habdank-Wojewódzki").
@@ -1903,11 +1928,13 @@ function passPersonOcrMix(ctx: RedactCtx): void {
 
 // ══════ FAZA 5 · DOMKNIĘCIA OSÓB · STABILNA NUMERACJA · PRZYWRÓCENIE URL ══════
 function finalizePersons(ctx: RedactCtx): void {
-  // DOMKNIĘCIE: imię słownikowe tuż przed zamaskowaną osobą (także złączone _ lub -) → do maski.
-  // Dwa przebiegi: po wciągnięciu jednego imienia przed maską może odsłonić się kolejne.
+  // DOMKNIĘCIE: imię słownikowe tuż przed zamaskowaną osobą (spacja/_/-/JEDNA nowa linia) → do maski.
+  // Nowa linia obejmuje „Jan\nWiśniewski" (imię na końcu wiersza, potwierdzone nazwisko w następnym) —
+  // gate `isFirstNameLike` chroni („protokół\n[OSOBA]" zostaje). Dwa przebiegi: wciągnięcie jednego
+  // imienia może odsłonić kolejne.
   for (let pass = 0; pass < 2; pass++) {
     ctx.text = ctx.text.replace(
-      new RegExp(`(?<![${PL_UP}${PL_LO}])([${PL_UP}][${PL_LO}]+)[ _-](\\[OSOBA-[A-Z]+\\]|\\[IMIĘ I NAZWISKO\\])`, 'g'),
+      new RegExp(`(?<![${PL_UP}${PL_LO}])([${PL_UP}][${PL_LO}]+)[ \\t\\n_-](\\[OSOBA-[A-Z]+\\]|\\[IMIĘ I NAZWISKO\\])`, 'g'),
       (m, w: string, mask: string) => (isFirstNameLike(w) ? mask : m),
     );
   }

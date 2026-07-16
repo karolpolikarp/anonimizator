@@ -674,6 +674,13 @@ export function buildDataset() {
   neg('Bulwar Filadelfijski 1998 objęty jest programem rewitalizacji nadbrzeży.', ['Bulwar Filadelfijski 1998']);
   str('Na rachunek wspólnoty PL61 1090 1014 0000 0712 1981 3152 wpłynęły zaliczki.', ['PL61 1090 1014 0000 0712 1981 3152'], ['wpłynęły']);
 
+  // v0.46.20: imię osierocone (newline / panieńskie „z") — maskuj całość; narzędnik „z Kowalskim" =
+  // dwie osoby (imię zostaje); REGON po etykiecie z wieloma wyrazami wtrącenia
+  oso('Jan\nWiśniewski złożył wniosek do urzędu.', ['Jan', 'Wiśniewski'], ['wniosek']);
+  str('Gosia z Lewandowskich głosowała wczoraj przeciw.', ['Gosia', 'Lewandowskich'], ['głosowała']);
+  str('Anna rozmawiała z Kowalskim przez telefon.', ['Kowalskim'], ['Anna', 'rozmawiała']);
+  str('REGON zakładu opiekuńczego wynosi 012345675 w rejestrze.', ['012345675'], ['opiekuńczego']);
+
   // ── Kontrola spójności zbioru ──
   const ids = new Set();
   for (const c of cases) {

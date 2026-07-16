@@ -1,5 +1,29 @@
 # Changelog
 
+## v0.46.20 — 2026-07-16
+
+**Rdzeń: trzy wady WCZEŚNIEJSZE (wykryte audytami v0.46.18–19) domknięte bez regresji.**
+
+- **Imię osierocone przy rozerwaniu pary:** gdy nazwisko było maskowane, a imię zostawało jawne —
+  „Jan\nWiśniewski" (imię na końcu wiersza) oraz „Gosia z Lewandowskich" (nazwisko panieńskie).
+  (1) Domknięcie imienia przed maską obejmuje teraz JEDNĄ nową linię (gate `isFirstNameLike` chroni
+  prozę: „protokół\n[OSOBA]" zostaje). (2) Nowy pass panieński „Imię z Nazwiskoskich"/„z domu Nazwisko"
+  → jedna osoba. Po gołym „z" WYMÓG dopełniacza l.mn. (-skich/-ckich/-ich/-ych/-ów) ODRÓŻNIA
+  panieńskie od NARZĘDNIKA „Anna z Kowalskim" (= „z kimś", dwie osoby — imię zostaje) i od miejsca
+  („z Krakowa").
+- **REGON/PESEL po etykiecie z wieloma wyrazami:** „REGON zakładu opiekuńczego wynosi 012345675"
+  wyciekał — wtrącenie między etykietą a numerem dopuszczało do 2 wyrazów; teraz do 3.
+- **Uzupełnienie słownika imion:** dodano częste imiona brakujące w słowniku (Barbara, Genowefa,
+  Czesław, Bronisław, Eugeniusz) — bez nich „Barbara Nowak" osierocała imię (nazwisko maskowane,
+  imię jawne), gdy nazwisko nie miało sufiksu morfologicznego.
+
+ŚWIADOMIE POMINIĘTE (wprowadzałyby regresje): PESEL po „nr" (bez etykiety „PESEL" ~10% numerów spraw
+losowo przechodzi sumę PESEL → FP) oraz przymiotniki GMINNE po roli („Wójt Klembowski" — „-owski" to
+najczęstszy sufiks NAZWISKA, dodanie gmin wyciekłoby realne nazwiska).
+
+Bez regresji: 321 testów zielonych, golden-master czysto addytywny, bramka benchmarku bez regresji
+(recall 94,8%, precyzja 99,7%). Zweryfikowane adwersarialnie. Rdzeń 0.29.10 → 0.29.11, web/landing 0.46.19 → 0.46.20.
+
 ## v0.46.19 — 2026-07-16
 
 **Rdzeń: cztery domknięcia wykryte audytem adwersarialnym v0.46.18 + systemowe zdrobnienia imion.**

@@ -130,6 +130,8 @@ exports[`golden: korpus benchmarku — filtr types (tylko strukturalne) 1`] = `
   "os-o-31": "Dokumenty od Grabowskiej dotarły pocztą.",
   "os-o-32": "Decyzję wysłano do Jankowskich.",
   "os-o-33": "Na ulicy spotkałem wczoraj Jana Kowalskiego.",
+  "os-o-34": "Jan
+Wiśniewski złożył wniosek do urzędu.",
   "os-p-01": "Pozwany Jan Kowalski nie stawił się na rozprawie.",
   "os-p-02": "Powódka Anna Nowak wniosła o zasądzenie kosztów.",
   "os-p-03": "Świadek Piotr Wiśniewski zeznał, że widział zdarzenie.",
@@ -308,6 +310,9 @@ Nazwisko: nowak",
   "str-85": "Wnioskodawca podał PESEL to [PESEL] w formularzu.",
   "str-86": "Adres zamieszkania: Rondo Kościuszki 5 w bloku.",
   "str-87": "Na rachunek wspólnoty [NR-KONTA] wpłynęły zaliczki.",
+  "str-88": "Gosia z Lewandowskich głosowała wczoraj przeciw.",
+  "str-89": "Anna rozmawiała z Kowalskim przez telefon.",
+  "str-90": "REGON zakładu opiekuńczego wynosi [REGON] w rejestrze.",
 }
 `;
 
@@ -441,6 +446,7 @@ exports[`golden: korpus benchmarku — pseudonimizacja osób ([OSOBA-A]…) 1`] 
   "os-o-31": "Dokumenty od [OSOBA-A] dotarły pocztą.",
   "os-o-32": "Decyzję wysłano do [OSOBA-A].",
   "os-o-33": "Na ulicy spotkałem wczoraj [OSOBA-A].",
+  "os-o-34": "[OSOBA-A] złożył wniosek do urzędu.",
   "os-p-01": "Pozwany [OSOBA-A] nie stawił się na rozprawie.",
   "os-p-02": "Powódka [OSOBA-A] wniosła o zasądzenie kosztów.",
   "os-p-03": "Świadek [OSOBA-A] zeznał, że widział zdarzenie.",
@@ -619,6 +625,9 @@ Nazwisko: [IMIĘ I NAZWISKO]",
   "str-85": "Wnioskodawca podał PESEL to [PESEL] w formularzu.",
   "str-86": "Adres zamieszkania: [ADRES] w bloku.",
   "str-87": "Na rachunek wspólnoty [NR-KONTA] wpłynęły zaliczki.",
+  "str-88": "[OSOBA-A] głosowała wczoraj przeciw.",
+  "str-89": "Anna rozmawiała z [OSOBA-A] przez telefon.",
+  "str-90": "REGON zakładu opiekuńczego wynosi [REGON] w rejestrze.",
 }
 `;
 
@@ -752,6 +761,7 @@ exports[`golden: korpus benchmarku — wariant domyślny (wszystkie typy) 1`] = 
   "os-o-31": "Dokumenty od [IMIĘ I NAZWISKO] dotarły pocztą.",
   "os-o-32": "Decyzję wysłano do [IMIĘ I NAZWISKO].",
   "os-o-33": "Na ulicy spotkałem wczoraj [IMIĘ I NAZWISKO].",
+  "os-o-34": "[IMIĘ I NAZWISKO] złożył wniosek do urzędu.",
   "os-p-01": "Pozwany [IMIĘ I NAZWISKO] nie stawił się na rozprawie.",
   "os-p-02": "Powódka [IMIĘ I NAZWISKO] wniosła o zasądzenie kosztów.",
   "os-p-03": "Świadek [IMIĘ I NAZWISKO] zeznał, że widział zdarzenie.",
@@ -930,6 +940,9 @@ Nazwisko: [IMIĘ I NAZWISKO]",
   "str-85": "Wnioskodawca podał PESEL to [PESEL] w formularzu.",
   "str-86": "Adres zamieszkania: [ADRES] w bloku.",
   "str-87": "Na rachunek wspólnoty [NR-KONTA] wpłynęły zaliczki.",
+  "str-88": "[IMIĘ I NAZWISKO] głosowała wczoraj przeciw.",
+  "str-89": "Anna rozmawiała z [IMIĘ I NAZWISKO] przez telefon.",
+  "str-90": "REGON zakładu opiekuńczego wynosi [REGON] w rejestrze.",
 }
 `;
 
