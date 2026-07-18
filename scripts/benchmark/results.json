@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-16T21:58:55.570Z",
+  "generatedAt": "2026-07-18T17:56:25.921Z",
   "seed": 20260704,
   "coreVersion": "0.29.11",
   "casesTotal": 309,
@@ -26,7 +26,7 @@
     {
       "name": "T0+T1 core",
       "desc": "redactPII() — regex + sumy kontrolne + słownik (in-process, offline)",
-      "elapsedMs": 45,
+      "elapsedMs": 59,
       "changedVsCore": null,
       "recall": 0.9477351916376306,
       "precision": 0.9970674486803519,

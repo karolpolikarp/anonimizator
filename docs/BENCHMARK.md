@@ -1,6 +1,6 @@
 # Benchmark anonimizacji — precision / recall
 
-- **Data uruchomienia:** 2026-07-16
+- **Data uruchomienia:** 2026-07-18
 - **Wersja rdzenia (`anonimizator`):** 0.29.11
 - **Zbiór ewaluacyjny:** 309 syntetycznych zdań (deterministyczny, seed `20260704`), 287 elementów do zamaskowania (mustMask), 341 elementów do zachowania (mustKeep)
 - **Reprodukcja:** `npm run build -w anonimizator && node scripts/benchmark/run.mjs`
@@ -33,7 +33,7 @@ Liczności kategorii: osoby-podstawowe — 35, osoby-odmiana — 34, osoby-rzadk
 
 | Warstwa | Recall (łącznie) | Precision-proxy (łącznie) | F1 | Porażki (przypadki) | Czas | Wynik ≠ core |
 |---|---|---|---|---|---|---|
-| T0+T1 core | 94.8% (272/287) | 99.7% (340/341) | 97.2% | 16 | 0.0 s | — |
+| T0+T1 core | 94.8% (272/287) | 99.7% (340/341) | 97.2% | 16 | 0.1 s | — |
 
 F1 liczone jako średnia harmoniczna recall i precision-proxy (łącznie po wszystkich kategoriach
 z oboma rodzajami elementów; kategoria „negatywy" nie ma recall, więc nie wchodzi do składowej recall).

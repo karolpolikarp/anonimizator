@@ -117,16 +117,24 @@ let compareMode = false;
 let lastRedacted = '';
 let lastFound: PiiFinding[] = [];
 
+/** Polska liczba mnoga: 1 → one; końcówka 2–4 poza 12–14 → few; reszta → many. */
+function plural(n: number, one: string, few: string, many: string): string {
+  if (n === 1) return one;
+  const d = n % 10;
+  const h = n % 100;
+  return d >= 2 && d <= 4 && (h < 12 || h > 14) ? few : many;
+}
+
 function renderStats(found: PiiFinding[]): void {
   if (!statEl) return;
   const total = found.reduce((s, f) => s + f.count, 0);
   if (total === 0) {
-    statEl.innerHTML = 'Nie wykryto danych osobowych.';
+    statEl.innerHTML = 'Nie wykryto danych osobowych w tym tekście.';
     return;
   }
   const cats = new Set(found.map((f) => typeCategory(f.type))).size;
   statEl.innerHTML =
-    `Zamaskowano <b>${total}</b> ${total === 1 ? 'fragment' : total < 5 ? 'fragmenty' : 'fragmentów'} ` +
+    `Zamaskowano <b>${total}</b> ${plural(total, 'fragment', 'fragmenty', 'fragmentów')} ` +
     `w <b>${cats}</b> ${cats === 1 ? 'kategorii' : 'kategoriach'}.`;
 }
 
@@ -150,7 +158,7 @@ function analyze(): void {
     lastRedacted = '';
     lastFound = [];
     renderOutput();
-    if (statEl) statEl.textContent = 'Zamaskowano 0 fragmentów.';
+    if (statEl) statEl.textContent = 'Wpisz tekst po lewej — statystyki pojawią się tutaj.';
     if (copyBtn) copyBtn.disabled = true;
     return;
   }
