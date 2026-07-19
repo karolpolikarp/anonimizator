@@ -156,7 +156,7 @@ function analyze(): void {
   if (!text.trim()) {
     lastRedacted = '';
     renderOutput();
-    if (statEl) statEl.textContent = 'Wpisz tekst po lewej — statystyki pojawią się tutaj.';
+    if (statEl) statEl.textContent = 'Wpisz tekst po lewej, tu pojawią się statystyki.';
     if (copyBtn) copyBtn.disabled = true;
     return;
   }
