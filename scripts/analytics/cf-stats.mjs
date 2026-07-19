@@ -6,21 +6,28 @@
  * ruch jako operator infrastruktury. Dzięki temu obietnica strony „0 żądań / nie zbiera
  * analityki" i licznik #net-count pozostają PRAWDZIWE. Patrz plan i pamięć projektu.
  *
- * Wymaga tokenu API z uprawnieniem „Zone · Analytics · Read" dla zony karolwilczynski.com:
- *   dash.cloudflare.com → My Profile → API Tokens → Create Token.
+ * Token API — wystarczy uprawnienie „Account Analytics · Read" (sekcja Analytics & Logs
+ * przy tworzeniu tokenu). Podaj wtedy Zone ID ręcznie (patrz niżej), bo taki token nie
+ * ma prawa listować zon. Alternatywa: token „Zone · Analytics · Read" + „Zone · Read"
+ * (wtedy zona wyszukiwana po nazwie, Zone ID niepotrzebny).
+ * Gdzie znaleźć Zone ID: dashboard → domena karolwilczynski.com → Overview → prawa
+ * kolumna „API" → Zone ID (32 znaki hex).
  *
  * Użycie (Git Bash):
  *   export CLOUDFLARE_API_TOKEN=xxxxx
+ *   export CLOUDFLARE_ZONE_ID=xxxxx      # zalecane przy tokenie Account Analytics
  *   node scripts/analytics/cf-stats.mjs --days 7
  * PowerShell:
- *   $env:CLOUDFLARE_API_TOKEN='xxxxx'; node scripts/analytics/cf-stats.mjs --days 7
+ *   $env:CLOUDFLARE_API_TOKEN='xxxxx'; $env:CLOUDFLARE_ZONE_ID='xxxxx'
+ *   node scripts/analytics/cf-stats.mjs --days 7
  *
  * Flagi:
  *   --days N     okno analizy w dniach (domyślnie 7)
  *   --hours      trend godzinowy zamiast dziennego (dobre dla --days 1..2)
  *   --host NAZWA hostname do filtrowania (domyślnie parawan.karolwilczynski.com)
- *   --zone NAZWA zona nadrzędna (domyślnie karolwilczynski.com)
- *   --top N      ile pozycji w rankingach krajów/przeglądarek (domyślnie 10)
+ *   --zone NAZWA zona nadrzędna, gdy szukamy po nazwie (domyślnie karolwilczynski.com)
+ *   --zone-id ID Zone ID wprost (zamiast wyszukiwania; albo env CLOUDFLARE_ZONE_ID)
+ *   --top N      ile pozycji w rankingach (domyślnie 10)
  *
  * ZERO zależności (Node 18+: wbudowany fetch), zgodnie z etosem repo.
  */
@@ -62,9 +69,18 @@ function isoRange(days) {
 }
 
 async function getZoneTag(name) {
+  // Preferuj podany Zone ID — wtedy token potrzebuje TYLKO „Account Analytics · Read"
+  // (bez prawa do listowania zon). Zone ID: dashboard → domena → Overview → API → Zone ID.
+  const given = process.env.CLOUDFLARE_ZONE_ID || flag('zone-id');
+  if (given && given !== true) return String(given).trim();
+  // Fallback: wyszukaj po nazwie (wymaga dodatkowo uprawnienia „Zone · Read").
   const res = await fetch(`${API}/zones?name=${encodeURIComponent(name)}`, { headers: authHeaders });
   const json = await res.json();
-  if (!json.success) throw new Error(`Nie pobrano zony: ${JSON.stringify(json.errors)}`);
+  if (!json.success)
+    throw new Error(
+      `Nie pobrano zony: ${JSON.stringify(json.errors)}. ` +
+        'Podaj Zone ID: --zone-id XXXX albo CLOUDFLARE_ZONE_ID (dashboard → domena → Overview → API → Zone ID).',
+    );
   if (!json.result?.length) throw new Error(`Zona „${name}" nie znaleziona na tym koncie.`);
   return json.result[0].id;
 }
