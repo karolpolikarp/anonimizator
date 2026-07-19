@@ -49,17 +49,28 @@ const HOST = String(flag('host', 'parawan.karolwilczynski.com'));
 const ZONE = String(flag('zone', 'karolwilczynski.com'));
 const TOP = Math.max(1, Number.parseInt(flag('top', '10'), 10) || 10);
 
+// Autoryzacja: preferowany user-owned token (Bearer). Awaryjnie Global API Key
+// (X-Auth-Email + X-Auth-Key) — ma pełne uprawnienia, więc GraphQL zadziała nawet
+// gdy UI nie pozwala zrobić tokenu Zone·Analytics. UWAGA: Global Key = klucz-master
+// konta; używaj tylko lokalnie, nie wklejaj do czatu, po użyciu rozważ zmianę.
 const TOKEN = process.env.CLOUDFLARE_API_TOKEN;
-if (!TOKEN) {
+const EMAIL = process.env.CLOUDFLARE_EMAIL;
+const APIKEY = process.env.CLOUDFLARE_API_KEY;
+
+let authHeaders;
+if (TOKEN) {
+  authHeaders = { Authorization: `Bearer ${TOKEN}`, 'Content-Type': 'application/json' };
+} else if (EMAIL && APIKEY) {
+  authHeaders = { 'X-Auth-Email': EMAIL, 'X-Auth-Key': APIKEY, 'Content-Type': 'application/json' };
+} else {
   console.error(
-    'Brak tokenu. Ustaw CLOUDFLARE_API_TOKEN (Zone · Analytics · Read).\n' +
-      '  Git Bash:   export CLOUDFLARE_API_TOKEN=xxxxx\n' +
-      "  PowerShell: $env:CLOUDFLARE_API_TOKEN='xxxxx'",
+    'Brak danych logowania. Wybierz jedną drogę:\n' +
+      '  (A) User-owned token (zalecane):  export CLOUDFLARE_API_TOKEN=cfat_xxxxx\n' +
+      '  (B) Global API Key (awaryjnie):   export CLOUDFLARE_EMAIL=… CLOUDFLARE_API_KEY=…\n' +
+      '  Do tego Zone ID:                  export CLOUDFLARE_ZONE_ID=…',
   );
   process.exit(1);
 }
-
-const authHeaders = { Authorization: `Bearer ${TOKEN}`, 'Content-Type': 'application/json' };
 
 // ── daty (ISO) — bez Date.now w cache-krytycznych miejscach nie dotyczy skryptu CLI ──
 function isoRange(days) {
