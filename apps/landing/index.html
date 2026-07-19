@@ -61,20 +61,21 @@
         </div>
         <div class="nav-cta">
           <a class="btn btn-cta btn-sm btn-nav-download" href="https://github.com/karolpolikarp/parawan/releases/latest/download/Parawan.html" target="_blank" rel="noopener noreferrer">Pobierz plik</a>
-          <button class="nav-toggle" id="nav-toggle" aria-label="Menu" aria-expanded="false"><i class="gi" data-i="suwaki"></i></button>
+          <button class="nav-toggle" id="nav-toggle" aria-label="Menu" aria-expanded="false" aria-controls="nav-links"><i class="gi" data-i="suwaki"></i></button>
         </div>
       </div>
     </nav>
 
     <span id="top"></span>
 
+    <main>
     <!-- ══════════ HERO ══════════ -->
     <header class="hero section wrap">
       <div class="hero-grid">
         <div class="hero-copy">
           <span class="hero-eyebrow"><span class="dotpulse"></span>100% lokalnie · nic nie wychodzi do sieci</span>
           <h1>Usuń dane osobowe z tekstu, <span class="hl">zanim wyjdą z Twojego komputera.</span></h1>
-          <p class="hero-lead">Parawan anonimizuje polskie dane osobowe — PESEL, NIP, numer konta, e-mail, adres, imię i nazwisko — zanim wkleisz tekst do czatu AI, wyślesz mailem albo udostępnisz dalej.</p>
+          <p class="hero-lead">Parawan anonimizuje polskie dane osobowe — PESEL, NIP, numer konta, e-mail, adres, imię i nazwisko — zanim wkleisz tekst do czatu AI, wyślesz e-mailem albo udostępnisz dalej.</p>
           <div class="hero-cta">
             <a class="btn btn-cta btn-lg" href="https://github.com/karolpolikarp/parawan/releases/latest/download/Parawan.html" target="_blank" rel="noopener noreferrer">
               <i class="gi" data-i="anonimizuj"></i>Pobierz Parawan — jeden plik HTML
@@ -163,7 +164,7 @@
           </div>
           <div class="demo-pane">
             <div class="demo-plabel"><span class="d d-out"></span>Wynik zanonimizowany</div>
-            <div id="demo-output" class="editor" role="region" aria-live="polite" aria-label="Wynik anonimizacji"></div>
+            <div id="demo-output" class="editor" role="region" aria-label="Wynik anonimizacji"></div>
           </div>
         </div>
         <div class="demo-foot">
@@ -190,7 +191,7 @@
         <div class="card step">
           <div class="step-top"><span class="ic c-place"><i class="gi" data-i="plik-txt"></i></span><span class="step-n">Krok 1</span></div>
           <h3>Wklej tekst</h3>
-          <p>lub upuść plik (TXT, DOCX, PDF) w dowolnym miejscu strony — Word i PDF są czytane w całości lokalnie.</p>
+          <p>lub upuść plik (TXT, DOCX, PDF) w oknie pobranego narzędzia — Word i PDF są czytane w całości lokalnie.</p>
         </div>
         <div class="card step">
           <div class="step-top"><span class="ic c-ident"><i class="gi" data-i="sprawdz"></i></span><span class="step-n">Krok 2</span></div>
@@ -235,7 +236,7 @@
           <span class="ic c-ident"><i class="gi" data-i="sprawdz"></i></span>
           <h3>2. Podejrzyj ruch sieciowy</h3>
           <p>Otwórz narzędzia deweloperskie (F12) → zakładka „Sieć” i korzystaj z narzędzia. Nie zobaczysz ani jednego żądania z Twoimi danymi.</p>
-          <span class="net-badge" id="net-badge" title="Żądania do serwerów zewnętrznych od otwarcia tej strony">Żądań do sieci na tej stronie: <b id="net-count">0</b></span>
+          <span class="net-badge" id="net-badge" title="Żądania do serwerów zewnętrznych od otwarcia tej strony">Żądań do sieci na tej stronie: <b id="net-count">0</b><span class="vh"> (żądania do serwerów zewnętrznych liczone od otwarcia tej strony)</span></span>
         </div>
         <div class="card pillar">
           <span class="ic c-person"><i class="gi" data-i="szablon"></i></span>
@@ -293,7 +294,7 @@
       <!-- notka o sumach kontrolnych — sedno przekazu „precyzja > nadmaskowanie" -->
       <div class="checksum-note">
         <i class="gi" data-i="suma"></i>
-        <span><b>Sumy kontrolne.</b> PESEL, NIP, REGON, IBAN i numer dowodu są sprawdzane matematycznie — przypadkowy ciąg cyfr (sygnatura akt, numer przepisu) nie spełnia sumy i zostaje nietknięty.</span>
+        <span><b>Sumy kontrolne.</b> PESEL, NIP, REGON, IBAN i numer dowodu są sprawdzane matematycznie — przypadkowy ciąg cyfr (numer przepisu, pozycja z ustawy) nie spełnia sumy i zostaje nietknięty.</span>
       </div>
     </section>
 
@@ -433,7 +434,7 @@
       <div class="caveat">
         <span class="ic"><i class="gi" data-i="ostrzezenie"></i></span>
         <div>
-          <h3>Ograniczenia — przeczytaj, zanim zaufasz w ciemno</h3>
+          <h2>Ograniczenia — przeczytaj, zanim zaufasz w ciemno</h2>
           <p>Rozpoznawanie imion i nazwisk jest <strong>heurystyczne</strong>: rzadkie albo obce nazwisko — bez imienia ze słownika i bez podpowiedzi z kontekstu — może się prześlizgnąć. Podobnie numer zapisany w bardzo nietypowy sposób. Dlatego traktuj Parawan jako <strong>pomoc, a nie gwarancję</strong> i przejrzyj wynik, zanim go wyślesz. Wolimy powiedzieć to wprost, niż obiecywać stuprocentową skuteczność.</p>
         </div>
       </div>
@@ -486,18 +487,19 @@
       <div class="finalcta">
         <h2>Zdejmij dane, zanim tekst gdziekolwiek pojedzie</h2>
         <p>Jeden plik HTML. Pobierasz raz, otwierasz i działasz — bez konta, bez sieci, bez opłat.</p>
-        <ol class="cta-steps" aria-label="Jak zacząć">
+        <ol class="cta-steps" role="list" aria-label="Jak zacząć">
           <li><b>1</b> Pobierz plik <code>Parawan.html</code></li>
           <li><b>2</b> Otwórz go podwójnym kliknięciem</li>
           <li><b>3</b> Wklej tekst i skopiuj bezpieczny wynik</li>
         </ol>
         <div class="hero-cta">
           <a class="btn btn-cta btn-lg" href="https://github.com/karolpolikarp/parawan/releases/latest/download/Parawan.html" target="_blank" rel="noopener noreferrer"><i class="gi" data-i="anonimizuj"></i>Pobierz Parawan</a>
-          <a class="btn btn-lg" href="https://github.com/karolpolikarp/parawan" target="_blank" rel="noopener noreferrer"><i class="gi" data-i="szablon"></i>Zobacz kod na GitHub</a>
+          <a class="btn btn-lg" href="https://github.com/karolpolikarp/parawan" target="_blank" rel="noopener noreferrer"><i class="gi" data-i="szablon"></i>Zobacz kod na GitHubie</a>
         </div>
         <p class="micro">Bez instalacji · bez konta · bez internetu</p>
       </div>
     </section>
+    </main>
 
     <!-- ══════════ STOPKA ══════════ -->
     <footer class="foot">

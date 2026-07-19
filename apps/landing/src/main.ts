@@ -37,7 +37,7 @@ type Cat = 'person' | 'contact' | 'ident' | 'fin' | 'place';
 function maskCategory(name: string): Cat {
   if (name.startsWith('OSOBA-') || name === 'IMIĘ I NAZWISKO' || name === 'DATA-URODZENIA') return 'person';
   if (name === 'EMAIL' || name === 'TELEFON') return 'contact';
-  if (name === 'NR-KONTA') return 'fin';
+  if (name === 'NR-KONTA' || name === 'NR-KARTY') return 'fin';
   if (name === 'ADRES' || name === 'KOD-POCZTOWY' || name === 'MIEJSCOWOŚĆ') return 'place';
   return 'ident';
 }
@@ -46,13 +46,13 @@ function maskCategory(name: string): Cat {
 function typeCategory(t: PiiType): Cat {
   if (t === 'IMIE' || t === 'DATA-UR') return 'person';
   if (t === 'EMAIL' || t === 'TELEFON') return 'contact';
-  if (t === 'IBAN' || t === 'NR-KONTA') return 'fin';
+  if (t === 'IBAN' || t === 'NR-KONTA' || t === 'KARTA') return 'fin';
   if (t === 'ADRES' || t === 'KOD-POCZTOWY' || t === 'MIEJSCOWOSC') return 'place';
   return 'ident';
 }
 
 const MASK_TOKEN_RE =
-  /\[(PESEL|NIP|REGON|NR-KONTA|NR-DOWODU|NR-PASZPORTU|KRS|ZNAK-SPRAWY|PRAWO-JAZDY|NR-REJESTRACYJNY|VIN|IP|MAC|TOKEN|EMAIL|TELEFON|KOD-POCZTOWY|DATA-URODZENIA|ADRES|MIEJSCOWOŚĆ|IMIĘ I NAZWISKO|OSOBA-[A-Z]+)\]/g;
+  /\[(PESEL|NIP|REGON|NR-KONTA|NR-KARTY|NR-DOWODU|NR-PASZPORTU|KRS|ZNAK-SPRAWY|PRAWO-JAZDY|NR-REJESTRACYJNY|VIN|IP|MAC|TOKEN|LOGIN|EMAIL|TELEFON|KOD-POCZTOWY|DATA-URODZENIA|ADRES|MIEJSCOWOŚĆ|IMIĘ I NAZWISKO|OSOBA-[A-Z]+)\]/g;
 
 function maskHtml(name: string): string {
   return `<mark class="pii pii-${maskCategory(name)}">[${name}]</mark>`;
@@ -115,7 +115,6 @@ const copyLabel = $('demo-copy-label');
 
 let compareMode = false;
 let lastRedacted = '';
-let lastFound: PiiFinding[] = [];
 
 /** Polska liczba mnoga: 1 → one; końcówka 2–4 poza 12–14 → few; reszta → many. */
 function plural(n: number, one: string, few: string, many: string): string {
@@ -156,7 +155,6 @@ function analyze(): void {
   const text = input.value;
   if (!text.trim()) {
     lastRedacted = '';
-    lastFound = [];
     renderOutput();
     if (statEl) statEl.textContent = 'Wpisz tekst po lewej — statystyki pojawią się tutaj.';
     if (copyBtn) copyBtn.disabled = true;
@@ -164,7 +162,6 @@ function analyze(): void {
   }
   const { redacted, found } = redactPII(text);
   lastRedacted = redacted;
-  lastFound = found;
   renderOutput();
   renderStats(found);
   if (copyBtn) copyBtn.disabled = false;
