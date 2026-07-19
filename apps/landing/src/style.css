@@ -111,6 +111,10 @@ kbd {
 }
 h1, h2, h3 { color: var(--acc); letter-spacing: -.01em; text-wrap: balance; }
 p { text-wrap: pretty; }
+/* krótkie bloki: równoważ linie, żeby nie zostawały „sieroty" (pojedyncze słowo w ostatniej linii) */
+.hero-lead, .sec-head p, .problem .a, .promise p, .finalcta p, .finalcta .micro,
+.bench-desc, .step p, .pillar p, .use p, .caveat p, .split > div > p,
+.privacy-t span, .filebox span, .notdo-cell span { text-wrap: balance; }
 
 .gi { display: inline-block; line-height: 0; flex: none; }
 .gi svg { display: block; width: 100%; height: 100%; }

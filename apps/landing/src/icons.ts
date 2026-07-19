@@ -36,6 +36,11 @@ export const ICONS: Record<string, string> = {
     '<path d="M14 3H7a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V7z"/><path d="M14 3v4h4"/>' +
       '<line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="12.5" y2="17"/>',
   ),
+  // plik HTML — dokument z symbolem kodu </>, dla Parawan.html
+  'plik-html': svg(
+    '<path d="M14 3H7a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V7z"/><path d="M14 3v4h4"/>' +
+      '<path d="m10.3 12.4-2.1 2.1 2.1 2.1"/><path d="m13.7 12.4 2.1 2.1-2.1 2.1"/>',
+  ),
   wyczysc: svg('<path d="m15.5 5 3.5 3.5a2 2 0 0 1 0 2.8L12 18.3H7l-2.5-2.5a2 2 0 0 1 0-2.8L12.7 5a2 2 0 0 1 2.8 0z"/><line x1="9" y1="10" x2="14" y2="15"/><line x1="7" y1="21" x2="20" y2="21"/>'),
   kopiuj: svg('<rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/>'),
   regula: svg(
