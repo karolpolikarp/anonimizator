@@ -1,8 +1,8 @@
 # Benchmark anonimizacji — precision / recall
 
-- **Data uruchomienia:** 2026-07-18
-- **Wersja rdzenia (`anonimizator`):** 0.29.11
-- **Zbiór ewaluacyjny:** 309 syntetycznych zdań (deterministyczny, seed `20260704`), 287 elementów do zamaskowania (mustMask), 341 elementów do zachowania (mustKeep)
+- **Data uruchomienia:** 2026-07-20
+- **Wersja rdzenia (`anonimizator`):** 0.29.12
+- **Zbiór ewaluacyjny:** 319 syntetycznych zdań (deterministyczny, seed `20260704`), 291 elementów do zamaskowania (mustMask), 351 elementów do zachowania (mustKeep)
 - **Reprodukcja:** `npm run build -w anonimizator && node scripts/benchmark/run.mjs`
 
 ## Metodologia
@@ -20,7 +20,7 @@ Wszystkie identyfikatory w zbiorze mają **poprawne sumy kontrolne** policzone w
 (PESEL, NIP, REGON, IBAN mod-97, nr dowodu), a negatywy zawierają m.in. ciągi o celowo
 **błędnych** sumach kontrolnych — silnik ma je zostawić w spokoju.
 
-Liczności kategorii: osoby-podstawowe — 35, osoby-odmiana — 34, osoby-rzadkie — 24, strukturalne — 90, negatywy — 95, osoby-rzadkie-ner — 19, osoby-slownik — 12.
+Liczności kategorii: osoby-podstawowe — 35, osoby-odmiana — 34, osoby-rzadkie — 24, strukturalne — 94, negatywy — 101, osoby-rzadkie-ner — 19, osoby-slownik — 12.
 
 ### Warstwy
 
@@ -33,7 +33,7 @@ Liczności kategorii: osoby-podstawowe — 35, osoby-odmiana — 34, osoby-rzadk
 
 | Warstwa | Recall (łącznie) | Precision-proxy (łącznie) | F1 | Porażki (przypadki) | Czas | Wynik ≠ core |
 |---|---|---|---|---|---|---|
-| T0+T1 core | 94.8% (272/287) | 99.7% (340/341) | 97.2% | 16 | 0.1 s | — |
+| T0+T1 core | 94.8% (276/291) | 99.7% (350/351) | 97.2% | 16 | 0.0 s | — |
 
 F1 liczone jako średnia harmoniczna recall i precision-proxy (łącznie po wszystkich kategoriach
 z oboma rodzajami elementów; kategoria „negatywy" nie ma recall, więc nie wchodzi do składowej recall).
@@ -54,7 +54,7 @@ z oboma rodzajami elementów; kategoria „negatywy" nie ma recall, więc nie wc
 
 | Warstwa | osoby-podstawowe | osoby-odmiana | osoby-rzadkie | strukturalne | negatywy | osoby-rzadkie-ner | osoby-slownik |
 |---|---|---|---|---|---|---|---|
-| T0+T1 core | 100.0% | 100.0% | 100.0% | 100.0% | 99.1% | 100.0% | 100.0% |
+| T0+T1 core | 100.0% | 100.0% | 100.0% | 100.0% | 99.2% | 100.0% | 100.0% |
 
 („—" = brak elementów danego rodzaju w kategorii, np. negatywy nie mają mustMask.)
 

@@ -91,6 +91,147 @@ test('KARTA — nie koliduje z PESEL/NIP/REGON/IBAN', () => {
   expect(redactPII('NIP 1234563218').redacted).toBe('NIP [NIP]');
 });
 
+// ── KSeF (numer faktury w Krajowym Systemie e-Faktur) ──
+test('KSEF — numer z kotwicą „KSeF" maskowany W CAŁOŚCI (NIP nie wycieka osobno)', () => {
+  expect(redactPII('Numer KSeF: 5265877635-20250826-0100001AF629-AF').redacted).toBe(
+    'Numer KSeF: [NR-KSEF]',
+  );
+  // stary, 36-znakowy format z KSeF 1.0 (część techniczna rozbita na 6+6)
+  expect(redactPII('Faktura o numerze KSeF 7781464139-20230721-80B510-9675F7-B5 wpłynęła.').redacted).toBe(
+    'Faktura o numerze KSeF [NR-KSEF] wpłynęła.',
+  );
+  // pierwszy człon inny niż NIP — schemat FA(3) dopuszcza „M" + 9 cyfr
+  expect(redactPII('W KSeF numer M123456789-20260213-01008C4F21B7-3D.').redacted).toBe(
+    'W KSeF numer [NR-KSEF].',
+  );
+});
+test('KSEF — złamanie wiersza PO myślniku (kolumna tabeli, zawijanie w e-mailu)', () => {
+  expect(redactPII('Numer KSeF: 5265877635-20250826-\n0100001AF629-AF').redacted).toBe(
+    'Numer KSeF: [NR-KSEF]',
+  );
+  // wcięcie kontynuacji twardymi spacjami (kopia z PDF) też jest tolerowane
+  expect(redactPII('Numer KSeF: 5265877635-20250826-\n  0100001AF629-AF').redacted).toBe(
+    'Numer KSeF: [NR-KSEF]',
+  );
+});
+test('KSEF — pierwszy człon musi być poprawnym NIP-em, data prawdziwa', () => {
+  // kotwica dokumentowa jest słabsza niż etykieta przy numerze, więc suma kontrolna NIP-u
+  // odsiewa numery zamówień/inwentarzowe o tym samym kształcie (audyt adwersarialny, runda 2)
+  expect(
+    redactPII('Faktury wystawiamy przez KSeF.\nNr zamówienia 4500123456-20260115-000000012345-01.').redacted,
+  ).toContain('4500123456-20260115-000000012345-01');
+  expect(
+    redactPII('Rozliczenie w KSeF.\nNr seryjny: ZEB1234567-20251220-000000098765-11').redacted,
+  ).toContain('ZEB1234567-20251220-000000098765-11');
+  // nieistniejąca data (miesiąc 13) — nie jest numerem KSeF
+  expect(redactPII('Rejestr KSeF: 5265877635-20251345-0100001AF629-AF').redacted).not.toContain('[NR-KSEF]');
+});
+test('KSEF — kotwicą bywa sam adres portalu (link) albo skrzynka w stopce', () => {
+  expect(
+    redactPII(
+      'Faktura wystawiona (portal https://ksef.mf.gov.pl/web/login).\nNumer dokumentu: 5265877635-20250826-0100001AF629-AF',
+    ).redacted,
+  ).toBe('Faktura wystawiona (portal https://ksef.mf.gov.pl/web/login).\nNumer dokumentu: [NR-KSEF]');
+  // e-mail znika w FAZIE 1, więc kotwicę liczymy na ORYGINALNYM wejściu
+  expect(redactPII('Kontakt: ksef@mf.gov.pl\nNumer dokumentu: 5265877635-20250826-0100001AF629-AF').redacted).toBe(
+    'Kontakt: [EMAIL]\nNumer dokumentu: [NR-KSEF]',
+  );
+});
+test('KSEF — część techniczna musi mieć hex; sama suma NIP to sito 1:11', () => {
+  expect(redactPII('W KSeF numer M123456789-20260213-01008C4F21B7-3D.').redacted).toBe(
+    'W KSeF numer [NR-KSEF].',
+  );
+  expect(redactPII('Nr KSeF: m123456789-20250826-0100001AF629-AF').redacted).toBe('Nr KSeF: [NR-KSEF]');
+  // ten sam kształt bez ani jednej litery A–F: numer modelu, numer zamówienia SAP (głowa
+  // z przypadkiem poprawną sumą NIP) i sklejone kolumny kwot — wszystkie zostają
+  expect(
+    redactPII('Faktury przez KSeF.\nNr modelu: M000000001-20240101-000000000000-00').redacted,
+  ).toContain('M000000001-20240101-000000000000-00');
+  expect(
+    redactPII('Faktury odbieramy przez KSeF.\nZamówienie: 4500100008-20250826-000000012345-01').redacted,
+  ).not.toContain('[NR-KSEF]');
+  expect(
+    redactPII('Uzgodnienie przed KSeF:\n5265877635-20250826-145000-118700-23').redacted,
+  ).not.toContain('[NR-KSEF]');
+  // zero wiodące — żaden NIP nie zaczyna się od zera, choć sumę kontrolną przechodzi
+  expect(redactPII('KSeF. Rekord 0034100016-20260115-A1B2C3D4E5F6-0F').redacted).not.toContain('[NR-KSEF]');
+});
+test('KSEF — biegnie przed znakiem sprawy (numer nie dostaje maski [ZNAK-SPRAWY])', () => {
+  expect(redactPII('Znak: 5265877635-20250826-0100001AF629-AF\nSystem KSeF.').redacted).toBe(
+    'Znak: [NR-KSEF]\nSystem KSeF.',
+  );
+  // zwykły znak sprawy dalej trafia do swojego typu
+  expect(redactPII('Znak sprawy: WOA-II.1431.55.2024\nSystem KSeF.').redacted).toBe(
+    'Znak sprawy: [ZNAK-SPRAWY]\nSystem KSeF.',
+  );
+});
+test('KSEF — kotwica jest DOKUMENTOWA: etykieta po numerze, w nagłówku kolumny, w znacznikach', () => {
+  expect(redactPII('5265877635-20250826-0100001AF629-AF — to numer KSeF faktury.').redacted).toBe(
+    '[NR-KSEF] — to numer KSeF faktury.',
+  );
+  expect(redactPII('**Nr KSeF:** 5265877635-20250826-0100001AF629-AF').redacted).toBe(
+    '**Nr KSeF:** [NR-KSEF]',
+  );
+  // etykieta w nagłówku kolumny — wartości stoją wiersz niżej
+  expect(redactPII('Nr KSeF;Kwota\n5265877635-20250826-0100001AF629-AF;1200,00').redacted).toBe(
+    'Nr KSeF;Kwota\n[NR-KSEF];1200,00',
+  );
+  // rozwinięta nazwa systemu też jest kotwicą
+  expect(
+    redactPII('Fakturę w Krajowym Systemie e-Faktur: 5265877635-20250826-0100001AF629-AF').redacted,
+  ).toBe('Fakturę w Krajowym Systemie e-Faktur: [NR-KSEF]');
+});
+test('KSEF — wyliczenie pod jedną etykietą maskowane w całości', () => {
+  const r = redactPII(
+    'Numery KSeF: 5265877635-20250826-0100001AF629-AF, 5265877635-20250901-0100002BC731-1D.',
+  );
+  expect(r.redacted).toBe('Numery KSeF: [NR-KSEF], [NR-KSEF].');
+  expect(r.found).toEqual([{ type: 'KSEF', count: 2 }]);
+});
+test('KSEF — tag <NrKSeF> i klucz „ksefNumber" niosą kotwicę w samej nazwie', () => {
+  expect(redactPII('<NrKSeF>5265877635-20250826-0100001AF629-AF</NrKSeF>').redacted).toBe(
+    '<NrKSeF>[NR-KSEF]</NrKSeF>',
+  );
+  expect(redactPII('"ksefNumber": "5265877635-20250826-0100001AF629-AF"').redacted).toBe(
+    '"ksefNumber": "[NR-KSEF]"',
+  );
+});
+test('KSEF — BEZ kotwicy i bez kształtu numeru nie maskuje (precyzja > nadmaskowanie)', () => {
+  expect(redactPII('System KSeF działa od 2026 roku.').redacted).toBe('System KSeF działa od 2026 roku.');
+  expect(redactPII('KSeF 2.0 zastąpił wersję 1.0.').redacted).toBe('KSeF 2.0 zastąpił wersję 1.0.');
+  // numer referencyjny sesji zaczyna się od DATY, nie od NIP-u — nie jest numerem KSeF
+  expect(redactPII('Numer referencyjny sesji w KSeF: 20250626-SO-2F14610000-242991F8C9-B4').redacted).toBe(
+    'Numer referencyjny sesji w KSeF: 20250626-SO-2F14610000-242991F8C9-B4',
+  );
+});
+test('KSEF — numer doklejony myślnikiem oraz w ścieżce URL-a', () => {
+  // myślnik po etykiecie i w nazwie pliku — granica dopasowania nie może się o niego opierać
+  expect(redactPII('Nr KSeF-5265877635-20250826-0100001AF629-AF').redacted).toBe('Nr KSeF-[NR-KSEF]');
+  expect(redactPII('Pobrano z KSeF: faktura-5265877635-20250826-0100001AF629-AF.xml').redacted).toBe(
+    'Pobrano z KSeF: faktura-[NR-KSEF].xml',
+  );
+  // URL jest sentinelowany PRZED fazą identyfikatorów — numer zdejmujemy już w passProtectUrls
+  expect(redactPII('Link: https://ksef.mf.gov.pl/faktura/5265877635-20250826-0100001AF629-AF/upo').redacted).toBe(
+    'Link: https://ksef.mf.gov.pl/faktura/[NR-KSEF]/upo',
+  );
+});
+test('KSEF — separatorem jest TYLKO myślnik (kolumny liczb i listy nie są scalane)', () => {
+  // audyt adwersarialny: spacja jako separator zjadała cztery sąsiednie kolumny raportu
+  expect(redactPII('KSeF 5265877635 20250826 000000012345 23').redacted).not.toContain('[NR-KSEF]');
+  // lista punktowana pod nagłówkiem „KSeF" — złamanie wiersza PRZED myślnikiem nie scala członów
+  expect(redactPII('Wysyłka: KSeF\n- 5265877635\n- 20250826\n- 000000012345\n- 23').redacted).not.toContain(
+    '[NR-KSEF]',
+  );
+  // kolumny zestawienia rozdzielone „ - " — spacja wokół myślnika nie jest separatorem numeru
+  expect(
+    redactPII('Rejestr sprzedaży KSeF.\n5265877635 - 20250826 - 145000 - 118700 - 23').redacted,
+  ).not.toContain('[NR-KSEF]');
+});
+test('KSEF — placeholder jest idempotentny', () => {
+  const once = redactPII('Numer KSeF: 5265877635-20250826-0100001AF629-AF').redacted;
+  expect(redactPII(once).redacted).toBe(once);
+});
+
 // ── Redakcja: maskuje realne PII ──
 test('redactPII — PESEL maskowany', () => {
   const r = redactPII('Mój PESEL to 44051401359, proszę o pomoc');

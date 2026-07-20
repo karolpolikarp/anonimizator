@@ -25,7 +25,7 @@ Wszystko dzieje się na Twoim komputerze. Nic nie trafia do internetu.
 
 ---
 
-**Parawan** to lokalny anonimizator polskich danych osobowych (PII). Zamienia PESEL, NIP, REGON, KRS,
+**Parawan** to lokalny anonimizator polskich danych osobowych (PII). Zamienia PESEL, NIP, REGON, KRS, KSeF,
 numery kont, numery dowodów i paszportów, prawo jazdy, nr rejestracyjny, VIN, adres IP/MAC, token,
 e-maile, telefony, adresy, miejscowości, daty urodzenia oraz imiona i nazwiska na neutralne
 etykiety, na przykład `Jan Kowalski` → `[IMIĘ I NAZWISKO]`, `44051401359` → `[PESEL]`.
@@ -143,6 +143,7 @@ kontekstową**, dlatego trafień „na ślepo" jest mało.
 | 🟤 Nr dowodu | 3 litery + 6 cyfr (+ suma kontrolna bez kontekstu) | `[NR-DOWODU]` |
 | 🟤 Nr paszportu | kontekst „paszport" + 2 litery + 7 cyfr | `[NR-PASZPORTU]` |
 | 🟤 Numer KRS | kontekst „KRS" + 10 cyfr (też z zerami wiodącymi) | `[KRS]` |
+| 🟤 Numer KSeF | słowo „KSeF" gdziekolwiek w dokumencie + numer faktury `NIP-RRRRMMDD-znaki-suma` (też stary format 36-znakowy) z **sumą kontrolną NIP-u** w pierwszym członie | `[NR-KSEF]` |
 | 🟤 Nr prawa jazdy | kontekst „prawo jazdy" + numer (z cyfrą) | `[PRAWO-JAZDY]` |
 | 🟤 Nr rejestracyjny | kontekst „rejestracyjny/tablica/pojazd" + tablica (np. WI1234K); wyliczenia po przecinku i „oraz/i" z walidacją wyróżnika wojewódzkiego | `[NR-REJESTRACYJNY]` |
 | 🟤 VIN | 17 znaków bez I/O/Q; kontekst „VIN/nadwozia" lub wyraźny układ VIN | `[VIN]` |

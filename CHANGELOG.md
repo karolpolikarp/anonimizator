@@ -1,5 +1,61 @@
 # Changelog
 
+## v0.46.22 — 2026-07-20
+
+**Nowy typ danych: numer KSeF (Krajowy System e-Faktur).**
+
+Numer KSeF zaczyna się od NIP-u wystawcy, więc bez własnego przebiegu `passNip` maskował sam
+prefiks i zostawiał `[NIP]-20250826-0100001AF629-AF` — wyciek fragmentu danej. Nowy przebieg
+`passKsef` biegnie jako PIERWSZY w fazie identyfikatorów numerycznych (przed IBAN/PESEL/NIP)
+i maskuje numer w całości jako `[NR-KSEF]`.
+
+- **Kotwica DOKUMENTOWA**: numer maskujemy, gdy słowo „KSeF" (albo „Krajowy System e-Faktur")
+  pada gdziekolwiek w tekście — wtedy znikają wszystkie wystąpienia numeru. Kotwica sąsiedzka
+  („etykieta tuż przed numerem", jak przy KRS) przepuszczała realne pisma: etykieta stoi
+  w nagłówku kolumny tabeli/CSV, po numerze („…-AF — to numer KSeF"), w znacznikach
+  (`**Nr KSeF:**`, `<td>Nr KSeF</td>`), a pod jedną etykietą stoi wyliczenie kilku numerów.
+- **Oba formaty w obiegu**: 35-znakowy z KSeF 2.0 (`NIP-RRRRMMDD-12 znaków-suma`) i historyczny
+  36-znakowy z KSeF 1.0 (część techniczna rozbita 6+6). Schemat FA(3) dopuszcza w pierwszym
+  członie także `M`+9 cyfr i 3 litery+7 cyfr — obsłużone.
+- **Druga warstwa: losowość części technicznej + suma kontrolna NIP-u + zakres daty.** Kotwica
+  dokumentowa jest słabsza niż etykieta tuż przy numerze, a sam kształt (10 cyfr · 8 cyfr ·
+  12 znaków hex · 2 znaki) noszą też numery zamówień, inwentarzowe, seryjne, identyfikatory
+  korelacji z logów i sklejone kolumny kwot — audyt maskował je w dokumentach, w których „KSeF"
+  pada przy okazji. Sama suma NIP-u nie wystarcza: przechodzi ją co jedenasty losowy ciąg
+  10 cyfr (zmierzone 8,97%). Dlatego wymagamy też **co najmniej jednej litery A–F** w części
+  technicznej — prawdziwy numer ma tam losowy hex (szansa na brak litery ≈ 0,14%), a numery
+  zamówień i kwoty mają same cyfry. Zero wiodące w NIP-ie odrzucamy wprost. Wariant pierwszego
+  członu „3 litery + 7 cyfr" (dopuszczony w XSD FA(3), w praktyce niespotykany) został wycięty.
+- **Własnej sumy KSeF-a NIE walidujemy**: CRC-8 zgadza się dla numerów z KSeF 2.0, ale numery
+  z KSeF 1.0 go nie przechodzą (znane rozbieżności w repozytoriach MF) — twardy warunek
+  odrzucałby prawdziwe numery.
+- **Separatorem jest TYLKO myślnik** (też półpauza/pauza/dywiz miękki, ze spacjami i złamaniem
+  wiersza PO nim — tak łamie się numer w wąskiej kolumnie). Dopuszczenie spacji jako separatora
+  zjadało cztery sąsiednie kolumny liczb w raporcie („KSeF 5265877635 20250826 000000012345 23"),
+  a złamanie wiersza PRZED myślnikiem scalało listę punktowaną — oba warianty odrzucone
+  po audycie adwersarialnym.
+
+- **Numer w ŚCIEŻCE URL-a** (`…/faktura/5265877635-…-AF/upo`) zdejmowany już przy ochronie
+  adresów — bez tego NIP wystawcy zostawał jawny w linku. Numer doklejony myślnikiem do
+  etykiety lub nazwy pliku (`Nr KSeF-5265…`, `faktura-5265…-AF.xml`) też jest maskowany.
+
+Precyzja: numer referencyjny sesji (`20250626-SO-…`) zaczyna się od DATY, nie od NIP-u, i nie
+zawiera danych podatnika — zostaje nietknięty nawet obok słowa „KSeF".
+
+ŚWIADOMIE POMINIĘTE: numer KSeF BEZ etykiety (wtedy jak dotąd znika sam NIP-prefiks), token
+autoryzacyjny KSeF, numery referencyjne sesji/UPO oraz identyfikator zbiorczy.
+
+Kotwicę liczymy na ORYGINALNYM wejściu: adres portalu w linku i skrzynka w stopce
+(`ksef@mf.gov.pl`) bywają jedyną wzmianką o systemie, a wcześniejsze przebiegi już je maskują.
+Przebieg biegnie też przed znakiem sprawy — kształt numeru pasował do wzorca JRWA i dostawał
+maskę `[ZNAK-SPRAWY]`.
+
+Bez regresji: 334 testy zielone, golden-master bez zmian w istniejących przypadkach, bramka
+benchmarku bez regresji (recall 94,8%, precyzja 99,7%). Trzy rundy audytu adwersarialnego
+(FP / FN / kolejność przebiegów / wydajność) zamknięte — po drodze zniknęła też kwadratowa
+złożoność w dokumentach z tysiącami linków (1 MB: 3,7 s → 0,12 s).
+Rdzeń 0.29.11 → 0.29.12, web/landing 0.46.21 → 0.46.22.
+
 ## v0.46.20 — 2026-07-16
 
 **Rdzeń: trzy wady WCZEŚNIEJSZE (wykryte audytami v0.46.18–19) domknięte bez regresji.**

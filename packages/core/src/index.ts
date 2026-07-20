@@ -36,6 +36,7 @@ export type PiiType =
   | 'DOWOD'
   | 'PASZPORT'
   | 'KRS'
+  | 'KSEF'
   | 'PRAWO-JAZDY'
   | 'NR-REJESTRACYJNY'
   | 'VIN'
@@ -110,6 +111,7 @@ const MASK: Record<PiiType, string> = {
   DOWOD: '[NR-DOWODU]',
   PASZPORT: '[NR-PASZPORTU]',
   KRS: '[KRS]',
+  KSEF: '[NR-KSEF]',
   'PRAWO-JAZDY': '[PRAWO-JAZDY]',
   'NR-REJESTRACYJNY': '[NR-REJESTRACYJNY]',
   VIN: '[VIN]',
@@ -731,6 +733,7 @@ const URL_PARAM_RULES: Array<{ re: RegExp; type: PiiType }> = [
   { re: /([?&#]pesel=)(\d+)/gi, type: 'PESEL' },
   { re: /([?&#](?:card(?:number|no)?|karta|nr_?karty|numer_?karty)=)([^&#\s\[\]]+)/gi, type: 'KARTA' },
   { re: /([?&#](?:token|api_?key|secret|auth|access_?token)=)([^&#\s\[\]]+)/gi, type: 'TOKEN' },
+  { re: /([?&#](?:ksef(?:_?number)?|nr_?ksef|numer_?ksef)=)([^&#\s\[\]]+)/gi, type: 'KSEF' },
 ];
 
 // ── Klucze strukturalne XML/JSON ──────────────────────────────────────────────
@@ -753,6 +756,8 @@ const STRUCT_KEYS = new Map<string, StructKind>(Object.entries({
   birthdate: 'birth', dateofbirth: 'birth', dob: 'birth', dataurodzenia: 'birth',
   login: 'login', username: 'login', user: 'login', userid: 'login',
   pesel: 'pesel', nip: 'nip', regon: 'regon',
+  // Numeru KSeF NIE ma na tej liście celowo: nazwa tagu/klucza („<NrKSeF>", „ksefNumber") sama
+  // zawiera słowo „KSeF", więc kotwica dokumentowa passKsef i tak zadziała — bez dublowania reguł.
 } as Record<string, StructKind>));
 const STRUCT_KIND_TYPE: Record<StructKind, PiiType> = {
   first: 'IMIE', surname: 'IMIE', fullname: 'IMIE', name: 'IMIE', phone: 'TELEFON',
@@ -760,6 +765,86 @@ const STRUCT_KIND_TYPE: Record<StructKind, PiiType> = {
   birth: 'DATA-UR', login: 'LOGIN', pesel: 'PESEL', nip: 'NIP', regon: 'REGON',
 };
 const normStructKey = (k: string): string => k.toLowerCase().replace(/[._-]/g, '');
+
+// ── NUMER KSeF (Krajowy System e-Faktur) ──────────────────────────────────────
+// Budowa: NIP wystawcy + data przyjęcia + 12 znaków technicznych + suma kontrolna, np.
+// „5265877635-20250826-0100001AF629-AF" (35 znaków). KSeF 1.0 nadawał wariant 36-znakowy
+// z częścią techniczną rozbitą na 6+6 („7781464139-20230721-80B510-9675F7-B5") — oba są
+// w obiegu (numery starych faktur nie znikają), więc oba maskujemy. Schemat FA(3) dopuszcza
+// w pierwszym członie także „M" + 9 cyfr oraz 3 litery + 7 cyfr (podmioty bez NIP).
+//
+// SUMY KONTROLNEJ NIE WALIDUJEMY: to CRC-8 (poly 0x07, init 0x00) liczone po znakach części
+// danych — zgadza się dla numerów z KSeF 2.0, ale numerów z KSeF 1.0 NIE przechodzi (znane
+// rozbieżności w repozytoriach MF). Twardy warunek odrzucałby prawdziwe numery, czyli wyciek.
+// Zamiast sumy wymagamy KOTWICY „KSeF" — bez niej nie maskujemy (precyzja > nadmaskowanie).
+//
+// Separator to WYŁĄCZNIE myślnik (też półpauza/pauza/dywiz miękki), z dopuszczalnym złamaniem
+// wiersza i cienką spacją wokół — numer bywa łamany w wąskiej kolumnie i autokorygowany przez
+// edytor. SAMA SPACJA jako separator jest ODRZUCONA: audyt adwersarialny pokazał, że wzorzec
+// „10 cyfr · 8 cyfr · 12 znaków · 2 znaki" rozdzielony spacjami zjada cztery sąsiednie KOLUMNY
+// liczb w raporcie („KSeF 5265877635 20250826 000000012345 23") — to nadmaskowanie.
+// Złamanie wiersza dopuszczamy TYLKO PO myślniku (tak łamie edytor i PDF: dywiz zostaje na końcu
+// linii). Newline PRZED myślnikiem odpada, bo scalałby listę punktowaną „- 5265877635\n- 20250826…"
+// w jeden numer — kolejny wariant nadmaskowania z audytu.
+// Wokół myślnika NIE MA spacji: dopuszczenie ich scalało kolumny zestawienia rozdzielone „ - "
+// („5265877635 - 20250826 - 145000 - 118700 - 23") w jeden numer. Dozwolone jest tylko złamanie
+// wiersza PO myślniku (z wcięciem kolejnej linii) — tak numer łamie edytor i PDF.
+// Miękki dywiz (U+00AD) NIE jest separatorem: w realnym tekście pada WEWNĄTRZ członu (artefakt
+// łamania wyrazu), a w klasie separatora otwierał kształt „ciąg cyfr bez widocznego myślnika".
+const KSEF_SEP = '[-\\u2010-\\u2015](?:[ \\t]*\\r?\\n[ \\t\\u00A0\\u2009\\u202F]*)?';
+// Wariant pierwszego członu „3 litery + 7 cyfr" (dopuszczony w XSD FA(3), w praktyce niespotykany)
+// jest CELOWO pominięty: łapał numery inwentarzowe, seryjne, partii i wydań („SRV2026001-20260108-
+// 000000004512-03") w dokumentach, w których słowo „KSeF" pada przy okazji. Data jest walidowana
+// zakresowo (rok 20xx, miesiąc 01–12, dzień 01–31), a NIP w pierwszym członie — sumą kontrolną
+// (patrz passKsef): przy kotwicie dokumentowej sam kształt to za mało.
+const KSEF_HEAD = '(?:\\d{10}|[Mm]\\d{9})';
+const KSEF_DATE = '20\\d{2}(?:0[1-9]|1[0-2])(?:0[1-9]|[12]\\d|3[01])';
+const KSEF_VALUE =
+  `${KSEF_HEAD}${KSEF_SEP}${KSEF_DATE}${KSEF_SEP}` +
+  `(?:[0-9A-Fa-f]{6}${KSEF_SEP}[0-9A-Fa-f]{6}|[0-9A-Fa-f]{12})${KSEF_SEP}[0-9A-Fa-f]{2}`;
+/**
+ * KOTWICA DOKUMENTOWA. Numer maskujemy tylko wtedy, gdy w tekście W OGÓLE pada „KSeF" (albo
+ * rozwinięta nazwa systemu) — kotwica sąsiedzka zawodziła w realnych pismach: etykieta bywa
+ * w nagłówku kolumny tabeli, po numerze („…-AF — to numer KSeF"), w znacznikach („**Nr KSeF:**",
+ * „<td>Nr KSeF</td>"), a pod jedną etykietą stoi wyliczenie kilku numerów. Kształt numeru jest
+ * na tyle sztywny (NIP + data + 12 znaków hex + suma), że w dokumencie mówiącym o KSeF nie ma
+ * czego innego pomylić — numer referencyjny sesji zaczyna się od DATY, nie od NIP-u.
+ */
+const RE_KSEF_ANCHOR = /ksef|krajow\w*\s+system\w*\s+e[-‐-―]?faktur/i;
+// Granice BEZ myślnika: numer bywa doklejony myślnikiem do etykiety („Nr KSeF-5265877635-…"),
+// nazwy pliku („faktura-5265877635-…-AF.xml") czy segmentu ścieżki — wtedy zakaz myślnika
+// z boku zostawiał jawny NIP. Dłuższy identyfikator zawierający kształt numeru KSeF i tak
+// niesie NIP wystawcy, więc maskujemy.
+const RE_KSEF_VALUE = new RegExp(`(?<![0-9A-Za-z])${KSEF_VALUE}(?![0-9A-Za-z])`, 'g');
+
+/** Kotwica liczona na ORYGINALNYM wejściu: „ksef.mf.gov.pl" w linku albo „ksef@mf.gov.pl"
+ *  w stopce bywa jedyną wzmianką o systemie, a wcześniejsze przebiegi już je skasowały. */
+function hasKsefAnchor(ctx: RedactCtx): boolean {
+  return RE_KSEF_ANCHOR.test(ctx.raw);
+}
+
+/**
+ * Maskuje dopasowanie TYLKO wtedy, gdy pierwszy człon jest poprawnym NIP-em. Kotwica jest
+ * dokumentowa (słabsza niż etykieta tuż przy numerze), więc sumę kontrolną NIP-u traktujemy jako
+ * drugą warstwę: bez niej numery zamówień i identyfikatory korelacji o tym samym kształcie
+ * („4500123456-20260115-000000012345-01") znikały w dokumentach wspominających KSeF.
+ * Wariant „M" + 9 cyfr (podmiot bez NIP wg FA(3)) sumy nie ma — tam decyduje sam kształt.
+ */
+function maskKsefMatch(ctx: RedactCtx) {
+  return (m: string): string => {
+    const head = (m.match(/^[Mm]?\d+/) as RegExpMatchArray)[0];
+    // (1) LOSOWOŚĆ części technicznej. Prawdziwy numer KSeF ma tam 14 znaków hex — szansa, że
+    // nie padnie ani jedna litera A–F, to ~0,14%. Za to numery zamówień, seryjne i sklejone
+    // kolumny kwot mają tam same cyfry, a sama suma NIP ich nie odsiewa: przechodzi ją co 11.
+    // losowy ciąg 10 cyfr (zmierzone 8,97%).
+    if (!/[A-Fa-f]/.test(m.slice(head.length))) return m;
+    // (2) Suma kontrolna NIP-u w głowie 10-cyfrowej. Zero wiodące odrzucamy wprost — żaden NIP
+    // nie zaczyna się od zera (pierwsze trzy cyfry to kod urzędu skarbowego), a suma je puszcza.
+    if (/^\d{10}$/.test(head) && (head.startsWith('0') || !isValidNip(head))) return m;
+    ctx.bump('KSEF');
+    return ctx.M.KSEF;
+  };
+}
 
 /** Pierwsze litery wyróżników wojewódzkich tablic rejestracyjnych (+ H/U — służby/wojsko).
  *  Walidują CZŁONY WYLICZENIA i tablice po kotwicy z przerwą („ISO 9001" ≠ tablica). */
@@ -776,6 +861,10 @@ const PLATE_VOIV_LETTERS = 'BCDEFGHKLNOPRSTUWZ';
  */
 interface RedactCtx {
   text: string;
+  /** Oryginalne wejście. Kotwice DOKUMENTOWE liczymy na nim, nie na `text`: wcześniejsze
+   *  przebiegi kasują adresy (URL → sentinel, e-mail → [EMAIL]), a słowo „KSeF" bywa właśnie
+   *  tam jedyne („ksef@mf.gov.pl", „ksef.mf.gov.pl") — wtedy kotwica ginęła. */
+  raw: string;
   on: (t: PiiType) => boolean;
   bump: (t: PiiType) => void;
   M: Record<PiiType, string>;
@@ -838,6 +927,9 @@ function cityBySuffix(ctx: RedactCtx, words: string[]): { prefix: string } | nul
 // ?user=/?email=…), potem podmieniamy URL na sentinel U+E000<litery>U+E001 i przywracamy na
 // końcu (finalizePersons). Drugi przebieg jest idempotentny: klasy wartości wykluczają „[".
 function passProtectUrls(ctx: RedactCtx): void {
+  // Kotwica KSeF liczona RAZ: to skan całego wejścia, a wewnątrz callbacku wykonywałby się
+  // dla każdego adresu z osobna (dokument z tysiącami linków rósł kwadratowo — 3,7 s na 1 MB).
+  const ksefInUrls = ctx.on('KSEF') && hasKsefAnchor(ctx);
   ctx.text = ctx.text.replace(/\b(?:https?:\/\/|www\.)[^\s<>"'„”()]+/g, (raw) => {
     const trailMatch = raw.match(/[.,;:!?\]]+$/); // interpunkcja zdania nie należy do URL-a
     const trail = trailMatch ? trailMatch[0] : '';
@@ -850,6 +942,12 @@ function passProtectUrls(ctx: RedactCtx): void {
       // JWT w URL-u (fragment „#access_token=eyJ…") — poza URL-em łapie go passTokens,
       // ale URL jest sentinelowany WCZEŚNIEJ, więc token trzeba zdjąć już tutaj.
       url = url.replace(/eyJ[A-Za-z0-9_-]{5,}\.[A-Za-z0-9_-]{5,}\.[A-Za-z0-9_-]{2,}/g, maskConst(ctx, 'TOKEN'));
+    }
+    // Numer KSeF w ŚCIEŻCE URL-a („…/faktura/5265877635-20250826-0100001AF629-AF/upo") — URL
+    // jest sentinelowany zanim ruszy passKsef, więc numer trzeba zdjąć już tutaj; inaczej NIP
+    // wystawcy zostawał jawny w linku.
+    if (ksefInUrls) {
+      url = url.replace(RE_KSEF_VALUE, maskKsefMatch(ctx));
     }
     for (const rule of URL_PARAM_RULES) {
       if (!ctx.on(rule.type)) continue;
@@ -1109,7 +1207,17 @@ function passLogin(ctx: RedactCtx): void {
   }
 }
 
-// 1e) ZNAK SPRAWY / ZNAK PISMA — sygnatura pisma urzędowego. Biegnie WCZEŚNIE, by zamaskować
+// 1e) NUMER KSeF — biegnie PRZED passZnakSprawy (kształt numeru pasuje do wzorca znaku sprawy
+// i dostawał maskę [ZNAK-SPRAWY]) oraz PRZED passNip: pierwszy człon numeru KSeF to NIP
+// z poprawną sumą, więc bez tego przebiegu passNip zjadał sam prefiks i zostawiał
+// „[NIP]-20250826-0100001AF629-AF" (wyciek fragmentu — „maskuj całość, nie fragment").
+function passKsef(ctx: RedactCtx): void {
+  if (!ctx.on('KSEF')) return;
+  if (!hasKsefAnchor(ctx)) return;
+  ctx.text = ctx.text.replace(RE_KSEF_VALUE, maskKsefMatch(ctx));
+}
+
+// 1f) ZNAK SPRAWY / ZNAK PISMA — sygnatura pisma urzędowego. Biegnie WCZEŚNIE, by zamaskować
 // cały znak, zanim krótsze detektory (kod, telefon) odgryzą jego fragmenty cyfrowe. Dwa tryby:
 function passZnakSprawy(ctx: RedactCtx): void {
   if (!ctx.on('ZNAK-SPRAWY')) return;
@@ -1991,7 +2099,7 @@ export function redactPII(input: string, options?: RedactOptions): RedactionResu
     return `[OSOBA-${label}]`;
   };
 
-  const ctx: RedactCtx = { text: input, on, bump, M, personMask, protectedUrls: [] };
+  const ctx: RedactCtx = { text: input, raw: input, on, bump, M, personMask, protectedUrls: [] };
 
   // Kolejność MA znaczenie: przebiegi czytają placeholdery poprzednich, a kolejność pierwszego
   // bump danego typu wyznacza kolejność listy `found`. Sekwencja = dawna kolejność fizyczna 1:1.
@@ -2008,6 +2116,9 @@ export function redactPII(input: string, options?: RedactOptions): RedactionResu
   passFormFields(ctx);
   passStructured(ctx);
   passLogin(ctx);
+  // PRZED passZnakSprawy (kształt numeru KSeF pasuje do wzorca znaku sprawy — dostawał wtedy
+  // maskę [ZNAK-SPRAWY]) i PRZED passNip (inaczej znika sam NIP, reszta numeru zostaje jawna).
+  passKsef(ctx);
   passZnakSprawy(ctx);
 
   // ═════ FAZA 2 · IDENTYFIKATORY NUMERYCZNE (suma kontrolna / etykieta / długość) ═════
@@ -2068,6 +2179,7 @@ const HUMAN_LABEL: Record<PiiType, string> = {
   DOWOD: 'numer dowodu',
   PASZPORT: 'numer paszportu',
   KRS: 'numer KRS',
+  KSEF: 'numer KSeF',
   'PRAWO-JAZDY': 'nr prawa jazdy',
   'NR-REJESTRACYJNY': 'nr rejestracyjny',
   VIN: 'VIN',

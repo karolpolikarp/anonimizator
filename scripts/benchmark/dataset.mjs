@@ -681,6 +681,26 @@ export function buildDataset() {
   str('Anna rozmawiała z Kowalskim przez telefon.', ['Kowalskim'], ['Anna', 'rozmawiała']);
   str('REGON zakładu opiekuńczego wynosi 012345675 w rejestrze.', ['012345675'], ['opiekuńczego']);
 
+  // v0.46.22 — numer KSeF (Krajowy System e-Faktur). Numer zawiera NIP wystawcy, więc maskujemy
+  // go W CAŁOŚCI (bez tego passNip zjadał sam prefiks i zostawiał „[NIP]-20250826-…").
+  str('Numer KSeF: 5265877635-20250826-0100001AF629-AF na fakturze.', ['5265877635-20250826-0100001AF629-AF'], ['fakturze']);
+  str('Korekta dotyczy numeru KSeF 7781464139-20230721-80B510-9675F7-B5 z lipca.', ['7781464139-20230721-80B510-9675F7-B5'], ['lipca']);
+  str('W polu <NrKSeF>5265877635-20260213-01008C4F21B7-3D</NrKSeF> zapisano identyfikator.', ['5265877635-20260213-01008C4F21B7-3D'], ['identyfikator']);
+  // numer inwentarzowy/seryjny o tym samym KSZTAŁCIE, w dokumencie wspominającym KSeF —
+  // pierwszy człon nie jest poprawnym NIP-em, więc zostaje jawny (kotwica dokumentowa to za mało)
+  neg('Faktury wystawiamy przez KSeF. Nr inwentarzowy 4500123456-20260115-000000012345-01 bez zmian.', ['4500123456-20260115-000000012345-01']);
+  // ten sam kształt bez ani jednej litery hex: numer modelu i sklejone kolumny kwot — zostają
+  neg('Rozliczenie w KSeF. Nr modelu urządzenia M000000001-20240101-000000000000-00.', ['M000000001-20240101-000000000000-00']);
+  // (sam NIP w tym ciągu jest maskowany jako NIP — pilnujemy, że reszta kolumn zostaje jawna)
+  neg('Uzgodnienie przed wysyłką do KSeF: 5265877635-20250826-145000-118700-23 w tabeli.', ['20250826-145000-118700-23']);
+  // kotwicą bywa sam adres skrzynki — e-mail znika wcześniej, więc liczymy ją na wejściu
+  str('Kontakt: ksef@mf.gov.pl, numer dokumentu 5265877635-20250826-0100001AF629-AF.', ['5265877635-20250826-0100001AF629-AF'], ['numer dokumentu']);
+  // numer referencyjny sesji zaczyna się od DATY (nie od NIP-u) — nie jest numerem KSeF
+  neg('Numer referencyjny sesji w KSeF: 20250626-SO-2F14610000-242991F8C9-B4', ['20250626-SO-2F14610000-242991F8C9-B4']);
+  neg('System KSeF w wersji 2.0 działa od 2026 roku.', ['KSeF']);
+  // separatorem numeru KSeF jest TYLKO myślnik — kolumny liczb w raporcie nie są scalane
+  neg('Raport KSeF 5265877635 20250826 000000012345 23 w podziale na kanały.', ['20250826 000000012345 23']);
+
   // ── Kontrola spójności zbioru ──
   const ids = new Set();
   for (const c of cases) {
