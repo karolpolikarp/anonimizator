@@ -103,6 +103,7 @@ const EXAMPLE_TEXT = `Dzień dobry, nazywam się Anna Kowalska (PESEL 4405140135
 Mieszkam przy ul. Polnej 12/3, 00-950 Warszawa.
 Proszę o kontakt: anna.kowalska@example.com lub tel. 600 700 800.
 Nr konta do zwrotu: PL61 1090 1014 0000 0712 1981 2874.
+Faktura w KSeF: 5265877635-20250826-0100001AF629-AF.
 Sprawę prowadzi pan Bąkiewicz zgodnie z art. 123 456 789 KC.`;
 
 const input = $<HTMLTextAreaElement>('demo-input');

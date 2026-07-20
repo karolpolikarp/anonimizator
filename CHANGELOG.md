@@ -45,6 +45,9 @@ zawiera danych podatnika — zostaje nietknięty nawet obok słowa „KSeF".
 ŚWIADOMIE POMINIĘTE: numer KSeF BEZ etykiety (wtedy jak dotąd znika sam NIP-prefiks), token
 autoryzacyjny KSeF, numery referencyjne sesji/UPO oraz identyfikator zbiorczy.
 
+Landing: numer KSeF w przykładzie live demo, w chmurze typów, w notce o sumach kontrolnych
+i w karcie „Księgowość" (24 typy zamiast 23).
+
 Kotwicę liczymy na ORYGINALNYM wejściu: adres portalu w linku i skrzynka w stopce
 (`ksef@mf.gov.pl`) bywają jedyną wzmianką o systemie, a wcześniejsze przebiegi już je maskują.
 Przebieg biegnie też przed znakiem sprawy — kształt numeru pasował do wzorca JRWA i dostawał
